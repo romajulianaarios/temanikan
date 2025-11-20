@@ -1,71 +1,90 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { authAPI } from '../services/api';
 
 interface User {
+  id: number;
   name: string;
   email: string;
   role: 'member' | 'admin';
+  phone?: string;
+  address?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (data: { name: string; email: string; password: string; phone?: string; address?: string }) => Promise<boolean>;
   logout: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Seeded Admin Account (hardcoded for internal access)
-const ADMIN_ACCOUNT = {
-  email: 'admin@temanikan.com',
-  password: 'admin123',
-  name: 'Super Admin',
-  role: 'admin' as const
-};
-
-// Mock Member Account for testing
-const MEMBER_ACCOUNT = {
-  email: 'member@temanikan.com',
-  password: '12345678',
-  name: 'Ahmad Wijaya',
-  role: 'member' as const
-};
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = (email: string, password: string): boolean => {
-    // Check if logging in as Admin
-    if (email === ADMIN_ACCOUNT.email && password === ADMIN_ACCOUNT.password) {
-      setUser({
-        name: ADMIN_ACCOUNT.name,
-        email: ADMIN_ACCOUNT.email,
-        role: ADMIN_ACCOUNT.role
-      });
-      return true;
-    }
+  // Check if user is already logged in on mount
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = localStorage.getItem('access_token');
+      const storedUser = localStorage.getItem('user');
+      
+      if (token && storedUser) {
+        try {
+          // Verify token is still valid
+          const response = await authAPI.getCurrentUser();
+          setUser(response.user);
+        } catch (error) {
+          // Token invalid, clear storage
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('user');
+        }
+      }
+      setLoading(false);
+    };
     
-    // Check if logging in as Member (demo account)
-    if (email === MEMBER_ACCOUNT.email && password === MEMBER_ACCOUNT.password) {
-      setUser({
-        name: MEMBER_ACCOUNT.name,
-        email: MEMBER_ACCOUNT.email,
-        role: MEMBER_ACCOUNT.role
-      });
-      return true;
+    initAuth();
+  }, []);
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const response = await authAPI.login(email, password);
+      
+      if (response.access_token && response.user) {
+        localStorage.setItem('access_token', response.access_token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        setUser(response.user);
+        return true;
+      }
+      return false;
+    } catch (error: any) {
+      console.error('Login error:', error.response?.data?.error || error.message);
+      return false;
     }
-    
-    // In production, this would validate against a real database
-    // For now, any other email/password combination will be treated as a new member
-    setUser({
-      name: email.split('@')[0],
-      email: email,
-      role: 'member'
-    });
-    return true;
+  };
+
+  const register = async (data: { name: string; email: string; password: string; phone?: string; address?: string }): Promise<boolean> => {
+    try {
+      const response = await authAPI.register(data);
+      
+      if (response.access_token && response.user) {
+        localStorage.setItem('access_token', response.access_token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        setUser(response.user);
+        return true;
+      }
+      return false;
+    } catch (error: any) {
+      console.error('Register error:', error.response?.data?.error || error.message);
+      return false;
+    }
   };
 
   const logout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 
@@ -73,8 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{ 
       user, 
       isLoggedIn: !!user, 
-      login, 
-      logout 
+      login,
+      register, 
+      logout,
+      loading
     }}>
       {children}
     </AuthContext.Provider>

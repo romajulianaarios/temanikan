@@ -58,15 +58,19 @@ function PasswordInput({ id, label, placeholder = '••••••••', va
 
 export default function AuthModal({ open, onOpenChange, initialMode = 'login', redirectTo }: AuthModalProps) {
   const navigate = useNavigate();
-  const { login, user } = useAuth();
+  const { login, register, user } = useAuth();
   const [currentView, setCurrentView] = useState<ModalView>('login');
   const [pendingRedirect, setPendingRedirect] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   
-  // Member registration passwords
+  // Member registration form state
+  const [memberName, setMemberName] = useState('');
+  const [memberEmail, setMemberEmail] = useState('');
+  const [memberPhone, setMemberPhone] = useState('');
   const [memberPassword, setMemberPassword] = useState('');
   const [memberConfirmPassword, setMemberConfirmPassword] = useState('');
 
@@ -98,25 +102,36 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
     setCurrentView('login');
     setLoginEmail('');
     setLoginPassword('');
+    setMemberName('');
+    setMemberEmail('');
+    setMemberPhone('');
     setMemberPassword('');
     setMemberConfirmPassword('');
+    setIsLoading(false);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    // Call login function from AuthContext
-    const success = login(loginEmail, loginPassword);
-    
-    if (success) {
-      // Set pending redirect to trigger useEffect after user state updates
-      setPendingRedirect(true);
-    } else {
-      alert('Email atau password salah');
+    try {
+      // Call login function from AuthContext
+      const success = await login(loginEmail, loginPassword);
+      
+      if (success) {
+        // Set pending redirect to trigger useEffect after user state updates
+        setPendingRedirect(true);
+      } else {
+        alert('Email atau password salah');
+      }
+    } catch (error) {
+      alert('Terjadi kesalahan saat login. Silakan coba lagi.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleMemberRegister = (e: React.FormEvent) => {
+  const handleMemberRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate passwords match
@@ -131,8 +146,28 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
       return;
     }
     
-    // After successful registration, show login form
-    setCurrentView('login');
+    setIsLoading(true);
+    
+    try {
+      // Call register function from AuthContext
+      const success = await register({
+        name: memberName,
+        email: memberEmail,
+        password: memberPassword,
+        phone: memberPhone
+      });
+      
+      if (success) {
+        // Set pending redirect to trigger useEffect after user state updates
+        setPendingRedirect(true);
+      } else {
+        alert('Gagal mendaftar. Email mungkin sudah terdaftar.');
+      }
+    } catch (error) {
+      alert('Terjadi kesalahan saat mendaftar. Silakan coba lagi.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderContent = () => {
@@ -180,8 +215,9 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
               <Button 
                 type="submit"
                 className="w-full text-white bg-primary-gradient"
+                disabled={isLoading}
               >
-                Login
+                {isLoading ? 'Loading...' : 'Login'}
               </Button>
             </form>
 
@@ -215,7 +251,9 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                 <Input 
                   id="nama-lengkap" 
                   type="text" 
-                  placeholder="Masukkan nama lengkap" 
+                  placeholder="Masukkan nama lengkap"
+                  value={memberName}
+                  onChange={(e) => setMemberName(e.target.value)}
                   required
                 />
               </div>
@@ -225,7 +263,9 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                 <Input 
                   id="register-email" 
                   type="email" 
-                  placeholder="nama@email.com" 
+                  placeholder="nama@email.com"
+                  value={memberEmail}
+                  onChange={(e) => setMemberEmail(e.target.value)}
                   required
                 />
               </div>
@@ -235,40 +275,11 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                 <Input 
                   id="nomor-hp" 
                   type="tel" 
-                  placeholder="+62 812 3456 7890" 
+                  placeholder="+62 812 3456 7890"
+                  value={memberPhone}
+                  onChange={(e) => setMemberPhone(e.target.value)}
                   required
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="usia" className="mb-3 block">Usia</Label>
-                <Input 
-                  id="usia" 
-                  type="number" 
-                  placeholder="Masukkan usia" 
-                  min="1"
-                  max="120"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="jenis-ikan" className="mb-3 block">Jenis Ikan Hias Utama</Label>
-                <Select required>
-                  <SelectTrigger id="jenis-ikan">
-                    <SelectValue placeholder="Pilih jenis ikan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="koi">Ikan Koi</SelectItem>
-                    <SelectItem value="cupang">Ikan Cupang</SelectItem>
-                    <SelectItem value="mas-koki">Ikan Mas Koki</SelectItem>
-                    <SelectItem value="discus">Ikan Discus</SelectItem>
-                    <SelectItem value="guppy">Ikan Guppy</SelectItem>
-                    <SelectItem value="arwana">Ikan Arwana</SelectItem>
-                    <SelectItem value="louhan">Ikan Louhan</SelectItem>
-                    <SelectItem value="lainnya">Lainnya</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
 
               <PasswordInput 
@@ -288,8 +299,9 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
               <Button 
                 type="submit"
                 className="w-full text-white bg-primary-gradient"
+                disabled={isLoading}
               >
-                Daftar Sekarang
+                {isLoading ? 'Loading...' : 'Daftar Sekarang'}
               </Button>
             </form>
 
