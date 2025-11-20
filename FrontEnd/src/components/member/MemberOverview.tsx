@@ -5,11 +5,13 @@ import { Droplets, Thermometer, Eye, Bot, Activity, TrendingUp, AlertTriangle, C
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../AuthContext';
 
 export default function MemberOverview() {
   const location = useLocation();
   const { deviceId } = useParams<{ deviceId?: string }>();
-  const userName = "Roma Juliana";
+  const { user } = useAuth();
+  const userName = user?.name || "Pengguna";
   const [currentTime, setCurrentTime] = useState(new Date());
   const [phValue, setPhValue] = useState(7.2);
   const [tempValue, setTempValue] = useState(26);

@@ -55,6 +55,33 @@ export const authAPI = {
     const response = await api.get('/auth/me');
     return response.data;
   },
+
+    updateProfile: async (data: { 
+    name?: string; 
+    phone?: string; 
+    address?: string; 
+    age?: number; 
+    primary_fish_type?: string; 
+    password?: string 
+  }) => {
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+    
+    const response = await axios.put(
+      'http://localhost:5000/api/users/profile', 
+      data,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+    
+    return response.data;
+  },
 };
 
 // Device API

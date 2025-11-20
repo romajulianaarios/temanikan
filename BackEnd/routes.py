@@ -1,5 +1,7 @@
+
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, User, Device, WaterMonitoring, CleaningHistory, DiseaseDetection
 from models import FishSpecies, ForumTopic, ForumReply, Order, Notification
 from datetime import datetime, timedelta
@@ -14,52 +16,102 @@ def register_routes(app):
     def register():
         data = request.get_json()
         
-        if not data.get('email') or not data.get('password'):
-            return jsonify({'error': 'Email and password are required'}), 400
+        # Validation
+        required_fields = ['name', 'email', 'password']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'{field} is required'}), 400
         
+        # Check if email already exists
         if User.query.filter_by(email=data['email']).first():
             return jsonify({'error': 'Email already registered'}), 400
         
+        # Create new user
         user = User(
-            name=data.get('name', data['email'].split('@')[0]),
+            name=data['name'],
             email=data['email'],
-            role='member',
+            role='member',  # Default role
             phone=data.get('phone'),
-            address=data.get('address')
+            address=data.get('address'),
+            age=data.get('age'),
+            primary_fish_type=data.get('primary_fish_type')
         )
         user.set_password(data['password'])
         
         db.session.add(user)
         db.session.commit()
         
-        access_token = create_access_token(identity=user.id)
-        
+        # UBAH: Tidak return token, hanya return success message
         return jsonify({
-            'message': 'User registered successfully',
-            'user': user.to_dict(),
-            'access_token': access_token
+            'message': 'Registrasi berhasil. Silahkan masuk dengan akun yang telah dibuat.',
+            'user': {
+                'id': user.id,
+                'name': user.name,
+                'email': user.email,
+                'role': user.role
+            }
         }), 201
     
     @app.route('/api/auth/login', methods=['POST'])
     def login():
-        data = request.get_json()
-        
-        if not data.get('email') or not data.get('password'):
-            return jsonify({'error': 'Email and password are required'}), 400
-        
-        user = User.query.filter_by(email=data['email']).first()
-        
-        if not user or not user.check_password(data['password']):
-            return jsonify({'error': 'Invalid email or password'}), 401
-        
-        access_token = create_access_token(identity=user.id)
-        
-        return jsonify({
-            'message': 'Login successful',
-            'user': user.to_dict(),
-            'access_token': access_token
-        }), 200
-    
+        try:
+            data = request.get_json()
+            
+            if not data.get('email') or not data.get('password'):
+                return jsonify({'error': 'Email and password are required'}), 400
+            
+            user = User.query.filter_by(email=data['email']).first()
+            
+            if not user or not user.check_password(data['password']):
+                return jsonify({'error': 'Invalid email or password'}), 401
+            
+            # Generate token
+            access_token = create_access_token(identity=str(user.id))
+            
+            # ✨ TEST: Decode token immediately to verify
+            from flask import current_app
+            import jwt as pyjwt
+            
+            print("=" * 70)
+            print("🔍 TOKEN GENERATION TEST:")
+            print(f"   User ID: {user.id}")
+            print(f"   Token (first 50 chars): {access_token[:50]}...")
+            
+            try:
+                # Decode with same secret key
+                decoded = pyjwt.decode(
+                    access_token, 
+                    current_app.config['JWT_SECRET_KEY'], 
+                    algorithms=['HS256']
+                )
+                print(f"   ✅ Decode successful!")
+                print(f"   Decoded user ID (sub): {decoded.get('sub')}")
+                print(f"   Issued at (iat): {decoded.get('iat')}")
+                print(f"   Expires at (exp): {decoded.get('exp')}")
+                
+                from datetime import datetime
+                iat_time = datetime.fromtimestamp(decoded.get('iat'))
+                exp_time = datetime.fromtimestamp(decoded.get('exp'))
+                print(f"   IAT datetime: {iat_time}")
+                print(f"   EXP datetime: {exp_time}")
+                
+            except Exception as decode_error:
+                print(f"   ❌ Decode failed: {decode_error}")
+            
+            print("=" * 70)
+            
+            return jsonify({
+                'message': 'Login successful',
+                'access_token': access_token,
+                'user': user.to_dict()
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+            return jsonify({'error': 'Internal server error'}), 500
+
     @app.route('/api/auth/me', methods=['GET'])
     @jwt_required()
     def get_current_user():
@@ -780,32 +832,85 @@ def register_routes(app):
     
     @app.route('/api/users/profile', methods=['PUT'])
     @jwt_required()
-    def update_user_profile():
-        user_id = get_jwt_identity()
-        user = User.query.get(user_id)
-        
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
-        
-        data = request.get_json()
-        
-        if 'name' in data:
-            user.name = data['name']
-        if 'phone' in data:
-            user.phone = data['phone']
-        if 'address' in data:
-            user.address = data['address']
-        if 'password' in data and data['password']:
-            user.set_password(data['password'])
-        
-        user.updated_at = datetime.utcnow()
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Profile updated successfully',
-            'user': user.to_dict()
-        }), 200
-    
+    def update_profile():
+        try:
+            print("=" * 70)
+            print("📨 UPDATE PROFILE REQUEST")
+            
+            # Get user ID from token (akan return string sekarang)
+            current_user_id = get_jwt_identity()
+            print(f"   User ID from token: '{current_user_id}' (type: {type(current_user_id)})")
+            
+            # ✅ Convert string ke integer untuk query database
+            user_id_int = int(current_user_id)
+            
+            # Get user from database
+            user = User.query.get(user_id_int)
+            if not user:
+                print(f"❌ User not found in DB: ID {user_id_int}")
+                return jsonify({
+                    'error': 'User tidak ditemukan',
+                    'message': 'Silahkan login kembali'
+                }), 404
+            
+            print(f"✅ User found: {user.email}")
+            
+            # Get request data
+            data = request.get_json()
+            print(f"📝 Update data: {data}")
+            
+            # Update user fields
+            updated_fields = []
+            if 'name' in data:
+                user.name = data['name']
+                updated_fields.append('name')
+            if 'phone' in data:
+                user.phone = data['phone']
+                updated_fields.append('phone')
+            if 'address' in data:
+                user.address = data['address']
+                updated_fields.append('address')
+            if 'age' in data:
+                user.age = data['age']
+                updated_fields.append('age')
+            if 'primary_fish_type' in data:
+                user.primary_fish_type = data['primary_fish_type']
+                updated_fields.append('primary_fish_type')
+            if 'password' in data and data['password']:
+                user.set_password(data['password'])
+                updated_fields.append('password')
+            
+            print(f"📝 Updating fields: {updated_fields}")
+            
+            # Commit changes
+            db.session.commit()
+            print("✅ Profile updated successfully!")
+            print("=" * 70)
+            
+            return jsonify({
+                'message': 'Profil berhasil diperbarui',
+                'user': user.to_dict()
+            }), 200
+            
+        except ValueError as ve:
+            print(f"❌ Invalid user ID format: {ve}")
+            return jsonify({
+                'error': 'Token tidak valid',
+                'message': 'Silahkan login kembali'
+            }), 422
+        except Exception as e:
+            print(f"❌ EXCEPTION in update_profile: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+            print("=" * 70)
+            
+            db.session.rollback()
+            return jsonify({
+                'error': 'Internal server error',
+                'message': str(e)
+            }), 500
+
+
     # Order Routes
     @app.route('/api/orders', methods=['GET'])
     @jwt_required()

@@ -4,6 +4,7 @@ import AddDeviceModal from '../components/AddDeviceModal';
 import { useNavigate } from '../components/Router';
 import { Plus, Bot, Activity, Circle } from '../components/icons';
 import { Button } from '../components/ui/button';
+import { useAuth } from '../components/AuthContext';
 
 interface Device {
   id: string;
@@ -15,6 +16,7 @@ interface Device {
 
 export default function MemberDevices() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [devices, setDevices] = useState<Device[]>([
     {
@@ -64,7 +66,7 @@ export default function MemberDevices() {
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-3xl" style={{ color: '#1F2937', fontWeight: 700 }}>
-              Halo, Roma Juliana!
+              Halo, {user?.name || 'Pengguna'}!
             </h1>
             <p className="text-sm mt-1" style={{ color: '#6B7280' }}>
               Ayo kelola semua robot Temanikan Anda dalam satu tempat

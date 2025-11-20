@@ -4,52 +4,126 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { User, Edit, Save, X } from '../icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../AuthContext';
 
 export default function MemberProfile() {
+  const { user, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
-    namaLengkap: 'Ahmad Wijaya',
-    email: 'ahmad@example.com',
-    nomorHP: '+62 812 3456 7890',
-    usia: '28',
-    jenisIkan: 'koi'
+    namaLengkap: '',
+    email: '',
+    nomorHP: '',
+    alamat: '',
+    usia: '',
+    jenisIkan: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // Load profile data from user context
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        namaLengkap: user.name || '',
+        email: user.email || '',
+        nomorHP: user.phone || '',
+        alamat: user.address || '',
+        usia: user.age ? user.age.toString() : '',
+        jenisIkan: user.primary_fish_type || ''
+      });
+    }
+  }, [user]);
 
   const [editData, setEditData] = useState({ ...profileData });
 
   const handleEdit = () => {
     setIsEditing(true);
     setEditData({ ...profileData });
+    setError('');
+    setSuccess('');
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setEditData({ ...profileData });
+    setError('');
+    setSuccess('');
   };
 
-  const handleSave = () => {
-    setProfileData({ ...editData });
-    setIsEditing(false);
+  const handleSave = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      console.log('Sending update data:', {
+        name: editData.namaLengkap,
+        phone: editData.nomorHP,
+        address: editData.alamat,
+        age: editData.usia ? parseInt(editData.usia) : undefined,
+        primary_fish_type: editData.jenisIkan
+      });
+
+      const result = await updateProfile({
+        name: editData.namaLengkap,
+        phone: editData.nomorHP,
+        address: editData.alamat,
+        age: editData.usia ? parseInt(editData.usia) : undefined,
+        primary_fish_type: editData.jenisIkan
+      });
+
+      console.log('Update result:', result);
+
+      if (result.success) {
+        // Update local state
+        setProfileData({ ...editData });
+        setSuccess(result.message);
+        setIsEditing(false);
+      } else {
+        setError(result.message || 'Gagal memperbarui profil');
+      }
+    } catch (err: any) {
+      console.error('Update profile error:', err);
+      setError(err.message || 'Terjadi kesalahan saat memperbarui profil');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
     setEditData({ ...editData, [field]: value });
   };
 
-  const jenisIkanLabel: Record<string, string> = {
-    koi: 'Ikan Koi',
-    cupang: 'Ikan Cupang',
-    'mas-koki': 'Ikan Mas Koki',
-    discus: 'Ikan Discus',
-    guppy: 'Ikan Guppy',
-    arwana: 'Ikan Arwana',
-    louhan: 'Ikan Louhan',
-    lainnya: 'Lainnya'
-  };
+  const fishTypes = [
+    'Ikan Koi',
+    'Ikan Mas Koki',
+    'Ikan Guppy',
+    'Ikan Cupang',
+    'Ikan Molly',
+    'Ikan Neon Tetra',
+    'Ikan Discus',
+    'Ikan Arwana',
+    'Ikan Louhan',
+    'Ikan Oscar',
+    'Lainnya'
+  ];
 
   return (
     <div className="max-w-3xl space-y-6">
+      {/* Success/Error Messages */}
+      {success && (
+        <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+          <p className="text-green-700">{success}</p>
+        </div>
+      )}
+      {error && (
+        <div className="p-4 rounded-lg bg-red-50 border border-red-200">
+          <p className="text-red-700">{error}</p>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -78,6 +152,7 @@ export default function MemberProfile() {
             <Button 
               variant="outline"
               onClick={handleCancel}
+              disabled={loading}
             >
               <X className="w-4 h-4 mr-2" />
               Batal
@@ -86,9 +161,10 @@ export default function MemberProfile() {
               className="text-white"
               style={{ backgroundColor: '#133E87' }}
               onClick={handleSave}
+              disabled={loading}
             >
               <Save className="w-4 h-4 mr-2" />
-              Simpan Perubahan
+              {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
             </Button>
           </div>
         )}
@@ -148,7 +224,7 @@ export default function MemberProfile() {
                 className="mt-2 p-3 rounded-lg"
                 style={{ backgroundColor: '#F3F3E0' }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.nomorHP}</p>
+                <p style={{ color: '#133E87' }}>{profileData.nomorHP || 'Belum diisi'}</p>
               </div>
             ) : (
               <Input 
@@ -156,6 +232,27 @@ export default function MemberProfile() {
                 type="tel"
                 value={editData.nomorHP}
                 onChange={(e) => handleInputChange('nomorHP', e.target.value)}
+                className="mt-2"
+              />
+            )}
+          </div>
+
+          {/* Alamat */}
+          <div>
+            <Label htmlFor="alamat">Alamat</Label>
+            {!isEditing ? (
+              <div 
+                className="mt-2 p-3 rounded-lg"
+                style={{ backgroundColor: '#F3F3E0' }}
+              >
+                <p style={{ color: '#133E87' }}>{profileData.alamat || 'Belum diisi'}</p>
+              </div>
+            ) : (
+              <Input 
+                id="alamat"
+                type="text"
+                value={editData.alamat}
+                onChange={(e) => handleInputChange('alamat', e.target.value)}
                 className="mt-2"
               />
             )}
@@ -169,7 +266,7 @@ export default function MemberProfile() {
                 className="mt-2 p-3 rounded-lg"
                 style={{ backgroundColor: '#F3F3E0' }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.usia} tahun</p>
+                <p style={{ color: '#133E87' }}>{profileData.usia ? `${profileData.usia} tahun` : 'Belum diisi'}</p>
               </div>
             ) : (
               <Input 
@@ -179,7 +276,8 @@ export default function MemberProfile() {
                 onChange={(e) => handleInputChange('usia', e.target.value)}
                 className="mt-2"
                 min="1"
-                max="120"
+                max="150"
+                placeholder="Masukkan usia"
               />
             )}
           </div>
@@ -192,27 +290,20 @@ export default function MemberProfile() {
                 className="mt-2 p-3 rounded-lg"
                 style={{ backgroundColor: '#F3F3E0' }}
               >
-                <p style={{ color: '#133E87' }}>{jenisIkanLabel[profileData.jenisIkan] || profileData.jenisIkan}</p>
+                <p style={{ color: '#133E87' }}>{profileData.jenisIkan || 'Belum diisi'}</p>
               </div>
             ) : (
-              <Select 
+              <select
+                id="jenisIkan"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-2"
                 value={editData.jenisIkan}
-                onValueChange={(value) => handleInputChange('jenisIkan', value)}
+                onChange={(e) => handleInputChange('jenisIkan', e.target.value)}
               >
-                <SelectTrigger id="jenisIkan" className="mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="koi">Ikan Koi</SelectItem>
-                  <SelectItem value="cupang">Ikan Cupang</SelectItem>
-                  <SelectItem value="mas-koki">Ikan Mas Koki</SelectItem>
-                  <SelectItem value="discus">Ikan Discus</SelectItem>
-                  <SelectItem value="guppy">Ikan Guppy</SelectItem>
-                  <SelectItem value="arwana">Ikan Arwana</SelectItem>
-                  <SelectItem value="louhan">Ikan Louhan</SelectItem>
-                  <SelectItem value="lainnya">Lainnya</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="">Pilih jenis ikan</option>
+                {fishTypes.map((fish) => (
+                  <option key={fish} value={fish}>{fish}</option>
+                ))}
+              </select>
             )}
           </div>
         </div>
@@ -227,12 +318,12 @@ export default function MemberProfile() {
             <span className="text-green-600">Aktif</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Paket</span>
-            <span style={{ color: '#133E87' }}>Member Premium</span>
+            <span className="text-gray-600">Role</span>
+            <span style={{ color: '#133E87' }}>{user?.role === 'member' ? 'Member Premium' : 'Admin'}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Tanggal Bergabung</span>
-            <span style={{ color: '#133E87' }}>15 Januari 2024</span>
+            <span className="text-gray-600">User ID</span>
+            <span style={{ color: '#133E87' }}>{user?.id || '-'}</span>
           </div>
         </div>
       </Card>

@@ -1,33 +1,32 @@
-
-  {
+{
       "name": "Website Design for Temanikan",
       "version": "0.1.0",
       "private": true,
       "dependencies": {
-          "@radix-ui/react-dialog": "*",
-          "@radix-ui/react-label": "*",
-          "@radix-ui/react-slot": "*",
-          "axios": "^1.7.7",
-          "class-variance-authority": "*",
-          "cmdk": "*",
-          "embla-carousel-react": "*",
-          "input-otp": "*",
-          "next-themes": "*",
-          "react": "^18.3.1",
-          "react-dom": "^18.3.1",
-          "react-hook-form": "^7.55.0",
-          "react-resizable-panels": "*",
-          "recharts": "*",
-          "sonner": "*",
-          "vaul": "*"
+            "@radix-ui/react-dialog": "*",
+            "@radix-ui/react-label": "*",
+            "@radix-ui/react-slot": "*",
+            "axios": "^1.13.2",
+            "class-variance-authority": "*",
+            "cmdk": "*",
+            "embla-carousel-react": "*",
+            "input-otp": "*",
+            "next-themes": "*",
+            "react": "^18.3.1",
+            "react-dom": "^18.3.1",
+            "react-hook-form": "^7.55.0",
+            "react-resizable-panels": "*",
+            "recharts": "*",
+            "sonner": "*",
+            "vaul": "*"
       },
       "devDependencies": {
-          "@types/node": "^20.10.0",
-          "@vitejs/plugin-react-swc": "^3.10.2",
-          "vite": "6.3.5"
+            "@types/node": "^20.10.0",
+            "@vitejs/plugin-react-swc": "^3.10.2",
+            "vite": "6.3.5"
       },
       "scripts": {
-          "dev": "vite",
-          "build": "vite build"
+            "dev": "vite",
+            "build": "vite build"
       }
-  }
+}

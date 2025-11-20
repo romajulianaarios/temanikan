@@ -16,6 +16,8 @@ class User(db.Model):
     role = db.Column(db.String(20), default='member')  # 'member' or 'admin'
     phone = db.Column(db.String(20))
     address = db.Column(db.Text)
+    age = db.Column(db.Integer)  # Usia
+    primary_fish_type = db.Column(db.String(100))  # Jenis Ikan Hias Utama
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -40,6 +42,8 @@ class User(db.Model):
             'role': self.role,
             'phone': self.phone,
             'address': self.address,
+            'age': self.age,
+            'primary_fish_type': self.primary_fish_type,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
