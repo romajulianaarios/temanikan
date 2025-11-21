@@ -7,10 +7,23 @@ from models import FishSpecies, ForumTopic, ForumReply, Order, Notification
 from datetime import datetime, timedelta
 import random
 import string
+from werkzeug.utils import secure_filename
+import os
+import base64
+from datetime import datetime
+from flask import send_file
+
 
 def register_routes(app):
     """Register all API routes"""
     
+    UPLOAD_FOLDER = 'uploads/payment_proofs'
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+    def allowed_file(filename):
+        return '.' in filename and filename.rsplit('.', 1).lower() in ALLOWED_EXTENSIONS
+
     # Authentication Routes
     @app.route('/api/auth/register', methods=['POST'])
     def register():
@@ -1087,6 +1100,141 @@ def register_routes(app):
             }), 200
             
         except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/orders/<int:order_id>/payment-proof', methods=['POST'])
+    @jwt_required()
+    def upload_payment_proof(order_id):
+        """Upload payment proof for an order"""
+        try:
+            current_user_id = get_jwt_identity()
+            
+            # Get the order
+            order = Order.query.filter_by(id=order_id, user_id=current_user_id).first()
+            if not order:
+                return jsonify({'error': 'Order not found'}), 404
+            
+            # Check if file is in request
+            if 'file' not in request.files:
+                return jsonify({'error': 'No file provided'}), 400
+            
+            file = request.files['file']
+            
+            # Check if file is selected
+            if file.filename == '':
+                return jsonify({'error': 'No file selected'}), 400
+            
+            # Validate file type
+            if not allowed_file(file.filename):
+                return jsonify({'error': 'Invalid file type. Only PNG, JPG, JPEG, and PDF are allowed'}), 400
+            
+            # Generate unique filename
+            filename = secure_filename(file.filename)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            unique_filename = f"{order.order_number}_{timestamp}_{filename}"
+            filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+            
+            # Save file
+            file.save(filepath)
+            
+            # Update order with payment proof path
+            order.payment_proof = filepath
+            order.payment_status = 'pending_verification'
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Payment proof uploaded successfully',
+                'data': {
+                    'order_id': order.id,
+                    'order_number': order.order_number,
+                    'payment_proof': filepath,
+                    'payment_status': order.payment_status
+                }
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error uploading payment proof: {str(e)}")
+            return jsonify({'error': str(e)}), 500
+    
+    
+    @app.route('/api/orders/<int:order_id>/payment-proof', methods=['GET'])
+    @jwt_required()
+    def get_payment_proof(order_id):
+        """Get payment proof image for an order"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            # Admin can view any order, member can only view their own
+            if current_user.role == 'admin':
+                order = Order.query.get(order_id)
+            else:
+                order = Order.query.filter_by(id=order_id, user_id=current_user_id).first()
+            
+            if not order:
+                return jsonify({'error': 'Order not found'}), 404
+            
+            if not order.payment_proof:
+                return jsonify({'error': 'No payment proof uploaded'}), 404
+            
+            # Check if file exists
+            if not os.path.exists(order.payment_proof):
+                return jsonify({'error': 'Payment proof file not found'}), 404
+            
+            # Read file and convert to base64
+            with open(order.payment_proof, 'rb') as f:
+                file_data = f.read()
+                base64_data = base64.b64encode(file_data).decode('utf-8')
+                
+                # Determine file type
+                file_ext = order.payment_proof.split('.')[-1].lower()
+                mime_type = 'image/jpeg' if file_ext in ['jpg', 'jpeg'] else f'image/{file_ext}'
+                
+                if file_ext == 'pdf':
+                    mime_type = 'application/pdf'
+            
+            return jsonify({
+                'data': {
+                    'filename': os.path.basename(order.payment_proof),
+                    'mime_type': mime_type,
+                    'base64': base64_data,
+                    'url': f'/api/orders/{order_id}/payment-proof/file'
+                }
+            }), 200
+            
+        except Exception as e:
+            print(f"Error getting payment proof: {str(e)}")
+            return jsonify({'error': str(e)}), 500
+    
+    
+    @app.route('/api/orders/<int:order_id>/payment-proof/file', methods=['GET'])
+    @jwt_required()
+    def serve_payment_proof(order_id):
+        """Serve payment proof file directly"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            # Admin can view any order, member can only view their own
+            if current_user.role == 'admin':
+                order = Order.query.get(order_id)
+            else:
+                order = Order.query.filter_by(id=order_id, user_id=current_user_id).first()
+            
+            if not order:
+                return jsonify({'error': 'Order not found'}), 404
+            
+            if not order.payment_proof:
+                return jsonify({'error': 'No payment proof uploaded'}), 404
+            
+            if not os.path.exists(order.payment_proof):
+                return jsonify({'error': 'Payment proof file not found'}), 404
+            
+            return send_file(order.payment_proof, mimetype='image/jpeg')
+            
+        except Exception as e:
+            print(f"Error serving payment proof: {str(e)}")
             return jsonify({'error': str(e)}), 500
 
 

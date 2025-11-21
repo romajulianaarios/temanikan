@@ -11,110 +11,47 @@ import { Package, Eye, CheckCircle, Clock, Truck, Edit, Download, Search, Trendi
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface Order {
-  id: string;
-  customerName: string;
-  customerEmail: string;
-  productName: string;
+  id: number;
+  order_number: string;
+  product_name: string;
   quantity: number;
-  totalPrice: number;
-  status: 'pending_payment' | 'processing' | 'shipped' | 'completed' | 'cancelled';
-  orderDate: string;
-  paymentMethod: string;
-  address: string;
-  paymentProof?: string;
+  total_price: number;
+  status: string;
+  payment_status: string;
+  shipping_address?: string;
+  payment_method?: string;
+  notes?: string;
+  created_at: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
+
+interface OrderStats {
+  total_orders: number;
+  total_revenue: number;
+  recent_orders: number;
+  status_breakdown: { [key: string]: number };
 }
 
 export default function AdminOrders() {
+  // State management
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [newStatus, setNewStatus] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Mock Orders Data (Admin melihat semua pesanan dari semua member)
-  // Real Orders Data from Backend
+  
+  // Data from backend
   const [orders, setOrders] = useState<Order[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<OrderStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch orders from backend
-  useEffect(() => {
-    fetchOrders();
-    fetchStats();
-  }, [selectedStatus, searchQuery]);
-
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      console.log('📡 Admin fetching orders...');
-      
-      const filters: any = {};
-      if (selectedStatus !== 'all') filters.status = mapFrontendToBackendStatus(selectedStatus);
-      if (searchQuery) filters.search = searchQuery;
-      
-      const response = await orderAPI.getAllOrders(filters);
-      console.log('✅ Orders received:', response);
-      
-      // Map backend data to frontend format
-      const mappedOrders = response.data.map((order: any) => ({
-        id: order.order_number,
-        customerName: order.user?.name || 'Unknown',
-        customerEmail: order.user?.email || '',
-        productName: order.product_name,
-        quantity: order.quantity,
-        totalPrice: order.total_price,
-        status: mapBackendToFrontendStatus(order.status),
-        orderDate: order.created_at.split('T')[0],
-        paymentMethod: order.payment_method || 'Transfer Bank',
-        address: order.shipping_address || '',
-        paymentProof: order.payment_status === 'paid' ? 'Uploaded' : undefined
-      }));
-      
-      setOrders(mappedOrders);
-    } catch (error: any) {
-      console.error('❌ Error:', error);
-      alert('Gagal memuat pesanan: ' + (error.response?.data?.error || error.message));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-const fetchStats = async () => {
-  try {
-    const response = await orderAPI.getOrderStats();
-    console.log('✅ Stats received:', response);
-    setStats(response.data);
-  } catch (error: any) {
-    console.error('❌ Error fetching stats:', error);
-  }
-};
-
-// Helper: Map frontend status to backend status
-const mapFrontendToBackendStatus = (frontendStatus: string) => {
-  const statusMap: { [key: string]: string } = {
-    'pending_payment': 'pending',
-    'processing': 'confirmed',
-    'shipped': 'shipping',
-    'completed': 'delivered',
-    'cancelled': 'cancelled'
-  };
-  return statusMap[frontendStatus] || frontendStatus;
-};
-
-// Helper: Map backend status to frontend status
-const mapBackendToFrontendStatus = (backendStatus: string) => {
-  const statusMap: { [key: string]: string } = {
-    'pending': 'pending_payment',
-    'confirmed': 'processing',
-    'shipping': 'shipped',
-    'delivered': 'completed',
-    'cancelled': 'cancelled'
-  };
-  return statusMap[backendStatus] || backendStatus;
-};
-
-  // Mock analytics data
+  // Mock analytics data (will be replaced with real data later)
   const weeklyTrend = [
     { day: 'Sen', orders: 12 },
     { day: 'Sel', orders: 19 },
@@ -128,12 +65,81 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
   const weeklyRevenue = [
     { day: 'Sen', revenue: 30000000 },
     { day: 'Sel', revenue: 47500000 },
-    { day: 'Rab', orders: 37500000 },
+    { day: 'Rab', revenue: 37500000 },
     { day: 'Kam', revenue: 55000000 },
     { day: 'Jum', revenue: 45000000 },
     { day: 'Sab', revenue: 62500000 },
     { day: 'Min', revenue: 50000000 }
   ];
+
+  // Fetch data on mount
+  useEffect(() => {
+    fetchOrders();
+    fetchStats();
+  }, [selectedStatus, searchQuery]);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('📡 Admin fetching orders...');
+      
+      const filters: any = {};
+      if (selectedStatus !== 'all') {
+        filters.status = selectedStatus;
+      }
+      if (searchQuery) {
+        filters.search = searchQuery;
+      }
+      
+      const response = await orderAPI.getAllOrders(filters);
+      
+      console.log('✅ Admin orders received:', response);
+      setOrders(response.data || []);
+    } catch (error: any) {
+      console.error('❌ Error fetching orders:', error);
+      setError(error.response?.data?.error || 'Gagal memuat pesanan');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      console.log('📡 Fetching stats...');
+      
+      const response = await orderAPI.getOrderStats();
+      
+      console.log('✅ Stats received:', response);
+      setStats(response.data);
+    } catch (error: any) {
+      console.error('❌ Error fetching stats:', error);
+    }
+  };
+
+  const handleUpdateStatus = async (order: Order) => {
+    setSelectedOrder(order);
+    setNewStatus(order.status);
+    setShowUpdateModal(true);
+  };
+
+  const handleSaveStatus = async () => {
+    if (selectedOrder && newStatus) {
+      try {
+        console.log('📤 Updating order status:', { orderId: selectedOrder.id, newStatus });
+        
+        await orderAPI.updateOrderStatus(selectedOrder.id, newStatus);
+        
+        alert(`Status pesanan ${selectedOrder.order_number} berhasil diupdate ke "${getStatusConfig(newStatus).label}"`);
+        setShowUpdateModal(false);
+        fetchOrders();
+        fetchStats();
+      } catch (error: any) {
+        console.error('❌ Error updating status:', error);
+        alert('Gagal update status: ' + (error.response?.data?.error || error.message));
+      }
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -143,22 +149,40 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
     }).format(amount);
   };
 
-  const getStatusConfig = (status: Order['status']) => {
-    const configs = {
-      pending_payment: { 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const getStatusConfig = (status: string) => {
+    const configs: Record<string, any> = {
+      pending: { 
         label: 'Menunggu Pembayaran', 
         bgColor: '#FEF3C7',
         textColor: '#92400E'
+      },
+      confirmed: { 
+        label: 'Diproses', 
+        bgColor: '#DBEAFE',
+        textColor: '#1E40AF'
       },
       processing: { 
         label: 'Diproses', 
         bgColor: '#DBEAFE',
         textColor: '#1E40AF'
       },
-      shipped: { 
+      shipping: { 
         label: 'Dikirim', 
         bgColor: '#EDE9FE',
         textColor: '#5B21B6'
+      },
+      delivered: { 
+        label: 'Selesai', 
+        bgColor: '#D1FAE5',
+        textColor: '#065F46'
       },
       completed: { 
         label: 'Selesai', 
@@ -171,86 +195,60 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
         textColor: '#991B1B'
       }
     };
-    return configs[status];
+    return configs[status] || configs.pending;
   };
 
   const getStatusCount = (status: string) => {
     if (status === 'all') return orders.length;
-    return orders.filter(o => o.status === status).length;
+    if (status === 'pending_payment') return orders.filter(o => o.payment_status === 'pending').length;
+    if (status === 'processing') return orders.filter(o => o.status === 'confirmed' || o.status === 'processing').length;
+    if (status === 'shipped') return orders.filter(o => o.status === 'shipping').length;
+    if (status === 'completed') return orders.filter(o => o.status === 'delivered' || o.status === 'completed').length;
+    return orders.filter(order => order.status === status).length;
   };
 
   const getTotalRevenue = () => {
     return orders
-      .filter(o => o.status === 'completed')
-      .reduce((sum, order) => sum + order.totalPrice, 0);
+      .filter(o => o.status === 'delivered' || o.status === 'completed')
+      .reduce((sum, order) => sum + order.total_price, 0);
   };
 
   const getStatusDistribution = () => {
-    const statuses = ['pending_payment', 'processing', 'shipped', 'completed', 'cancelled'];
+    const statuses = [
+      { key: 'pending_payment', label: 'Menunggu Pembayaran', color: '#F59E0B' },
+      { key: 'processing', label: 'Diproses', color: '#3B82F6' },
+      { key: 'shipped', label: 'Dikirim', color: '#8B5CF6' },
+      { key: 'completed', label: 'Selesai', color: '#10B981' },
+      { key: 'cancelled', label: 'Dibatalkan', color: '#EF4444' }
+    ];
+    
     return statuses.map(status => ({
-      name: getStatusConfig(status as Order['status']).label,
-      value: getStatusCount(status),
-      color: status === 'pending_payment' ? '#F59E0B' :
-             status === 'processing' ? '#3B82F6' :
-             status === 'shipped' ? '#8B5CF6' :
-             status === 'completed' ? '#10B981' : '#EF4444'
+      name: status.label,
+      value: getStatusCount(status.key),
+      color: status.color
     }));
   };
-
-  const filteredOrders = orders.filter(order => {
-    const matchesStatus = selectedStatus === 'all' || order.status === selectedStatus;
-    const matchesSearch = 
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.productName.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
 
   const handleViewDetail = (order: Order) => {
     setSelectedOrder(order);
     setShowDetailModal(true);
   };
 
-  const handleUpdateStatus = (order: Order) => {
-    setSelectedOrder(order);
-    setNewStatus(order.status);
-    setShowUpdateModal(true);
-  };
-
-  const handleSaveStatus = async () => {
-    if (!selectedOrder || !newStatus) return;
-    
-    try {
-      const backendStatus = mapFrontendToBackendStatus(newStatus);
-      
-      // Extract order ID from order_number (ORD-YYYYMMDD-XXXXX)
-      const orderId = parseInt(selectedOrder.id.split('-').pop() || '0');
-      
-      await orderAPI.updateOrderStatus(orderId, backendStatus);
-      
-      alert(`✅ Status pesanan ${selectedOrder.id} berhasil diupdate`);
-      setShowUpdateModal(false);
-      
-      // Refresh data
-      fetchOrders();
-      fetchStats();
-    } catch (error: any) {
-      alert('❌ Gagal update status: ' + (error.response?.data?.error || error.message));
-    }
-  };
-
-  const handleDeleteOrder = (orderId: string) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus pesanan ${orderId}?`)) {
-      setOrders(orders.filter(o => o.id !== orderId));
-      alert(`Pesanan ${orderId} berhasil dihapus`);
-      if (showDetailModal) setShowDetailModal(false);
-    }
-  };
-
   const handleExportData = () => {
     alert('Fitur export data akan segera tersedia!');
   };
+
+  // Loading state
+  if (loading && !stats) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-gray-600">Memuat pesanan...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -282,7 +280,7 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Total Pesanan</p>
-              <p className="text-3xl" style={{ color: '#4880FF' }}>{stats ? stats.total_orders : getStatusCount('all')}</p>
+              <p className="text-3xl" style={{ color: '#4880FF' }}>{stats?.total_orders || getStatusCount('all')}</p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#E0EAFF' }}>
               <ShoppingBag className="w-6 h-6" style={{ color: '#4880FF' }} />
@@ -300,7 +298,7 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Menunggu Pembayaran</p>
-              <p className="text-3xl" style={{ color: '#F59E0B' }}>{stats ? stats.pending_orders : getStatusCount('pending_payment')}</p>
+              <p className="text-3xl" style={{ color: '#F59E0B' }}>{getStatusCount('pending_payment')}</p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FEF3C7' }}>
               <Clock className="w-6 h-6" style={{ color: '#F59E0B' }} />
@@ -318,7 +316,7 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Diproses</p>
-              <p className="text-3xl" style={{ color: '#3B82F6' }}>{stats ? stats.confirmed_orders : getStatusCount('processing')}</p>
+              <p className="text-3xl" style={{ color: '#3B82F6' }}>{getStatusCount('processing')}</p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#DBEAFE' }}>
               <Package className="w-6 h-6" style={{ color: '#3B82F6' }} />
@@ -336,7 +334,7 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Selesai</p>
-              <p className="text-3xl" style={{ color: '#10B981' }}>{stats ? stats.delivered_orders : getStatusCount('completed')}</p>
+              <p className="text-3xl" style={{ color: '#10B981' }}>{getStatusCount('completed')}</p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#D1FAE5' }}>
               <CheckCircle className="w-6 h-6" style={{ color: '#10B981' }} />
@@ -355,7 +353,7 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
             <div>
               <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
               <p className="text-xl" style={{ color: '#8B5CF6' }}>
-                {stats ? formatCurrency(stats.total_revenue) : formatCurrency(getTotalRevenue())}
+                {formatCurrency(stats?.total_revenue || getTotalRevenue()).replace('Rp', 'Rp ')}
               </p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#EDE9FE' }}>
@@ -392,15 +390,34 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="pending_payment">Menunggu Pembayaran</SelectItem>
-                  <SelectItem value="processing">Diproses</SelectItem>
-                  <SelectItem value="shipped">Dikirim</SelectItem>
-                  <SelectItem value="completed">Selesai</SelectItem>
+                  <SelectItem value="pending">Menunggu Pembayaran</SelectItem>
+                  <SelectItem value="confirmed">Dikonfirmasi</SelectItem>
+                  <SelectItem value="shipping">Dikirim</SelectItem>
+                  <SelectItem value="delivered">Selesai</SelectItem>
                   <SelectItem value="cancelled">Dibatalkan</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </Card>
+
+          {error && (
+            <Card className="p-6 bg-red-50 border-red-200">
+              <div className="flex items-center gap-3 text-red-800">
+                <Package className="w-5 h-5" />
+                <div>
+                  <p className="font-semibold">Gagal Memuat Pesanan</p>
+                  <p className="text-sm">{error}</p>
+                </div>
+              </div>
+              <Button 
+                onClick={fetchOrders} 
+                className="mt-4"
+                variant="outline"
+              >
+                Coba Lagi
+              </Button>
+            </Card>
+          )}
 
           {/* Orders Table */}
           <Card className="rounded-xl shadow-sm" style={{ backgroundColor: 'white' }}>
@@ -419,45 +436,85 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={8} className="px-6 py-12 text-center">
-                        <div className="flex flex-col items-center justify-center">
-                          <div 
-                            className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 mb-4"
-                            style={{ borderColor: '#4880FF' }}
-                          ></div>
-                          <p className="text-lg font-semibold mb-2" style={{ color: '#4880FF' }}>
-                            Memuat pesanan...
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Mohon tunggu sebentar
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : filteredOrders.length === 0 ? (
+                  {orders.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="px-6 py-12 text-center">
                         <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                        <h3 className="mb-2" style={{ color: '#4880FF' }}>
-                          Tidak Ada Pesanan
-                        </h3>
-                        <p className="text-gray-600">
-                          Tidak ada pesanan yang sesuai dengan filter
-                        </p>
+                        <h3 className="mb-2" style={{ color: '#4880FF' }}>Tidak Ada Pesanan</h3>
+                        <p className="text-gray-600">Tidak ada pesanan yang sesuai dengan filter</p>
                       </td>
                     </tr>
                   ) : (
-                    filteredOrders.map((order) => {
+                    orders.map((order) => {
                       const statusConfig = getStatusConfig(order.status);
+                      const customerName = order.user?.name || 'Customer';
+                      const customerEmail = order.user?.email || '-';
+                      
                       return (
-                        <tr 
-                          key={order.id} 
-                          className="border-b hover:bg-gray-50 transition-colors" 
-                          style={{ borderColor: '#E5E7EB' }}
-                        >
-                          {/* Table cells - tetap seperti sebelumnya */}
+                        <tr key={order.id} className="border-b hover:bg-gray-50 transition-colors" style={{ borderColor: '#E5E7EB' }}>
+                          <td className="px-6 py-4">
+                            <span className="text-sm" style={{ color: '#4880FF' }}>{order.order_number}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#E0EAFF' }}>
+                                <span style={{ color: '#4880FF' }}>{customerName.charAt(0)}</span>
+                              </div>
+                              <div>
+                                <p className="text-sm" style={{ color: '#2D3436' }}>{customerName}</p>
+                                <p className="text-xs text-gray-500">{customerEmail}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-sm text-gray-900">{order.product_name}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-sm text-gray-600">{order.quantity} unit</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-sm" style={{ color: '#4880FF' }}>
+                              {formatCurrency(order.total_price)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-sm text-gray-600">
+                              {formatDate(order.created_at)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <Badge 
+                              className="px-3 py-1"
+                              style={{ 
+                                backgroundColor: statusConfig.bgColor,
+                                color: statusConfig.textColor
+                              }}
+                            >
+                              {statusConfig.label}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                style={{ borderColor: '#4880FF', color: '#4880FF' }}
+                                onClick={() => handleViewDetail(order)}
+                              >
+                                <Eye className="w-3 h-3 mr-1" />
+                                Detail
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="text-white"
+                                style={{ backgroundColor: '#10B981' }}
+                                onClick={() => handleUpdateStatus(order)}
+                              >
+                                <Edit className="w-3 h-3 mr-1" />
+                                Update
+                              </Button>
+                            </div>
+                          </td>
                         </tr>
                       );
                     })
@@ -553,21 +610,21 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
               <div className="space-y-4 py-4">
                 <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
                   <p className="text-sm text-gray-600 mb-1">ID Pesanan</p>
-                  <p className="text-lg" style={{ color: '#4880FF' }}>{selectedOrder.id}</p>
+                  <p className="text-lg" style={{ color: '#4880FF' }}>{selectedOrder.order_number}</p>
                 </div>
 
                 <div className="space-y-3">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Nama Customer</p>
-                    <p style={{ color: '#2D3436' }}>{selectedOrder.customerName}</p>
+                    <p style={{ color: '#2D3436' }}>{selectedOrder.user?.name || 'Customer'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Email Customer</p>
-                    <p style={{ color: '#2D3436' }}>{selectedOrder.customerEmail}</p>
+                    <p style={{ color: '#2D3436' }}>{selectedOrder.user?.email || '-'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Produk</p>
-                    <p style={{ color: '#2D3436' }}>{selectedOrder.productName}</p>
+                    <p style={{ color: '#2D3436' }}>{selectedOrder.product_name}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Jumlah</p>
@@ -575,19 +632,13 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Tanggal Pesanan</p>
-                    <p style={{ color: '#2D3436' }}>
-                      {new Date(selectedOrder.orderDate).toLocaleDateString('id-ID', { 
-                        day: 'numeric', 
-                        month: 'long', 
-                        year: 'numeric' 
-                      })}
-                    </p>
+                    <p style={{ color: '#2D3436' }}>{formatDate(selectedOrder.created_at)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Metode Pembayaran</p>
-                    <p style={{ color: '#2D3436' }}>{selectedOrder.paymentMethod}</p>
+                    <p style={{ color: '#2D3436' }}>{selectedOrder.payment_method || '-'}</p>
                   </div>
-                  {selectedOrder.paymentProof && (
+                  {selectedOrder.payment_status === 'paid' && (
                     <div>
                       <p className="text-sm text-gray-600 mb-1">Bukti Pembayaran</p>
                       <p className="text-sm" style={{ color: '#10B981' }}>✓ Sudah Upload</p>
@@ -595,7 +646,7 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
                   )}
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Alamat Pengiriman</p>
-                    <p style={{ color: '#2D3436' }}>{selectedOrder.address}</p>
+                    <p style={{ color: '#2D3436' }}>{selectedOrder.shipping_address || '-'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Status</p>
@@ -612,7 +663,7 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
                     <div className="flex justify-between items-center">
                       <span style={{ color: '#2D3436' }}>Total Pembayaran</span>
                       <span className="text-2xl" style={{ color: '#4880FF' }}>
-                        {formatCurrency(selectedOrder.totalPrice)}
+                        {formatCurrency(selectedOrder.total_price)}
                       </span>
                     </div>
                   </div>
@@ -654,12 +705,12 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
               <div className="space-y-4 py-4">
                 <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
                   <p className="text-sm text-gray-600 mb-1">ID Pesanan</p>
-                  <p style={{ color: '#4880FF' }}>{selectedOrder.id}</p>
+                  <p style={{ color: '#4880FF' }}>{selectedOrder.order_number}</p>
                 </div>
 
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Customer</p>
-                  <p style={{ color: '#2D3436' }}>{selectedOrder.customerName}</p>
+                  <p style={{ color: '#2D3436' }}>{selectedOrder.user?.name || 'Customer'}</p>
                 </div>
 
                 <div>
@@ -671,19 +722,19 @@ const mapBackendToFrontendStatus = (backendStatus: string) => {
                       <SelectValue placeholder="Pilih status baru" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending_payment">Menunggu Pembayaran</SelectItem>
-                      <SelectItem value="processing">Diproses</SelectItem>
-                      <SelectItem value="shipped">Dikirim</SelectItem>
-                      <SelectItem value="completed">Selesai</SelectItem>
+                      <SelectItem value="pending">Menunggu Pembayaran</SelectItem>
+                      <SelectItem value="confirmed">Dikonfirmasi</SelectItem>
+                      <SelectItem value="shipping">Dikirim</SelectItem>
+                      <SelectItem value="delivered">Selesai</SelectItem>
                       <SelectItem value="cancelled">Dibatalkan</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {newStatus && (
-                  <div className="p-3 rounded-lg" style={{ backgroundColor: getStatusConfig(newStatus as Order['status']).bgColor }}>
-                    <p className="text-sm" style={{ color: getStatusConfig(newStatus as Order['status']).textColor }}>
-                      Status akan diupdate menjadi: <strong>{getStatusConfig(newStatus as Order['status']).label}</strong>
+                  <div className="p-3 rounded-lg" style={{ backgroundColor: getStatusConfig(newStatus).bgColor }}>
+                    <p className="text-sm" style={{ color: getStatusConfig(newStatus).textColor }}>
+                      Status akan diupdate menjadi: <strong>{getStatusConfig(newStatus).label}</strong>
                     </p>
                   </div>
                 )}

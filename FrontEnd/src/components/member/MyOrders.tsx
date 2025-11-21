@@ -8,39 +8,40 @@ import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
 import { Package, ShoppingCart, CheckCircle, XCircle, Clock, Truck, CreditCard, Plus, Eye, Upload } from '../icons';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
 
 interface Order {
-  id: string;
-  productName: string;
+  id: number;
+  order_number: string;
+  product_name: string;
   quantity: number;
-  totalPrice: number;
-  status: 'pending_payment' | 'processing' | 'shipped' | 'completed' | 'cancelled';
-  orderDate: string;
-  paymentMethod: string;
-  address?: string;
-  customerName?: string;
+  total_price: number;
+  status: string;
+  payment_status: string;
+  shipping_address?: string;
+  payment_method?: string;
+  notes?: string;
+  created_at: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }
 
 export default function MyOrders() {
-  const [activeView, setActiveView] = useState<'create' | 'list'>('create');
+  // State management
+  const [activeView, setActiveView] = useState<'create' | 'list'>('list');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [newOrderId, setNewOrderId] = useState('');
+  const [newOrderData, setNewOrderData] = useState<Order | null>(null);
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   
-  // Store the confirmed order data for success modal
-  const [confirmedOrderData, setConfirmedOrderData] = useState({
-    quantity: 1,
-    address: '',
-    city: '',
-    province: '',
-    postalCode: '',
-    paymentMethod: '',
-    customerName: 'Roma Juliana' // From auth context in real app
-  });
+  // Data from backend
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Order Form State
   const [orderForm, setOrderForm] = useState({
@@ -52,7 +53,7 @@ export default function MyOrders() {
     paymentMethod: ''
   });
 
-  // Product Info
+  // Product Info (static for now)
   const product = {
     name: 'Robot Temanikan - Smart Aquarium Cleaner',
     image: 'https://images.unsplash.com/photo-1563207153-f403bf289096?w=400',
@@ -60,11 +61,7 @@ export default function MyOrders() {
     description: 'Robot pembersih akuarium otomatis dengan AI detection terintegrasi'
   };
 
-  // Real Orders Data from Backend
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch orders from backend
+  // Fetch orders on mount
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -72,56 +69,20 @@ export default function MyOrders() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      console.log('📡 Fetching orders from backend...');
+      setError(null);
+      console.log('📡 Fetching member orders from backend...');
       
       const response = await orderAPI.getMyOrders();
       
       console.log('✅ Orders received:', response);
-      
-      // Map backend data to frontend format
-      const mappedOrders = response.data.map((order: any) => ({
-        id: order.order_number,  // Backend uses order_number
-        productName: order.product_name,
-        quantity: order.quantity,
-        totalPrice: order.total_price,
-        status: mapBackendStatus(order.status), // Map status format
-        orderDate: order.created_at.split('T')[0], // Format: YYYY-MM-DD
-        paymentMethod: mapPaymentMethod(order.payment_method),
-        address: order.shipping_address,
-        customerName: order.user?.name || 'Roma Juliana'
-      }));
-      
-      setOrders(mappedOrders);
+      setOrders(response.data || []);
     } catch (error: any) {
       console.error('❌ Error fetching orders:', error);
-      alert('Gagal memuat pesanan: ' + (error.response?.data?.error || error.message));
+      setError(error.response?.data?.error || error.message || 'Gagal memuat pesanan');
     } finally {
       setLoading(false);
     }
   };
-
-// Helper: Map backend status to frontend status
-const mapBackendStatus = (backendStatus: string) => {
-  const statusMap: { [key: string]: string } = {
-    'pending': 'pending_payment',
-    'confirmed': 'processing',
-    'shipping': 'shipped',
-    'delivered': 'completed',
-    'cancelled': 'cancelled'
-  };
-  return statusMap[backendStatus] || 'pending_payment';
-};
-
-// Helper: Map backend payment method to frontend format
-const mapPaymentMethod = (method: string) => {
-  const methodMap: { [key: string]: string } = {
-    'bank_transfer': 'Transfer Bank',
-    'e_wallet': 'E-Wallet',
-    'credit_card': 'Kartu Kredit',
-    'cod': 'Cash on Delivery'
-  };
-  return methodMap[method] || method;
-};
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -145,24 +106,16 @@ const mapPaymentMethod = (method: string) => {
     );
   };
 
-  const generateOrderId = () => {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `ORD-${year}-${month}-${day}-${random}`;
-  };
-
   const getPaymentMethodLabel = (method: string) => {
     if (method === 'bank_transfer') return 'Transfer Bank';
-    if (method === 'ewallet') return 'E-Wallet';
+    if (method === 'ewallet' || method === 'e_wallet') return 'E-Wallet';
     if (method === 'credit_card') return 'Kartu Kredit';
+    if (method === 'cod') return 'COD';
     return method;
   };
 
   const handleSubmitOrder = async () => {
-    if (!isFormValid) {
+    if (!isFormValid()) {
       alert('Mohon lengkapi semua field yang diperlukan');
       return;
     }
@@ -170,35 +123,23 @@ const mapPaymentMethod = (method: string) => {
     try {
       console.log('📤 Creating order...');
       
-      // Map frontend payment method to backend format
-      const paymentMethodMap: { [key: string]: string } = {
-        'banktransfer': 'bank_transfer',
-        'ewallet': 'e_wallet',
-        'creditcard': 'credit_card'
-      };
+      const fullAddress = `${orderForm.address}, ${orderForm.city}, ${orderForm.province} ${orderForm.postalCode}`;
       
       const response = await orderAPI.createOrder({
         product_name: product.name,
         quantity: orderForm.quantity,
         total_price: calculateTotal(),
-        shipping_address: `${orderForm.address}, ${orderForm.city}, ${orderForm.province} ${orderForm.postalCode}`,
-        payment_method: paymentMethodMap[orderForm.paymentMethod] || 'bank_transfer',
+        shipping_address: fullAddress,
+        payment_method: orderForm.paymentMethod,
         notes: ''
       });
       
       console.log('✅ Order created:', response);
       
-      // Store order number for modal
-      setNewOrderId(response.data.order_number);
-      
-      // Store confirmed order data
-      setConfirmedOrderData({
-        ...orderForm,
-        customerName: 'Roma Juliana' // From auth context in real app
-      });
-      
+      // Set new order data for success modal
+      setNewOrderData(response.data);
       setShowSuccessModal(true);
-      
+
       // Reset form
       setOrderForm({
         quantity: 1,
@@ -208,10 +149,9 @@ const mapPaymentMethod = (method: string) => {
         postalCode: '',
         paymentMethod: ''
       });
-      
+
       // Refresh orders list
       fetchOrders();
-      
     } catch (error: any) {
       console.error('❌ Error creating order:', error);
       alert('Gagal membuat pesanan: ' + (error.response?.data?.error || error.message));
@@ -225,10 +165,8 @@ const mapPaymentMethod = (method: string) => {
 
   const handlePayNow = () => {
     setShowSuccessModal(false);
-    // Find the newly created order
-    const newOrder = orders.find(o => o.id === newOrderId);
-    if (newOrder) {
-      setSelectedOrder(newOrder);
+    if (newOrderData) {
+      setSelectedOrder(newOrderData);
       setShowPaymentModal(true);
     }
   };
@@ -254,9 +192,11 @@ const mapPaymentMethod = (method: string) => {
       alert('Mohon upload bukti pembayaran terlebih dahulu');
       return;
     }
+    // TODO: Implement upload to backend
     alert(`Bukti pembayaran "${paymentProof.name}" berhasil diupload! Pembayaran akan diverifikasi dalam 1x24 jam.`);
     setShowPaymentModal(false);
     setPaymentProof(null);
+    fetchOrders();
   };
 
   const getPaymentInstructions = (paymentMethod: string) => {
@@ -267,49 +207,67 @@ const mapPaymentMethod = (method: string) => {
           'Transfer ke rekening berikut:',
           'Bank BCA: 1234567890',
           'A.n. PT Temanikan Indonesia',
-          `Total yang harus dibayar: ${selectedOrder ? formatCurrency(selectedOrder.totalPrice) : ''}`,
+          `Total yang harus dibayar: ${selectedOrder ? formatCurrency(selectedOrder.total_price) : ''}`,
           'Setelah transfer, upload bukti pembayaran di bawah ini'
         ]
       };
-    } else if (paymentMethod.includes('E-Wallet') || paymentMethod === 'ewallet') {
+    } else if (paymentMethod.includes('E-Wallet') || paymentMethod === 'ewallet' || paymentMethod === 'e_wallet') {
       return {
         title: 'Instruksi E-Wallet',
         steps: [
           'Scan QR Code berikut menggunakan aplikasi GoPay/OVO/DANA:',
           '[QR CODE PLACEHOLDER]',
-          `Total yang harus dibayar: ${selectedOrder ? formatCurrency(selectedOrder.totalPrice) : ''}`,
+          `Total yang harus dibayar: ${selectedOrder ? formatCurrency(selectedOrder.total_price) : ''}`,
           'Setelah pembayaran berhasil, upload screenshot bukti pembayaran'
         ]
       };
     } else {
       return {
-        title: 'Instruksi Pembayaran Kartu Kredit',
+        title: 'Instruksi Pembayaran',
         steps: [
-          'Masukkan detail kartu kredit Anda',
-          'Verifikasi dengan OTP yang dikirim ke nomor HP terdaftar',
-          `Total yang harus dibayar: ${selectedOrder ? formatCurrency(selectedOrder.totalPrice) : ''}`,
-          'Klik "Bayar" untuk menyelesaikan transaksi'
+          'Selesaikan pembayaran sesuai metode yang dipilih',
+          `Total yang harus dibayar: ${selectedOrder ? formatCurrency(selectedOrder.total_price) : ''}`,
+          'Upload bukti pembayaran setelah transaksi berhasil'
         ]
       };
     }
   };
 
-  const getStatusConfig = (status: Order['status']) => {
-    const configs = {
-      pending_payment: { 
-        label: 'Menunggu Pembayaran', 
+  const getStatusConfig = (status: string, paymentStatus?: string) => {
+    // Prioritize payment status for display
+    if (paymentStatus === 'pending') {
+      return {
+        label: 'Menunggu Pembayaran',
         bgColor: '#FEF3C7',
         textColor: '#92400E'
+      };
+    }
+
+    const configs: Record<string, any> = {
+      pending: { 
+        label: 'Menunggu Konfirmasi', 
+        bgColor: '#FEF3C7',
+        textColor: '#92400E'
+      },
+      confirmed: { 
+        label: 'Diproses', 
+        bgColor: '#DBEAFE',
+        textColor: '#1E40AF'
       },
       processing: { 
         label: 'Diproses', 
         bgColor: '#DBEAFE',
         textColor: '#1E40AF'
       },
-      shipped: { 
+      shipping: { 
         label: 'Dikirim', 
         bgColor: '#EDE9FE',
         textColor: '#5B21B6'
+      },
+      delivered: { 
+        label: 'Selesai', 
+        bgColor: '#D1FAE5',
+        textColor: '#065F46'
       },
       completed: { 
         label: 'Selesai', 
@@ -322,15 +280,39 @@ const mapPaymentMethod = (method: string) => {
         textColor: '#991B1B'
       }
     };
-    return configs[status];
+    return configs[status] || configs.pending;
   };
 
   const getStatusCount = (status: string) => {
     if (status === 'total') return orders.length;
-    return orders.filter(o => o.status === status).length;
+    if (status === 'pending_payment') return orders.filter(o => o.payment_status === 'pending').length;
+    if (status === 'processing') return orders.filter(o => o.status === 'confirmed' || o.status === 'processing').length;
+    if (status === 'shipped') return orders.filter(o => o.status === 'shipping').length;
+    if (status === 'completed') return orders.filter(o => o.status === 'delivered' || o.status === 'completed').length;
+    return orders.filter(order => order.status === status).length;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
   };
 
   const formValid = isFormValid();
+
+  // Loading state
+  if (loading && activeView === 'list') {
+    return (
+      <div className="p-6">
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-gray-600">Memuat pesanan...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -385,10 +367,13 @@ const mapPaymentMethod = (method: string) => {
               <h3 className="mb-4" style={{ color: '#4880FF' }}>Produk</h3>
               <div className="flex gap-6">
                 <div className="w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden" style={{ backgroundColor: '#CBDCEB' }}>
-                  <ImageWithFallback
+                  <img
                     src={product.image}
                     alt={product.name}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://via.placeholder.com/400x300?text=Robot+Temanikan';
+                    }}
                   />
                 </div>
                 <div className="flex-1">
@@ -479,6 +464,7 @@ const mapPaymentMethod = (method: string) => {
                         <SelectItem value="Jawa Barat">Jawa Barat</SelectItem>
                         <SelectItem value="Jawa Tengah">Jawa Tengah</SelectItem>
                         <SelectItem value="Jawa Timur">Jawa Timur</SelectItem>
+                        <SelectItem value="Banten">Banten</SelectItem>
                         <SelectItem value="Bali">Bali</SelectItem>
                       </SelectContent>
                     </Select>
@@ -510,8 +496,8 @@ const mapPaymentMethod = (method: string) => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="bank_transfer">Transfer Bank</SelectItem>
-                      <SelectItem value="ewallet">E-Wallet (GoPay/OVO/DANA)</SelectItem>
-                      <SelectItem value="credit_card">Kartu Kredit</SelectItem>
+                      <SelectItem value="e_wallet">E-Wallet (GoPay/OVO/DANA)</SelectItem>
+                      <SelectItem value="cod">COD (Bayar di Tempat)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -600,6 +586,25 @@ const mapPaymentMethod = (method: string) => {
             </Card>
           </div>
 
+          {error && (
+            <Card className="p-6 bg-red-50 border-red-200">
+              <div className="flex items-center gap-3 text-red-800">
+                <XCircle className="w-5 h-5" />
+                <div>
+                  <p className="font-semibold">Gagal Memuat Pesanan</p>
+                  <p className="text-sm">{error}</p>
+                </div>
+              </div>
+              <Button 
+                onClick={fetchOrders} 
+                className="mt-4"
+                variant="outline"
+              >
+                Coba Lagi
+              </Button>
+            </Card>
+          )}
+
           <Card style={{ backgroundColor: 'white' }}>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -615,33 +620,12 @@ const mapPaymentMethod = (method: string) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center">
-                        <div className="flex flex-col items-center justify-center">
-                          <div 
-                            className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 mb-4"
-                            style={{ borderColor: '#4880FF' }}
-                          ></div>
-                          <p className="text-lg font-semibold mb-2" style={{ color: '#4880FF' }}>
-                            Memuat pesanan...
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Mohon tunggu sebentar
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : orders.length === 0 ? (
+                  {orders.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="px-6 py-12 text-center">
                         <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                        <h3 className="mb-2" style={{ color: '#4880FF' }}>
-                          Belum Ada Pesanan
-                        </h3>
-                        <p className="text-gray-600 mb-4">
-                          Anda belum memiliki riwayat pesanan
-                        </p>
+                        <h3 className="mb-2" style={{ color: '#4880FF' }}>Belum Ada Pesanan</h3>
+                        <p className="text-gray-600 mb-4">Anda belum memiliki riwayat pesanan</p>
                         <Button
                           onClick={() => setActiveView('create')}
                           style={{ backgroundColor: '#4880FF', color: 'white' }}
@@ -653,20 +637,63 @@ const mapPaymentMethod = (method: string) => {
                     </tr>
                   ) : (
                     orders.map((order) => {
-                      const statusConfig = getStatusConfig(order.status);
+                      const statusConfig = getStatusConfig(order.status, order.payment_status);
                       return (
-                        <tr 
-                          key={order.id} 
-                          className="border-b hover:bg-gray-50" 
-                          style={{ borderColor: '#CBDCEB' }}
-                        >
-                          {/* Table cells - tetap seperti sebelumnya */}
+                        <tr key={order.id} className="border-b hover:bg-gray-50" style={{ borderColor: '#CBDCEB' }}>
                           <td className="px-6 py-4">
-                            <span className="text-sm" style={{ color: '#4880FF' }}>
-                              {order.id}
+                            <span className="text-sm" style={{ color: '#4880FF' }}>{order.order_number}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-sm text-gray-600">
+                              {formatDate(order.created_at)}
                             </span>
                           </td>
-                          {/* ... rest of cells ... */}
+                          <td className="px-6 py-4">
+                            <span className="text-sm text-gray-900">{order.product_name}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-sm text-gray-600">{order.quantity} unit</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-sm" style={{ color: '#4880FF' }}>
+                              {formatCurrency(order.total_price)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <Badge 
+                              className="px-2 py-1"
+                              style={{ 
+                                backgroundColor: statusConfig.bgColor,
+                                color: statusConfig.textColor
+                              }}
+                            >
+                              {statusConfig.label}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex gap-2">
+                              {order.payment_status === 'pending' && (
+                                <Button
+                                  size="sm"
+                                  className="text-white"
+                                  style={{ backgroundColor: '#4880FF' }}
+                                  onClick={() => handlePayOrder(order)}
+                                >
+                                  <CreditCard className="w-3 h-3 mr-1" />
+                                  Bayar
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                style={{ borderColor: '#4880FF', color: '#4880FF' }}
+                                onClick={() => handleViewDetail(order)}
+                              >
+                                <Eye className="w-3 h-3 mr-1" />
+                                Detail
+                              </Button>
+                            </div>
+                          </td>
                         </tr>
                       );
                     })
@@ -678,7 +705,7 @@ const mapPaymentMethod = (method: string) => {
         </div>
       )}
 
-      {/* Success Modal - Dynamic Data */}
+      {/* Success Modal */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
         <DialogContent className="max-w-md" style={{ backgroundColor: 'white' }}>
           <DialogHeader>
@@ -692,60 +719,56 @@ const mapPaymentMethod = (method: string) => {
             </div>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
-              <p className="text-sm text-gray-600 mb-1">ID Pesanan</p>
-              <p className="text-xl" style={{ color: '#4880FF' }}>{newOrderId}</p>
-            </div>
+          {newOrderData && (
+            <div className="space-y-4 py-4">
+              <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
+                <p className="text-sm text-gray-600 mb-1">ID Pesanan</p>
+                <p className="text-xl" style={{ color: '#4880FF' }}>{newOrderData.order_number}</p>
+              </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Nama Pemesan</span>
-                <span style={{ color: '#2D3436' }}>{confirmedOrderData.customerName}</span>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Produk</span>
+                  <span style={{ color: '#2D3436' }}>{newOrderData.product_name}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Jumlah</span>
+                  <span style={{ color: '#2D3436' }}>{newOrderData.quantity} unit</span>
+                </div>
+                <div className="text-sm">
+                  <p className="text-gray-600 mb-1">Alamat Pengiriman</p>
+                  <p style={{ color: '#2D3436' }}>{newOrderData.shipping_address}</p>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Metode Pembayaran</span>
+                  <span style={{ color: '#2D3436' }}>
+                    {getPaymentMethodLabel(newOrderData.payment_method || '')}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t pt-2" style={{ borderColor: '#CBDCEB' }}>
+                  <span style={{ color: '#2D3436' }}>Total</span>
+                  <span className="text-xl" style={{ color: '#4880FF' }}>
+                    {formatCurrency(newOrderData.total_price)}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Produk</span>
-                <span style={{ color: '#2D3436' }}>{product.name}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Jumlah</span>
-                <span style={{ color: '#2D3436' }}>{confirmedOrderData.quantity} unit</span>
-              </div>
-              <div className="text-sm">
-                <p className="text-gray-600 mb-1">Alamat Pengiriman</p>
-                <p style={{ color: '#2D3436' }}>
-                  {confirmedOrderData.address}, {confirmedOrderData.city}, {confirmedOrderData.province} {confirmedOrderData.postalCode}
-                </p>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Metode Pembayaran</span>
-                <span style={{ color: '#2D3436' }}>
-                  {getPaymentMethodLabel(confirmedOrderData.paymentMethod)}
-                </span>
-              </div>
-              <div className="flex justify-between border-t pt-2" style={{ borderColor: '#CBDCEB' }}>
-                <span style={{ color: '#2D3436' }}>Total</span>
-                <span className="text-xl" style={{ color: '#4880FF' }}>
-                  {formatCurrency(product.price * confirmedOrderData.quantity)}
-                </span>
-              </div>
-            </div>
 
-            <div className="p-3 rounded-lg" style={{ backgroundColor: '#FEF3C7' }}>
-              <Badge style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}>
-                Menunggu Pembayaran
-              </Badge>
-            </div>
+              <div className="p-3 rounded-lg" style={{ backgroundColor: '#FEF3C7' }}>
+                <Badge style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}>
+                  Menunggu Pembayaran
+                </Badge>
+              </div>
 
-            <div className="text-sm text-gray-600 p-3 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
-              <p className="mb-2">Langkah selanjutnya:</p>
-              <ol className="list-decimal list-inside space-y-1 text-xs">
-                <li>Lakukan pembayaran sesuai metode yang dipilih</li>
-                <li>Upload bukti pembayaran pada halaman pembayaran</li>
-                <li>Pesanan akan diproses setelah pembayaran terverifikasi</li>
-              </ol>
+              <div className="text-sm text-gray-600 p-3 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
+                <p className="mb-2">Langkah selanjutnya:</p>
+                <ol className="list-decimal list-inside space-y-1 text-xs">
+                  <li>Lakukan pembayaran sesuai metode yang dipilih</li>
+                  <li>Upload bukti pembayaran pada halaman pembayaran</li>
+                  <li>Pesanan akan diproses setelah pembayaran terverifikasi</li>
+                </ol>
+              </div>
             </div>
-          </div>
+          )}
 
           <DialogFooter className="flex gap-2">
             <Button
@@ -778,17 +801,17 @@ const mapPaymentMethod = (method: string) => {
               <div className="space-y-4 py-4">
                 <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
                   <p className="text-sm text-gray-600 mb-1">ID Pesanan</p>
-                  <p className="text-lg" style={{ color: '#4880FF' }}>{selectedOrder.id}</p>
+                  <p className="text-lg" style={{ color: '#4880FF' }}>{selectedOrder.order_number}</p>
                 </div>
 
                 <div className="space-y-3">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Nama Pemesan</p>
-                    <p style={{ color: '#2D3436' }}>{selectedOrder.customerName}</p>
+                    <p style={{ color: '#2D3436' }}>{selectedOrder.user?.name || 'Customer'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Produk</p>
-                    <p style={{ color: '#2D3436' }}>{selectedOrder.productName}</p>
+                    <p style={{ color: '#2D3436' }}>{selectedOrder.product_name}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Jumlah</p>
@@ -796,40 +819,34 @@ const mapPaymentMethod = (method: string) => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Tanggal Pesanan</p>
-                    <p style={{ color: '#2D3436' }}>
-                      {new Date(selectedOrder.orderDate).toLocaleDateString('id-ID', { 
-                        day: 'numeric', 
-                        month: 'long', 
-                        year: 'numeric' 
-                      })}
-                    </p>
+                    <p style={{ color: '#2D3436' }}>{formatDate(selectedOrder.created_at)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Metode Pembayaran</p>
-                    <p style={{ color: '#2D3436' }}>{selectedOrder.paymentMethod}</p>
+                    <p style={{ color: '#2D3436' }}>{getPaymentMethodLabel(selectedOrder.payment_method || '')}</p>
                   </div>
-                  {selectedOrder.address && (
+                  {selectedOrder.shipping_address && (
                     <div>
                       <p className="text-sm text-gray-600 mb-1">Alamat Pengiriman</p>
-                      <p style={{ color: '#2D3436' }}>{selectedOrder.address}</p>
+                      <p style={{ color: '#2D3436' }}>{selectedOrder.shipping_address}</p>
                     </div>
                   )}
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Status</p>
                     <Badge 
                       style={{ 
-                        backgroundColor: getStatusConfig(selectedOrder.status).bgColor,
-                        color: getStatusConfig(selectedOrder.status).textColor
+                        backgroundColor: getStatusConfig(selectedOrder.status, selectedOrder.payment_status).bgColor,
+                        color: getStatusConfig(selectedOrder.status, selectedOrder.payment_status).textColor
                       }}
                     >
-                      {getStatusConfig(selectedOrder.status).label}
+                      {getStatusConfig(selectedOrder.status, selectedOrder.payment_status).label}
                     </Badge>
                   </div>
                   <div className="border-t pt-3" style={{ borderColor: '#CBDCEB' }}>
                     <div className="flex justify-between items-center">
                       <span style={{ color: '#2D3436' }}>Total Pembayaran</span>
                       <span className="text-2xl" style={{ color: '#4880FF' }}>
-                        {formatCurrency(selectedOrder.totalPrice)}
+                        {formatCurrency(selectedOrder.total_price)}
                       </span>
                     </div>
                   </div>
@@ -843,7 +860,7 @@ const mapPaymentMethod = (method: string) => {
                 >
                   Tutup
                 </Button>
-                {selectedOrder.status === 'pending_payment' && (
+                {selectedOrder.payment_status === 'pending' && (
                   <Button
                     onClick={() => {
                       setShowDetailModal(false);
@@ -861,26 +878,26 @@ const mapPaymentMethod = (method: string) => {
         </DialogContent>
       </Dialog>
 
-      {/* Payment Instruction Modal */}
+      {/* Payment Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
         <DialogContent className="max-w-lg" style={{ backgroundColor: 'white' }}>
           {selectedOrder && (
             <>
               <DialogHeader>
                 <DialogTitle style={{ color: '#4880FF' }}>
-                  {getPaymentInstructions(selectedOrder.paymentMethod).title}
+                  {getPaymentInstructions(selectedOrder.payment_method || '').title}
                 </DialogTitle>
               </DialogHeader>
               
               <div className="space-y-4 py-4">
                 <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
                   <p className="text-sm text-gray-600 mb-1">ID Pesanan</p>
-                  <p style={{ color: '#4880FF' }}>{selectedOrder.id}</p>
+                  <p style={{ color: '#4880FF' }}>{selectedOrder.order_number}</p>
                 </div>
 
                 <div className="p-4 rounded-lg border-2" style={{ borderColor: '#4880FF', backgroundColor: '#F0F9FF' }}>
                   <ol className="space-y-2">
-                    {getPaymentInstructions(selectedOrder.paymentMethod).steps.map((step, index) => (
+                    {getPaymentInstructions(selectedOrder.payment_method || '').steps.map((step, index) => (
                       <li key={index} className="text-sm" style={{ color: '#2D3436' }}>
                         {step.includes('QR CODE') ? (
                           <div className="mt-2 p-8 bg-white rounded-lg text-center border" style={{ borderColor: '#CBDCEB' }}>

@@ -290,6 +290,7 @@ class Order(db.Model):
             'payment_status': self.payment_status,
             'notes': self.notes,
             'created_at': self.created_at.isoformat() if self.created_at else None,
+            'payment_proof': self.payment_proof,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 

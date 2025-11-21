@@ -28,13 +28,59 @@ api.interceptors.request.use(
 // Add response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    
     if (error.response?.status === 401) {
-      // Token expired or invalid
+      // Log untuk debugging
+      console.log('🔴 401 Error on URL:', originalRequest?.url);
+      console.log('📍 Current path:', window.location.pathname);
+      
+      // Jangan auto-logout kalau:
+      const currentPath = window.location.pathname;
+      const isPublicPath = currentPath === '/' || currentPath.includes('/login');
+      const isAuthEndpoint = originalRequest?.url?.includes('/auth/');
+      
+      // Kalau sudah di public page atau ini request auth, skip
+      if (isPublicPath || isAuthEndpoint) {
+        return Promise.reject(error);
+      }
+      
+      // Cek apakah ini retry attempt
+      if (!originalRequest._retry) {
+        originalRequest._retry = true;
+        
+        // Validasi token
+        const token = localStorage.getItem('access_token');
+        
+        if (token) {
+          try {
+            // Decode JWT untuk cek expiry
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const isExpired = payload.exp * 1000 < Date.now();
+            
+            if (!isExpired) {
+              // Token masih valid, retry request
+              console.log('✅ Token still valid, retrying request...');
+              return api(originalRequest);
+            }
+          } catch (e) {
+            console.error('Token decode error:', e);
+          }
+        }
+      }
+      
+      // Kalau sampai sini, berarti token bener-bener expired/invalid
+      console.log('🚪 Logging out due to invalid token');
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
-      window.location.href = '/';
+      
+      // Pakai timeout untuk avoid race condition
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     }
+    
     return Promise.reject(error);
   }
 );
