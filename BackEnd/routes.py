@@ -932,33 +932,75 @@ def register_routes(app):
     @app.route('/api/orders', methods=['POST'])
     @jwt_required()
     def create_order():
-        user_id = get_jwt_identity()
-        data = request.get_json()
-        
-        if not data.get('product_name') or not data.get('total_price'):
-            return jsonify({'error': 'Product name and total price are required'}), 400
-        
-        # Generate order number
-        order_number = f"ORD-{datetime.utcnow().strftime('%Y%m%d')}-{''.join(random.choices(string.digits, k=6))}"
-        
-        order = Order(
-            order_number=order_number,
-            user_id=user_id,
-            product_name=data['product_name'],
-            quantity=data.get('quantity', 1),
-            total_price=data['total_price'],
-            shipping_address=data.get('shipping_address'),
-            payment_method=data.get('payment_method'),
-            notes=data.get('notes')
-        )
-        
-        db.session.add(order)
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Order created successfully',
-            'order': order.to_dict()
-        }), 201
+        """Create new order (Member only)"""
+        try:
+            current_user_id = get_jwt_identity()
+            data = request.get_json()
+            
+            print(f"🔵 Creating order for user_id: {current_user_id}")
+            print(f"🔵 Order data: {data}")
+            
+            # Validation
+            required_fields = ['product_name', 'total_price']
+            for field in required_fields:
+                if field not in data:
+                    return jsonify({'error': f'{field} is required'}), 400
+            
+            # Generate order number
+            now = datetime.now()
+            date_part = now.strftime('%Y%m%d')
+            
+            last_order = Order.query.filter(
+                Order.order_number.like(f'ORD-{date_part}-%')
+            ).order_by(Order.created_at.desc()).first()
+            
+            if last_order:
+                last_num = int(last_order.order_number.split('-')[-1])
+                new_num = last_num + 1
+            else:
+                new_num = 1
+            
+            order_number = f'ORD-{date_part}-{new_num:05d}'
+            print(f"🔵 Generated order_number: {order_number}")
+            
+            # Create order
+            order = Order(
+                order_number=order_number,
+                user_id=current_user_id,
+                product_name=data['product_name'],
+                quantity=data.get('quantity', 1),
+                total_price=data['total_price'],
+                status='pending',
+                shipping_address=data.get('shipping_address', ''),
+                payment_method=data.get('payment_method', ''),
+                payment_status='pending',
+                notes=data.get('notes', '')
+            )
+            
+            print(f"🔵 Order object created")
+            
+            db.session.add(order)
+            print(f"🔵 Order added to session")
+            
+            db.session.commit()
+            print(f"✅ Order committed to database! ID: {order.id}")
+            
+            # Verify in database
+            verify = Order.query.get(order.id)
+            print(f"🔵 Verification - Order found in DB: {verify is not None}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Order created successfully',
+                'data': order.to_dict()
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ ERROR creating order: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': str(e)}), 500
     
     @app.route('/api/orders/<int:order_id>', methods=['PUT'])
     @jwt_required()
@@ -996,6 +1038,296 @@ def register_routes(app):
             'order': order.to_dict()
         }), 200
     
+    # Member: Get my orders with filters
+    @app.route('/api/orders/my-orders', methods=['GET'])
+    @jwt_required()
+    def get_my_orders():
+        """Get all orders for logged-in member with optional status filter"""
+        try:
+            current_user_id = get_jwt_identity()
+            status_filter = request.args.get('status', None)
+            
+            query = Order.query.filter_by(user_id=current_user_id)
+            
+            if status_filter:
+                query = query.filter_by(status=status_filter)
+            
+            orders = query.order_by(Order.created_at.desc()).all()
+            
+            return jsonify({
+                'success': True,
+                'data': [order.to_dict() for order in orders],
+                'total': len(orders)
+            }), 200
+            
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+
+    # Member: Get order detail
+    @app.route('/api/orders/<int:order_id>/detail', methods=['GET'])
+    @jwt_required()
+    def get_order_detail(order_id):
+        """Get order detail"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            order = Order.query.get(order_id)
+            if not order:
+                return jsonify({'error': 'Order not found'}), 404
+            
+            # Member can only see their own orders
+            if current_user.role != 'admin' and order.user_id != int(current_user_id):
+                return jsonify({'error': 'Unauthorized'}), 403
+            
+            return jsonify({
+                'success': True,
+                'data': order.to_dict()
+            }), 200
+            
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+
+    # Member: Cancel order (only pending orders)
+    @app.route('/api/orders/<int:order_id>/cancel', methods=['PUT'])
+    @jwt_required()
+    def cancel_order(order_id):
+        """Cancel order (Member can cancel their own pending orders)"""
+        try:
+            current_user_id = get_jwt_identity()
+            
+            order = Order.query.filter_by(id=order_id, user_id=current_user_id).first()
+            if not order:
+                return jsonify({'error': 'Order not found'}), 404
+            
+            # Only pending orders can be cancelled
+            if order.status != 'pending':
+                return jsonify({'error': 'Only pending orders can be cancelled'}), 400
+            
+            order.status = 'cancelled'
+            order.updated_at = datetime.utcnow()
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Order cancelled successfully'
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+
+
+    # ==================== ADMIN ORDERS ROUTES ====================
+
+    # Admin: Get all orders with filters and pagination
+    @app.route('/api/admin/orders', methods=['GET'])
+    @jwt_required()
+    def admin_get_all_orders():
+        """Get all orders (Admin only) with filters and pagination"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            if current_user.role != 'admin':
+                return jsonify({'error': 'Unauthorized'}), 403
+            
+            # Get query parameters
+            status = request.args.get('status', None)
+            payment_status = request.args.get('payment_status', None)
+            search = request.args.get('search', None)
+            page = int(request.args.get('page', 1))
+            per_page = int(request.args.get('per_page', 10))
+            
+            # Build query
+            query = Order.query
+            
+            if status:
+                query = query.filter_by(status=status)
+            
+            if payment_status:
+                query = query.filter_by(payment_status=payment_status)
+            
+            if search:
+                query = query.join(User).filter(
+                    db.or_(
+                        Order.order_number.like(f'%{search}%'),
+                        Order.product_name.like(f'%{search}%'),
+                        User.name.like(f'%{search}%')
+                    )
+                )
+            
+            # Get total count
+            total = query.count()
+            
+            # Paginate
+            orders = query.order_by(Order.created_at.desc()).paginate(
+                page=page, per_page=per_page, error_out=False
+            )
+            
+            return jsonify({
+                'success': True,
+                'data': [order.to_dict() for order in orders.items],
+                'pagination': {
+                    'page': page,
+                    'per_page': per_page,
+                    'total': total,
+                    'pages': orders.pages
+                }
+            }), 200
+            
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+
+    # Admin: Update order status
+    @app.route('/api/admin/orders/<int:order_id>/status', methods=['PUT'])
+    @jwt_required()
+    def admin_update_order_status(order_id):
+        """Update order status (Admin only)"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            if current_user.role != 'admin':
+                return jsonify({'error': 'Unauthorized'}), 403
+            
+            data = request.get_json()
+            new_status = data.get('status')
+            
+            if not new_status:
+                return jsonify({'error': 'Status is required'}), 400
+            
+            # Validate status
+            valid_statuses = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled']
+            if new_status not in valid_statuses:
+                return jsonify({'error': f'Invalid status. Valid: {valid_statuses}'}), 400
+            
+            order = Order.query.get(order_id)
+            if not order:
+                return jsonify({'error': 'Order not found'}), 404
+            
+            order.status = new_status
+            order.updated_at = datetime.utcnow()
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': f'Order status updated to {new_status}'
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+
+
+    # Admin: Update payment status
+    @app.route('/api/admin/orders/<int:order_id>/payment', methods=['PUT'])
+    @jwt_required()
+    def admin_update_payment_status(order_id):
+        """Update payment status (Admin only)"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            if current_user.role != 'admin':
+                return jsonify({'error': 'Unauthorized'}), 403
+            
+            data = request.get_json()
+            payment_status = data.get('payment_status')
+            
+            if not payment_status:
+                return jsonify({'error': 'Payment status is required'}), 400
+            
+            # Validate payment status
+            valid_statuses = ['pending', 'paid', 'failed']
+            if payment_status not in valid_statuses:
+                return jsonify({'error': f'Invalid payment status. Valid: {valid_statuses}'}), 400
+            
+            order = Order.query.get(order_id)
+            if not order:
+                return jsonify({'error': 'Order not found'}), 404
+            
+            order.payment_status = payment_status
+            order.updated_at = datetime.utcnow()
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': f'Payment status updated to {payment_status}'
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+
+
+    # Admin: Get order statistics
+    @app.route('/api/admin/orders/stats', methods=['GET'])
+    @jwt_required()
+    def admin_get_order_stats():
+        """Get order statistics (Admin only)"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            if current_user.role != 'admin':
+                return jsonify({'error': 'Unauthorized'}), 403
+            
+            # Total orders
+            total_orders = Order.query.count()
+            
+            # Orders by status
+            status_stats = db.session.query(
+                Order.status,
+                db.func.count(Order.id)
+            ).group_by(Order.status).all()
+            
+            status_breakdown = {status: count for status, count in status_stats}
+            
+            # Payment statistics
+            payment_stats = db.session.query(
+                Order.payment_status,
+                db.func.count(Order.id),
+                db.func.sum(Order.total_price)
+            ).group_by(Order.payment_status).all()
+            
+            payment_breakdown = [
+                {
+                    'status': status,
+                    'count': count,
+                    'total_amount': float(total or 0)
+                }
+                for status, count, total in payment_stats
+            ]
+            
+            # Total revenue (paid orders only)
+            total_revenue = db.session.query(
+                db.func.sum(Order.total_price)
+            ).filter_by(payment_status='paid').scalar() or 0
+            
+            # Recent orders (last 7 days)
+            seven_days_ago = datetime.utcnow() - timedelta(days=7)
+            recent_orders = Order.query.filter(
+                Order.created_at >= seven_days_ago
+            ).count()
+            
+            return jsonify({
+                'success': True,
+                'data': {
+                    'total_orders': total_orders,
+                    'total_revenue': float(total_revenue),
+                    'recent_orders': recent_orders,
+                    'status_breakdown': status_breakdown,
+                    'payment_breakdown': payment_breakdown
+                }
+            }), 200
+            
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
     # Notification Routes
     @app.route('/api/notifications', methods=['GET'])
     @jwt_required()

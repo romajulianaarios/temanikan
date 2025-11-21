@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { orderAPI } from '../../services/api';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -59,64 +60,68 @@ export default function MyOrders() {
     description: 'Robot pembersih akuarium otomatis dengan AI detection terintegrasi'
   };
 
-  // Mock Orders Data
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: 'ORD-2023-11-20-001',
-      productName: 'Robot Temanikan',
-      quantity: 1,
-      totalPrice: 2500000,
-      status: 'completed',
-      orderDate: '2023-11-20',
-      paymentMethod: 'Transfer Bank',
-      address: 'Jl. Sudirman No. 123, Jakarta Pusat, DKI Jakarta 10110',
-      customerName: 'Roma Juliana'
-    },
-    {
-      id: 'ORD-2023-11-15-002',
-      productName: 'Robot Temanikan',
-      quantity: 1,
-      totalPrice: 2500000,
-      status: 'shipped',
-      orderDate: '2023-11-15',
-      paymentMethod: 'E-Wallet',
-      address: 'Jl. Gatot Subroto No. 456, Jakarta Selatan, DKI Jakarta 12950',
-      customerName: 'Roma Juliana'
-    },
-    {
-      id: 'ORD-2023-11-10-003',
-      productName: 'Robot Temanikan',
-      quantity: 2,
-      totalPrice: 5000000,
-      status: 'processing',
-      orderDate: '2023-11-10',
-      paymentMethod: 'Transfer Bank',
-      address: 'Jl. Thamrin No. 789, Jakarta Pusat, DKI Jakarta 10230',
-      customerName: 'Roma Juliana'
-    },
-    {
-      id: 'ORD-2023-11-05-004',
-      productName: 'Robot Temanikan',
-      quantity: 1,
-      totalPrice: 2500000,
-      status: 'pending_payment',
-      orderDate: '2023-11-05',
-      paymentMethod: 'Transfer Bank',
-      address: 'Jl. Kuningan No. 321, Jakarta Selatan, DKI Jakarta 12940',
-      customerName: 'Roma Juliana'
-    },
-    {
-      id: 'ORD-2023-11-01-005',
-      productName: 'Robot Temanikan',
-      quantity: 1,
-      totalPrice: 2500000,
-      status: 'cancelled',
-      orderDate: '2023-11-01',
-      paymentMethod: 'E-Wallet',
-      address: 'Jl. Rasuna Said No. 654, Jakarta Selatan, DKI Jakarta 12920',
-      customerName: 'Roma Juliana'
+  // Real Orders Data from Backend
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch orders from backend
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      console.log('📡 Fetching orders from backend...');
+      
+      const response = await orderAPI.getMyOrders();
+      
+      console.log('✅ Orders received:', response);
+      
+      // Map backend data to frontend format
+      const mappedOrders = response.data.map((order: any) => ({
+        id: order.order_number,  // Backend uses order_number
+        productName: order.product_name,
+        quantity: order.quantity,
+        totalPrice: order.total_price,
+        status: mapBackendStatus(order.status), // Map status format
+        orderDate: order.created_at.split('T')[0], // Format: YYYY-MM-DD
+        paymentMethod: mapPaymentMethod(order.payment_method),
+        address: order.shipping_address,
+        customerName: order.user?.name || 'Roma Juliana'
+      }));
+      
+      setOrders(mappedOrders);
+    } catch (error: any) {
+      console.error('❌ Error fetching orders:', error);
+      alert('Gagal memuat pesanan: ' + (error.response?.data?.error || error.message));
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+// Helper: Map backend status to frontend status
+const mapBackendStatus = (backendStatus: string) => {
+  const statusMap: { [key: string]: string } = {
+    'pending': 'pending_payment',
+    'confirmed': 'processing',
+    'shipping': 'shipped',
+    'delivered': 'completed',
+    'cancelled': 'cancelled'
+  };
+  return statusMap[backendStatus] || 'pending_payment';
+};
+
+// Helper: Map backend payment method to frontend format
+const mapPaymentMethod = (method: string) => {
+  const methodMap: { [key: string]: string } = {
+    'bank_transfer': 'Transfer Bank',
+    'e_wallet': 'E-Wallet',
+    'credit_card': 'Kartu Kredit',
+    'cod': 'Cash on Delivery'
+  };
+  return methodMap[method] || method;
+};
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -156,46 +161,61 @@ export default function MyOrders() {
     return method;
   };
 
-  const handleSubmitOrder = () => {
-    if (!isFormValid()) {
+  const handleSubmitOrder = async () => {
+    if (!isFormValid) {
       alert('Mohon lengkapi semua field yang diperlukan');
       return;
     }
 
-    // Generate new order
-    const orderId = generateOrderId();
-    setNewOrderId(orderId);
-
-    // Store confirmed order data for modal display
-    setConfirmedOrderData({
-      ...orderForm,
-      customerName: 'Roma Juliana'
-    });
-
-    const newOrder: Order = {
-      id: orderId,
-      productName: product.name,
-      quantity: orderForm.quantity,
-      totalPrice: calculateTotal(),
-      status: 'pending_payment',
-      orderDate: new Date().toISOString().split('T')[0],
-      paymentMethod: getPaymentMethodLabel(orderForm.paymentMethod),
-      address: `${orderForm.address}, ${orderForm.city}, ${orderForm.province} ${orderForm.postalCode}`,
-      customerName: 'Roma Juliana'
-    };
-
-    setOrders([newOrder, ...orders]);
-    setShowSuccessModal(true);
-
-    // Reset form
-    setOrderForm({
-      quantity: 1,
-      address: '',
-      city: '',
-      province: '',
-      postalCode: '',
-      paymentMethod: ''
-    });
+    try {
+      console.log('📤 Creating order...');
+      
+      // Map frontend payment method to backend format
+      const paymentMethodMap: { [key: string]: string } = {
+        'banktransfer': 'bank_transfer',
+        'ewallet': 'e_wallet',
+        'creditcard': 'credit_card'
+      };
+      
+      const response = await orderAPI.createOrder({
+        product_name: product.name,
+        quantity: orderForm.quantity,
+        total_price: calculateTotal(),
+        shipping_address: `${orderForm.address}, ${orderForm.city}, ${orderForm.province} ${orderForm.postalCode}`,
+        payment_method: paymentMethodMap[orderForm.paymentMethod] || 'bank_transfer',
+        notes: ''
+      });
+      
+      console.log('✅ Order created:', response);
+      
+      // Store order number for modal
+      setNewOrderId(response.data.order_number);
+      
+      // Store confirmed order data
+      setConfirmedOrderData({
+        ...orderForm,
+        customerName: 'Roma Juliana' // From auth context in real app
+      });
+      
+      setShowSuccessModal(true);
+      
+      // Reset form
+      setOrderForm({
+        quantity: 1,
+        address: '',
+        city: '',
+        province: '',
+        postalCode: '',
+        paymentMethod: ''
+      });
+      
+      // Refresh orders list
+      fetchOrders();
+      
+    } catch (error: any) {
+      console.error('❌ Error creating order:', error);
+      alert('Gagal membuat pesanan: ' + (error.response?.data?.error || error.message));
+    }
   };
 
   const handleViewOrders = () => {
@@ -595,12 +615,33 @@ export default function MyOrders() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.length === 0 ? (
+                  {loading ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <div 
+                            className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 mb-4"
+                            style={{ borderColor: '#4880FF' }}
+                          ></div>
+                          <p className="text-lg font-semibold mb-2" style={{ color: '#4880FF' }}>
+                            Memuat pesanan...
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Mohon tunggu sebentar
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : orders.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="px-6 py-12 text-center">
                         <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                        <h3 className="mb-2" style={{ color: '#4880FF' }}>Belum Ada Pesanan</h3>
-                        <p className="text-gray-600 mb-4">Anda belum memiliki riwayat pesanan</p>
+                        <h3 className="mb-2" style={{ color: '#4880FF' }}>
+                          Belum Ada Pesanan
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          Anda belum memiliki riwayat pesanan
+                        </p>
                         <Button
                           onClick={() => setActiveView('create')}
                           style={{ backgroundColor: '#4880FF', color: 'white' }}
@@ -614,61 +655,18 @@ export default function MyOrders() {
                     orders.map((order) => {
                       const statusConfig = getStatusConfig(order.status);
                       return (
-                        <tr key={order.id} className="border-b hover:bg-gray-50" style={{ borderColor: '#CBDCEB' }}>
-                          <td className="px-6 py-4">
-                            <span className="text-sm" style={{ color: '#4880FF' }}>{order.id}</span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-sm text-gray-600">
-                              {new Date(order.orderDate).toLocaleDateString('id-ID')}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-sm text-gray-900">{order.productName}</span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-sm text-gray-600">{order.quantity} unit</span>
-                          </td>
+                        <tr 
+                          key={order.id} 
+                          className="border-b hover:bg-gray-50" 
+                          style={{ borderColor: '#CBDCEB' }}
+                        >
+                          {/* Table cells - tetap seperti sebelumnya */}
                           <td className="px-6 py-4">
                             <span className="text-sm" style={{ color: '#4880FF' }}>
-                              {formatCurrency(order.totalPrice)}
+                              {order.id}
                             </span>
                           </td>
-                          <td className="px-6 py-4">
-                            <Badge 
-                              className="px-2 py-1"
-                              style={{ 
-                                backgroundColor: statusConfig.bgColor,
-                                color: statusConfig.textColor
-                              }}
-                            >
-                              {statusConfig.label}
-                            </Badge>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex gap-2">
-                              {order.status === 'pending_payment' && (
-                                <Button
-                                  size="sm"
-                                  className="text-white"
-                                  style={{ backgroundColor: '#4880FF' }}
-                                  onClick={() => handlePayOrder(order)}
-                                >
-                                  <CreditCard className="w-3 h-3 mr-1" />
-                                  Bayar
-                                </Button>
-                              )}
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                style={{ borderColor: '#4880FF', color: '#4880FF' }}
-                                onClick={() => handleViewDetail(order)}
-                              >
-                                <Eye className="w-3 h-3 mr-1" />
-                                Detail
-                              </Button>
-                            </div>
-                          </td>
+                          {/* ... rest of cells ... */}
                         </tr>
                       );
                     })

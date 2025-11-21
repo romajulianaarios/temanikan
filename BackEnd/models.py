@@ -25,7 +25,7 @@ class User(db.Model):
     devices = db.relationship('Device', backref='owner', lazy=True, cascade='all, delete-orphan')
     forum_topics = db.relationship('ForumTopic', backref='author', lazy=True)
     forum_replies = db.relationship('ForumReply', backref='author', lazy=True)
-    orders = db.relationship('Order', backref='customer', lazy=True)
+    orders = db.relationship('Order', back_populates='user', lazy=True)
     notifications = db.relationship('Notification', backref='user', lazy=True, cascade='all, delete-orphan')
     
     def set_password(self, password):
@@ -258,19 +258,29 @@ class Order(db.Model):
     product_name = db.Column(db.String(200), nullable=False)
     quantity = db.Column(db.Integer, default=1)
     total_price = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(20), default='pending')  # pending, confirmed, shipping, delivered, cancelled
+    status = db.Column(db.String(20), default='pending')
     shipping_address = db.Column(db.Text)
     payment_method = db.Column(db.String(50))
-    payment_status = db.Column(db.String(20), default='pending')  # pending, paid, failed
+    payment_status = db.Column(db.String(20), default='pending')
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # Relationship
+    user = db.relationship('User', back_populates='orders')
+    
     def to_dict(self):
+        """Convert order to dictionary"""
         return {
             'id': self.id,
             'order_number': self.order_number,
-            'user': self.customer.to_dict() if self.customer else None,
+            'user_id': self.user_id,
+            'user': {
+                'id': self.user.id,
+                'name': self.user.name,
+                'email': self.user.email,
+                'phone': self.user.phone
+            } if self.user else None,
             'product_name': self.product_name,
             'quantity': self.quantity,
             'total_price': self.total_price,

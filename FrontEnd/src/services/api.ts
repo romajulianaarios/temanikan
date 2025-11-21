@@ -271,11 +271,14 @@ export const forumAPI = {
 
 // Order API
 export const orderAPI = {
-  getOrders: async () => {
-    const response = await api.get('/orders');
+  // Member: Get my orders with filter
+  getMyOrders: async (status?: string) => {
+    const params = status ? { status } : {};
+    const response = await api.get('/orders/my-orders', { params });
     return response.data;
   },
-  
+
+  // Member: Create new order
   createOrder: async (data: {
     product_name: string;
     quantity?: number;
@@ -287,9 +290,46 @@ export const orderAPI = {
     const response = await api.post('/orders', data);
     return response.data;
   },
-  
-  updateOrder: async (orderId: number, data: any) => {
-    const response = await api.put(`/orders/${orderId}`, data);
+
+  // Member: Get order detail
+  getOrderDetail: async (orderId: number) => {
+    const response = await api.get(`/orders/${orderId}/detail`);
+    return response.data;
+  },
+
+  // Member: Cancel order
+  cancelOrder: async (orderId: number) => {
+    const response = await api.put(`/orders/${orderId}/cancel`);
+    return response.data;
+  },
+
+  // Admin: Get all orders with filters and pagination
+  getAllOrders: async (filters?: {
+    status?: string;
+    payment_status?: string;
+    search?: string;
+    page?: number;
+    per_page?: number;
+  }) => {
+    const response = await api.get('/admin/orders', { params: filters });
+    return response.data;
+  },
+
+  // Admin: Update order status
+  updateOrderStatus: async (orderId: number, status: string) => {
+    const response = await api.put(`/admin/orders/${orderId}/status`, { status });
+    return response.data;
+  },
+
+  // Admin: Update payment status
+  updatePaymentStatus: async (orderId: number, payment_status: string) => {
+    const response = await api.put(`/admin/orders/${orderId}/payment`, { payment_status });
+    return response.data;
+  },
+
+  // Admin: Get order statistics
+  getOrderStats: async () => {
+    const response = await api.get('/admin/orders/stats');
     return response.data;
   },
 };
