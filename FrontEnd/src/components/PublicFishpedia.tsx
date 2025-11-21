@@ -1,0 +1,507 @@
+import { useState } from 'react';
+import { Card } from './ui/card';
+import { Input } from './ui/input';
+import { Badge } from './ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Search, Fish, ChevronRight, Menu, X } from './icons';
+import { ImageWithFallback } from './figma/ImageWithFallback';
+import Navbar from './Navbar';
+
+interface PublicFishpediaProps {
+  onAuthClick?: (mode: 'login' | 'register') => void;
+  onNavigateHome?: () => void;
+  onSmartNavigate?: (target: string) => void;
+}
+
+interface FishSpecies {
+  id: number;
+  name: string;
+  scientificName: string;
+  category: string;
+  difficulty: string;
+  temperament: string;
+  size: string;
+  temperature: string;
+  ph: string;
+  description: string;
+  imageUrl: string;
+  detailedDescription: string;
+  family: string;
+  habitat: string;
+  diet: string;
+  lifespan: string;
+}
+
+export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNavigate }: PublicFishpediaProps) {
+  const [selectedFish, setSelectedFish] = useState<FishSpecies | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('Semua');
+
+  const handleAuthClick = (mode: 'login' | 'register') => {
+    if (onAuthClick) {
+      onAuthClick(mode);
+    }
+  };
+
+  const handleNavigateHome = () => {
+    if (onNavigateHome) {
+      onNavigateHome();
+    }
+  };
+
+  const fishSpecies: FishSpecies[] = [
+    {
+      id: 1,
+      name: 'Ikan Koi',
+      scientificName: 'Cyprinus carpio',
+      category: 'Air Tawar',
+      difficulty: 'Menengah',
+      temperament: 'Damai',
+      size: '60-90 cm',
+      temperature: '15-25°C',
+      ph: '6.8-7.2',
+      description: 'Ikan hias populer dari Jepang dengan berbagai pola warna yang indah.',
+      imageUrl: 'https://images.unsplash.com/photo-1701738504736-8f8e53148b36?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxrb2klMjBmaXNoJTIwcG9uZHxlbnwxfHx8fDE3NjIyNTI1ODV8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      detailedDescription: 'Ikan hias populer dari Jepang dengan berbagai pola warna yang indah. Koi merupakan simbol keberuntungan, kemakmuran, dan umur panjang dalam budaya Jepang. Mereka memiliki kepribadian yang unik dan dapat mengenali pemiliknya. Koi dapat hidup hingga puluhan tahun dengan perawatan yang tepat dan dapat tumbuh sangat besar di kolam yang sesuai.',
+      family: 'Cyprinidae',
+      habitat: 'Kolam air tawar, sungai dengan arus tenang',
+      diet: 'Omnivora - pelet ikan, sayuran, buah-buahan, dan serangga',
+      lifespan: '25-35 tahun (dapat mencapai 100+ tahun dengan perawatan optimal)'
+    },
+    {
+      id: 2,
+      name: 'Ikan Cupang',
+      scientificName: 'Betta splendens',
+      category: 'Air Tawar',
+      difficulty: 'Mudah',
+      temperament: 'Agresif',
+      size: '5-7 cm',
+      temperature: '24-28°C',
+      ph: '6.5-7.5',
+      description: 'Ikan cantik dengan sirip mengembang, cocok untuk pemula.',
+      imageUrl: 'https://images.unsplash.com/photo-1553986187-9cb16fa33483?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZXR0YSUyMGZpc2glMjBzaWFtZXNlfGVufDF8fHx8MTc2MjI1MjU4NXww&ixlib=rb-4.1.0&q=80&w=1080',
+      detailedDescription: 'Ikan cantik dengan sirip mengembang yang spektakuler, cocok untuk pemula. Berasal dari Thailand dan dikenal sebagai "Ikan Petarung Siam". Cupang jantan sangat teritorial dan akan bertarung dengan jantan lain. Mereka memiliki organ labirin yang memungkinkan mereka mengambil oksigen langsung dari udara, sehingga dapat hidup di perairan dengan oksigen rendah.',
+      family: 'Osphronemidae',
+      habitat: 'Sawah, rawa, dan sungai dangkal di Asia Tenggara',
+      diet: 'Karnivora - larva nyamuk, bloodworm, artemia, pelet protein tinggi',
+      lifespan: '2-5 tahun'
+    },
+    {
+      id: 3,
+      name: 'Ikan Mas Koki',
+      scientificName: 'Carassius auratus',
+      category: 'Air Tawar',
+      difficulty: 'Mudah',
+      temperament: 'Damai',
+      size: '15-20 cm',
+      temperature: '18-22°C',
+      ph: '7.0-7.5',
+      description: 'Ikan hias klasik dengan bentuk tubuh unik dan warna cerah.',
+      imageUrl: 'https://images.unsplash.com/photo-1646116917668-7e3210fad343?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb2xkZmlzaCUyMGFxdWFyaXVtfGVufDF8fHx8MTc2MjE2MTAzMHww&ixlib=rb-4.1.0&q=80&w=1080',
+      detailedDescription: 'Ikan hias klasik dengan bentuk tubuh unik dan warna cerah yang beragam. Mas Koki memiliki banyak varietas seperti Oranda, Ranchu, Lionhead, dan Ryukin. Mereka adalah ikan sosial yang suka berkelompok dan sangat mudah beradaptasi. Memerlukan akuarium yang cukup besar karena menghasilkan banyak limbah dan membutuhkan filtrasi yang baik.',
+      family: 'Cyprinidae',
+      habitat: 'Akuarium air tawar, kolam hias',
+      diet: 'Omnivora - pelet khusus goldfish, sayuran rebus, bloodworm',
+      lifespan: '10-15 tahun (dapat mencapai 20+ tahun di kolam)'
+    },
+    {
+      id: 4,
+      name: 'Ikan Discus',
+      scientificName: 'Symphysodon spp.',
+      category: 'Air Tawar',
+      difficulty: 'Sulit',
+      temperament: 'Damai',
+      size: '15-20 cm',
+      temperature: '26-30°C',
+      ph: '6.0-7.0',
+      description: 'Raja akuarium air tawar dengan bentuk bulat dan warna spektakuler.',
+      imageUrl: 'https://images.unsplash.com/photo-1564989769610-40bbae0aa5e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkaXNjdXMlMjBmaXNoJTIwYXF1YXJpdW18ZW58MXx8fHwxNzYyMjUyNTg1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+      detailedDescription: 'Raja akuarium air tawar dengan bentuk bulat pipih dan warna yang spektakuler. Berasal dari Sungai Amazon, Discus memerlukan perawatan intensif dengan kualitas air yang sangat baik. Mereka adalah ikan yang sensitif terhadap perubahan parameter air dan memerlukan suhu yang lebih hangat dibanding kebanyakan ikan tropis. Discus adalah ikan berkelompok yang harus dipelihara minimal 5-6 ekor.',
+      family: 'Cichlidae',
+      habitat: 'Sungai Amazon dengan air hitam dan pH rendah',
+      diet: 'Karnivora - bloodworm, artemia, pelet protein tinggi khusus discus',
+      lifespan: '10-15 tahun'
+    },
+    {
+      id: 5,
+      name: 'Ikan Arwana',
+      scientificName: 'Scleropages formosus',
+      category: 'Air Tawar',
+      difficulty: 'Sulit',
+      temperament: 'Agresif',
+      size: '60-90 cm',
+      temperature: '24-30°C',
+      ph: '6.0-7.0',
+      description: 'Ikan legendaris yang dipercaya membawa keberuntungan.',
+      imageUrl: 'https://images.unsplash.com/photo-1522720833778-7738150eb537?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcm93YW5hJTIwZmlzaHxlbnwxfHx8fDE3NjIyNTI1ODZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      detailedDescription: 'Ikan legendaris yang dipercaya membawa keberuntungan dalam budaya Asia. Arwana adalah ikan predator besar yang memerlukan akuarium sangat besar (minimal 500 liter). Mereka dikenal karena kemampuan melompat yang luar biasa dan memerlukan tutup akuarium yang kuat. Arwana adalah perenang aktif dan memerlukan ruang berenang yang luas.',
+      family: 'Osteoglossidae',
+      habitat: 'Sungai dan danau di Asia Tenggara',
+      diet: 'Karnivora - ikan kecil, udang, serangga, jangkrik',
+      lifespan: '15-20 tahun'
+    },
+    {
+      id: 6,
+      name: 'Ikan Guppy',
+      scientificName: 'Poecilia reticulata',
+      category: 'Air Tawar',
+      difficulty: 'Mudah',
+      temperament: 'Damai',
+      size: '3-6 cm',
+      temperature: '22-28°C',
+      ph: '7.0-8.0',
+      description: 'Ikan kecil berwarna-warni yang mudah berkembang biak.',
+      imageUrl: 'https://images.unsplash.com/photo-1591582768075-bc8a9bf94b4f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxndXBweSUyMGZpc2h8ZW58MXx8fHwxNzYyMjUyNTg2fDA&ixlib=rb-4.1.0&q=80&w=1080',
+      detailedDescription: 'Ikan kecil yang sangat populer di kalangan aquarist pemula. Guppy jantan memiliki warna yang lebih cerah dan ekor yang lebih panjang dibanding betina. Mereka adalah livebearer (beranak) yang sangat produktif dan dapat bereproduksi dengan cepat. Guppy sangat mudah beradaptasi dan toleran terhadap berbagai kondisi air.',
+      family: 'Poeciliidae',
+      habitat: 'Sungai dan kolam air tawar di Amerika Selatan',
+      diet: 'Omnivora - pelet kecil, kutu air, spirulina, sayuran rebus',
+      lifespan: '2-3 tahun'
+    },
+    {
+      id: 7,
+      name: 'Ikan Molly',
+      scientificName: 'Poecilia sphenops',
+      category: 'Air Tawar',
+      difficulty: 'Mudah',
+      temperament: 'Damai',
+      size: '8-12 cm',
+      temperature: '25-28°C',
+      ph: '7.5-8.5',
+      description: 'Ikan damai dengan berbagai variasi warna.',
+      imageUrl: 'https://images.unsplash.com/photo-1520990981767-a4c6988f5ee7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2xseSUyMGZpc2h8ZW58MXx8fHwxNzYyMjUyNTg2fDA&ixlib=rb-4.1.0&q=80&w=1080',
+      detailedDescription: 'Molly adalah ikan yang sangat populer untuk akuarium komunitas karena sifatnya yang damai. Tersedia dalam berbagai varietas seperti Black Molly, Silver Molly, dan Balloon Molly. Mereka adalah livebearer yang mudah berkembang biak dan membutuhkan air dengan pH sedikit basa. Molly juga dapat hidup di air payau.',
+      family: 'Poeciliidae',
+      habitat: 'Sungai, danau, dan perairan payau di Amerika Tengah',
+      diet: 'Omnivora dengan preferensi herbivora - spirulina, sayuran, alga, pelet',
+      lifespan: '3-5 tahun'
+    },
+    {
+      id: 8,
+      name: 'Ikan Neon Tetra',
+      scientificName: 'Paracheirodon innesi',
+      category: 'Air Tawar',
+      difficulty: 'Mudah',
+      temperament: 'Damai',
+      size: '3-4 cm',
+      temperature: '20-26°C',
+      ph: '6.0-7.0',
+      description: 'Ikan kecil dengan garis neon biru yang mencolok.',
+      imageUrl: 'https://images.unsplash.com/photo-1584642875245-786dc34761b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxuZW9uJTIwdGV0cmElMjBmaXNofGVufDF8fHx8MTc2MjI1MjU4Nnww&ixlib=rb-4.1.0&q=80&w=1080',
+      detailedDescription: 'Ikan kecil yang sangat populer dengan garis neon biru cerah yang membentang dari mata ke ekor. Neon Tetra adalah ikan schooling yang harus dipelihara dalam kelompok minimal 6 ekor. Mereka berasal dari perairan hitam Amazon dan lebih menyukai air yang sedikit asam. Sangat damai dan cocok untuk akuarium komunitas.',
+      family: 'Characidae',
+      habitat: 'Sungai-sungai kecil di Amazon',
+      diet: 'Omnivora - pelet mikro, cacing darah kecil, kutu air',
+      lifespan: '5-8 tahun'
+    }
+  ];
+
+  const difficultyLevels = ['Semua', 'Mudah', 'Menengah', 'Sulit'];
+
+  const filteredFish = fishSpecies.filter(fish => {
+    const matchesSearch = fish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         fish.scientificName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDifficulty = selectedDifficulty === 'Semua' || fish.difficulty === selectedDifficulty;
+    return matchesSearch && matchesDifficulty;
+  });
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'Mudah':
+        return 'bg-green-100 text-green-800';
+      case 'Menengah':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Sulit':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F5F6FA' }}>
+      {/* Global Navbar */}
+      <Navbar onAuthClick={onAuthClick} onSmartNavigate={onSmartNavigate} />
+
+      {/* Main Content */}
+      <main className="flex-1 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl mb-3" style={{ color: '#2D3436' }}>Fishpedia</h1>
+            <p className="text-lg" style={{ color: '#636E72' }}>
+              Jelajahi database lengkap ikan hias dengan informasi detail tentang perawatan, habitat, dan karakteristik setiap spesies
+            </p>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="mb-8 space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                placeholder="Cari nama ikan atau nama ilmiah..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 py-6 text-base"
+                style={{ backgroundColor: 'white' }}
+              />
+            </div>
+
+            {/* Difficulty Filter */}
+            <div className="flex flex-wrap gap-2">
+              <span className="text-sm self-center mr-2" style={{ color: '#636E72' }}>Tingkat Kesulitan:</span>
+              {difficultyLevels.map((difficulty) => (
+                <button
+                  key={difficulty}
+                  onClick={() => setSelectedDifficulty(difficulty)}
+                  className={`px-4 py-2 rounded-full text-sm transition-colors`}
+                  style={{
+                    backgroundColor: selectedDifficulty === difficulty ? '#4880FF' : 'white',
+                    color: selectedDifficulty === difficulty ? 'white' : '#2D3436',
+                    border: selectedDifficulty === difficulty ? 'none' : '1px solid #CBDCEB'
+                  }}
+                >
+                  {difficulty}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Results Count */}
+          <div className="mb-6">
+            <p style={{ color: '#636E72' }}>
+              Menampilkan <span style={{ color: '#4880FF' }}>{filteredFish.length}</span> dari <span style={{ color: '#4880FF' }}>{fishSpecies.length}</span> spesies ikan
+            </p>
+          </div>
+
+          {/* Fish Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredFish.map((fish) => (
+              <Card 
+                key={fish.id} 
+                className="overflow-hidden hover:shadow-xl transition-shadow cursor-pointer bg-white"
+                onClick={() => setSelectedFish(fish)}
+              >
+                <div className="relative h-48 bg-gradient-to-br from-blue-100 to-blue-200">
+                  <ImageWithFallback
+                    src={fish.imageUrl}
+                    alt={fish.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-3 right-3">
+                    <Badge className={getDifficultyColor(fish.difficulty)}>
+                      {fish.difficulty}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="p-5">
+                  <h3 className="text-xl mb-1">{fish.name}</h3>
+                  <p className="text-sm text-gray-500 italic mb-3">{fish.scientificName}</p>
+                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">{fish.description}</p>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-gray-500">Temperamen:</span>
+                      <p className="font-medium">{fish.temperament}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Ukuran:</span>
+                      <p className="font-medium">{fish.size}</p>
+                    </div>
+                  </div>
+
+                  <button className="mt-4 text-[#608BC1] hover:text-[#133E87] flex items-center gap-2 group w-full justify-center">
+                    Lihat Detail
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* No Results */}
+          {filteredFish.length === 0 && (
+            <div className="text-center py-12">
+              <Fish className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">Tidak ada ikan yang ditemukan</p>
+              <p className="text-gray-400 text-sm mt-2">Coba ubah kata kunci pencarian atau filter kategori</p>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Landing Page Footer */}
+      <footer className="bg-[#133E87] text-white py-12 border-t border-[#608BC1] mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            {/* Column 1 - Brand */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Fish className="w-8 h-8" />
+                <span className="text-2xl" style={{ fontFamily: 'Allura, cursive' }}>Temanikan</span>
+              </div>
+              <p className="text-sm text-[#CBDCEB]">
+                Platform edukasi, komunitas, dan monitoring ikan hias berbasis Machine Learning
+              </p>
+            </div>
+
+            {/* Column 2 - Navigation */}
+            <div>
+              <h3 className="mb-4">Navigasi Cepat</h3>
+              <ul className="space-y-2 text-sm">
+                <li><button onClick={handleNavigateHome} className="text-[#CBDCEB] hover:text-white transition-colors">Beranda</button></li>
+                <li><a href="#tentang" className="text-[#CBDCEB] hover:text-white transition-colors">Tentang Kami</a></li>
+                <li><a href="#fishpedia" className="text-[#CBDCEB] hover:text-white transition-colors">Fishpedia</a></li>
+                <li><a href="#fitur" className="text-[#CBDCEB] hover:text-white transition-colors">Fitur</a></li>
+                <li><a href="#produk" className="text-[#CBDCEB] hover:text-white transition-colors">Produk</a></li>
+              </ul>
+            </div>
+
+            {/* Column 3 - Support */}
+            <div>
+              <h3 className="mb-4">Dukungan</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">FAQ</a></li>
+                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">Kontak</a></li>
+                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">Bantuan</a></li>
+                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">Dokumentasi</a></li>
+              </ul>
+            </div>
+
+            {/* Column 4 - Social Media */}
+            <div>
+              <h3 className="mb-4">Ikuti Kami</h3>
+              <div className="flex gap-3">
+                <a href="#" className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center hover:bg-[#CBDCEB] transition-colors">
+                  <span className="sr-only">Facebook</span>
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </a>
+                <a href="#" className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center hover:bg-[#CBDCEB] transition-colors">
+                  <span className="sr-only">Instagram</span>
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                  </svg>
+                </a>
+                <a href="#" className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center hover:bg-[#CBDCEB] transition-colors">
+                  <span className="sr-only">Twitter</span>
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-[#608BC1] flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#CBDCEB]">
+            <p>© 2025 Temanikan. All rights reserved.</p>
+            <div className="flex gap-6">
+              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-white transition-colors">Terms & Conditions</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* Fish Detail Dialog */}
+      <Dialog open={selectedFish !== null} onOpenChange={() => setSelectedFish(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{selectedFish?.name}</DialogTitle>
+          </DialogHeader>
+          
+          {selectedFish && (
+            <div className="space-y-6">
+              {/* Image and Basic Info */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="relative h-64 rounded-lg overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200">
+                  <ImageWithFallback
+                    src={selectedFish.imageUrl}
+                    alt={selectedFish.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-sm text-gray-500">Nama Ilmiah</span>
+                    <p className="font-medium italic">{selectedFish.scientificName}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-500">Famili</span>
+                    <p className="font-medium">{selectedFish.family}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-500">Kategori</span>
+                    <p className="font-medium">{selectedFish.category}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-500">Tingkat Kesulitan</span>
+                    <Badge className={getDifficultyColor(selectedFish.difficulty) + ' mt-1'}>
+                      {selectedFish.difficulty}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h3 className="text-lg mb-2">Deskripsi</h3>
+                <p className="text-gray-600 leading-relaxed">{selectedFish.detailedDescription}</p>
+              </div>
+
+              {/* Parameters Grid */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg">Parameter Air</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-gray-600">Suhu</span>
+                      <span className="font-medium">{selectedFish.temperature}</span>
+                    </div>
+                    <div className="flex justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-gray-600">pH</span>
+                      <span className="font-medium">{selectedFish.ph}</span>
+                    </div>
+                    <div className="flex justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-gray-600">Ukuran Maksimal</span>
+                      <span className="font-medium">{selectedFish.size}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg">Informasi Lainnya</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-gray-600">Temperamen</span>
+                      <span className="font-medium">{selectedFish.temperament}</span>
+                    </div>
+                    <div className="flex justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-gray-600">Lama Hidup</span>
+                      <span className="font-medium">{selectedFish.lifespan}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Habitat */}
+              <div>
+                <h3 className="text-lg mb-2">Habitat Alami</h3>
+                <p className="text-gray-600 leading-relaxed">{selectedFish.habitat}</p>
+              </div>
+
+              {/* Diet */}
+              <div>
+                <h3 className="text-lg mb-2">Makanan & Diet</h3>
+                <p className="text-gray-600 leading-relaxed">{selectedFish.diet}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
