@@ -46,3 +46,10 @@ instance/
 # OS
 .DS_Store
 Thumbs.db
+
+# Uploads (Payment Proofs)
+uploads/
+*.jpg
+*.jpeg
+*.png
+*.pdf

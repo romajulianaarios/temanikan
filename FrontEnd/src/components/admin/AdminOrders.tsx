@@ -22,6 +22,7 @@ interface Order {
   payment_method?: string;
   notes?: string;
   created_at: string;
+  payment_proof?: string;  // ← ADD THIS LINE
   user?: {
     id: number;
     name: string;
@@ -44,6 +45,8 @@ export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [newStatus, setNewStatus] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [paymentProofImage, setPaymentProofImage] = useState<string | null>(null);
+  const [showPaymentProofModal, setShowPaymentProofModal] = useState(false);
   
   // Data from backend
   const [orders, setOrders] = useState<Order[]>([]);
@@ -229,9 +232,28 @@ export default function AdminOrders() {
     }));
   };
 
-  const handleViewDetail = (order: Order) => {
+  const handleViewDetail = async (order: Order) => {
     setSelectedOrder(order);
     setShowDetailModal(true);
+    
+    // Load payment proof if exists
+    if (order.payment_proof) {
+      try {
+        console.log('📥 Loading payment proof for order:', order.id);
+        const response = await orderAPI.getPaymentProof(order.id);
+        setPaymentProofImage(`data:${response.data.data.mime_type};base64,${response.data.data.base64}`);
+      } catch (error) {
+        console.error('Error loading payment proof:', error);
+        setPaymentProofImage(null);
+      }
+    } else {
+      setPaymentProofImage(null);
+    }
+  };
+
+  const handleViewPaymentProof = () => {
+    setShowDetailModal(false);
+    setShowPaymentProofModal(true);
   };
 
   const handleExportData = () => {
@@ -638,10 +660,25 @@ export default function AdminOrders() {
                     <p className="text-sm text-gray-600 mb-1">Metode Pembayaran</p>
                     <p style={{ color: '#2D3436' }}>{selectedOrder.payment_method || '-'}</p>
                   </div>
-                  {selectedOrder.payment_status === 'paid' && (
+                  {/* Payment Proof Section */}
+                  {selectedOrder?.payment_proof && (
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">Bukti Pembayaran</p>
-                      <p className="text-sm" style={{ color: '#10B981' }}>✓ Sudah Upload</p>
+                      <p className="text-sm text-gray-600 mb-2">Bukti Pembayaran</p>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 text-sm" style={{ color: '#10B981' }}>
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Sudah Upload</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          style={{ borderColor: '#4880FF', color: '#4880FF' }}
+                          onClick={handleViewPaymentProof}
+                        >
+                          <Eye className="w-3 h-3 mr-1" />
+                          Lihat Bukti
+                        </Button>
+                      </div>
                     </div>
                   )}
                   <div>
@@ -687,6 +724,78 @@ export default function AdminOrders() {
                   <Edit className="w-4 h-4 mr-2" />
                   Update Status
                 </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Proof Modal - MODAL BARU */}
+      <Dialog open={showPaymentProofModal} onOpenChange={setShowPaymentProofModal}>
+        <DialogContent className="max-w-2xl" style={{ backgroundColor: 'white' }}>
+          {selectedOrder && (
+            <>
+              <DialogHeader>
+                <DialogTitle style={{ color: '#4880FF' }}>
+                  Bukti Pembayaran - {selectedOrder.order_number}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="py-4">
+                {paymentProofImage ? (
+                  <div className="space-y-4">
+                    <div className="rounded-lg overflow-hidden border" style={{ borderColor: '#E5E7EB' }}>
+                      <img 
+                        src={paymentProofImage} 
+                        alt="Bukti Pembayaran"
+                        className="w-full h-auto max-h-[500px] object-contain bg-gray-50"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
+                      <div>
+                        <p className="text-sm text-gray-600">Customer</p>
+                        <p style={{ color: '#2D3436' }}>{selectedOrder.user?.name}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Total Pembayaran</p>
+                        <p className="text-xl" style={{ color: '#4880FF' }}>
+                          Rp {selectedOrder.total_price?.toLocaleString('id-ID')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-600">Bukti pembayaran tidak tersedia</p>
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowPaymentProofModal(false);
+                    setShowDetailModal(true);
+                  }}
+                >
+                  Kembali
+                </Button>
+                {paymentProofImage && (
+                  <Button
+                    style={{ backgroundColor: '#4880FF', color: 'white' }}
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = paymentProofImage;
+                      link.download = `bukti_pembayaran_${selectedOrder.order_number}.jpg`;
+                      link.click();
+                    }}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                )}
               </DialogFooter>
             </>
           )}

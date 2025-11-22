@@ -265,6 +265,7 @@ class Order(db.Model):
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    payment_proof = db.Column(db.Text)
     
     # Relationship
     user = db.relationship('User', back_populates='orders')

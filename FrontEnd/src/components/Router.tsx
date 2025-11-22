@@ -21,11 +21,22 @@ export const BrowserRouter = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const navigate = (path: string) => {
+    // Prevent full page reload if already on path
+    if (path === window.location.pathname) {
+      return;
+    }
+    
+    // Update browser history
     window.history.pushState({}, '', path);
+    
+    // Update state to trigger re-render
     setCurrentPath(path);
+    
+    // Scroll to top on navigation (optional, comment out if not needed)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const params = {}; // Params will be extracted in Routes component
+  const params = {};
 
   return (
     <RouterContext.Provider value={{ currentPath, navigate, params }}>
@@ -48,7 +59,6 @@ export const Routes = ({ children }: { children: React.ReactNode }) => {
       const { path, element } = child.props;
       
       if (path !== '*' && matchPath(path, context.currentPath)) {
-        // Extract params and update context
         const params = extractParams(path, context.currentPath);
         return <ParamsProvider params={params}>{element}</ParamsProvider>;
       }
@@ -96,11 +106,24 @@ export const useLocation = () => {
   return { pathname: context.currentPath };
 };
 
-export const Link = ({ to, children, className, ...props }: { to: string; children: React.ReactNode; className?: string; [key: string]: any }) => {
+export const Link = ({ to, children, className, onClick, ...props }: { 
+  to: string; 
+  children: React.ReactNode; 
+  className?: string;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  [key: string]: any 
+}) => {
   const context = useContext(RouterContext);
   
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
+    
+    // Call custom onClick if provided
+    if (onClick) {
+      onClick(e);
+    }
+    
+    // Navigate
     if (context) {
       context.navigate(to);
     }
@@ -116,7 +139,7 @@ export const Link = ({ to, children, className, ...props }: { to: string; childr
 function matchPath(pattern: string, path: string): boolean {
   // Handle wildcard paths like /member/* or /admin/*
   if (pattern.endsWith('/*')) {
-    const basePattern = pattern.slice(0, -2); // Remove /*
+    const basePattern = pattern.slice(0, -2);
     return path === basePattern || path.startsWith(basePattern + '/');
   }
 
@@ -132,7 +155,6 @@ function matchPath(pattern: string, path: string): boolean {
   });
 }
 
-// Helper function to extract params from path
 function extractParams(pattern: string, path: string): Record<string, string> {
   const params: Record<string, string> = {};
   const patternParts = pattern.split('/');
@@ -151,14 +173,17 @@ export const Route = ({ element }: { path: string; element: React.ReactNode }) =
   return <>{element}</>;
 };
 
-export const Navigate = ({ to }: { to: string }) => {
+export const Navigate = ({ to, replace }: { to: string; replace?: boolean }) => {
   const context = useContext(RouterContext);
   
   useEffect(() => {
     if (context) {
+      if (replace) {
+        window.history.replaceState({}, '', to);
+      }
       context.navigate(to);
     }
-  }, [to, context]);
+  }, [to, context, replace]);
 
   return null;
 };

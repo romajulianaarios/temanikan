@@ -187,16 +187,40 @@ export default function MyOrders() {
     }
   };
 
-  const handleSubmitPaymentProof = () => {
+  const handleSubmitPaymentProof = async () => {
     if (!paymentProof) {
       alert('Mohon upload bukti pembayaran terlebih dahulu');
       return;
     }
-    // TODO: Implement upload to backend
-    alert(`Bukti pembayaran "${paymentProof.name}" berhasil diupload! Pembayaran akan diverifikasi dalam 1x24 jam.`);
-    setShowPaymentModal(false);
-    setPaymentProof(null);
-    fetchOrders();
+    
+    if (!selectedOrder) {
+      alert('Order tidak ditemukan');
+      return;
+    }
+    
+    try {
+      console.log('📤 Uploading payment proof...', {
+        orderId: selectedOrder.id,
+        fileName: paymentProof.name,
+        fileSize: paymentProof.size
+      });
+      
+      const response = await orderAPI.uploadPaymentProof(selectedOrder.id, paymentProof);
+      
+      console.log('✅ Payment proof uploaded:', response);
+      
+      alert(`Bukti pembayaran "${paymentProof.name}" berhasil diupload! Pembayaran akan diverifikasi dalam 1x24 jam.`);
+      
+      // Reset state
+      setShowPaymentModal(false);
+      setPaymentProof(null);
+      
+      // Refresh orders
+      fetchOrders();
+    } catch (error: any) {
+      console.error('❌ Error uploading payment proof:', error);
+      alert('Gagal upload bukti pembayaran: ' + (error.response?.data?.error || error.message));
+    }
   };
 
   const getPaymentInstructions = (paymentMethod: string) => {
