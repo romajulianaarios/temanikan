@@ -1506,6 +1506,104 @@ def register_routes(app):
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
+    # Admin: Get order analytics (weekly trends and revenue)
+    @app.route('/api/admin/orders/analytics', methods=['GET'])
+    @jwt_required()
+    def admin_get_order_analytics():
+        """Get order analytics data for charts (Admin only)"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            if current_user.role != 'admin':
+                return jsonify({'error': 'Unauthorized'}), 403
+            
+            # Get orders from last 7 days
+            today = datetime.utcnow().date()
+            days = []
+            day_names = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
+            
+            weekly_trend = []
+            weekly_revenue = []
+            
+            for i in range(6, -1, -1):  # Last 7 days
+                target_date = today - timedelta(days=i)
+                start_datetime = datetime.combine(target_date, datetime.min.time())
+                end_datetime = datetime.combine(target_date, datetime.max.time())
+                
+                # Count orders for this day
+                order_count = Order.query.filter(
+                    Order.created_at >= start_datetime,
+                    Order.created_at <= end_datetime
+                ).count()
+                
+                # Sum revenue for this day (paid orders only)
+                daily_revenue = db.session.query(
+                    db.func.sum(Order.total_price)
+                ).filter(
+                    Order.created_at >= start_datetime,
+                    Order.created_at <= end_datetime,
+                    Order.payment_status == 'paid'
+                ).scalar() or 0
+                
+                # Get day name (0=Monday, 6=Sunday)
+                day_index = target_date.weekday()
+                # Adjust: Monday=1(Sen), Sunday=0(Min)
+                adjusted_index = (day_index + 1) % 7
+                day_name = day_names[adjusted_index]
+                
+                weekly_trend.append({
+                    'day': day_name,
+                    'orders': order_count
+                })
+                
+                weekly_revenue.append({
+                    'day': day_name,
+                    'revenue': float(daily_revenue)
+                })
+            
+            # Status distribution
+            status_counts = {
+                'pending_payment': 0,
+                'processing': 0,
+                'shipped': 0,
+                'completed': 0,
+                'cancelled': 0
+            }
+            
+            # Count orders by payment status
+            pending_payment = Order.query.filter_by(payment_status='pending').count()
+            status_counts['pending_payment'] = pending_payment
+            
+            # Count by order status
+            processing = Order.query.filter(
+                (Order.status == 'confirmed') | (Order.status == 'processing')
+            ).count()
+            status_counts['processing'] = processing
+            
+            shipped = Order.query.filter_by(status='shipping').count()
+            status_counts['shipped'] = shipped
+            
+            completed = Order.query.filter(
+                (Order.status == 'delivered') | (Order.status == 'completed')
+            ).count()
+            status_counts['completed'] = completed
+            
+            cancelled = Order.query.filter_by(status='cancelled').count()
+            status_counts['cancelled'] = cancelled
+            
+            return jsonify({
+                'success': True,
+                'data': {
+                    'weekly_trend': weekly_trend,
+                    'weekly_revenue': weekly_revenue,
+                    'status_distribution': status_counts
+                }
+            }), 200
+            
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
     # Notification Routes
     @app.route('/api/notifications', methods=['GET'])
     @jwt_required()

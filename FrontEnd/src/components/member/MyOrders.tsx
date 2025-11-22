@@ -34,9 +34,11 @@ export default function MyOrders() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [newOrderData, setNewOrderData] = useState<Order | null>(null);
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
   
   // Data from backend
   const [orders, setOrders] = useState<Order[]>([]);
@@ -209,10 +211,14 @@ export default function MyOrders() {
       
       console.log('✅ Payment proof uploaded:', response);
       
-      alert(`Bukti pembayaran "${paymentProof.name}" berhasil diupload! Pembayaran akan diverifikasi dalam 1x24 jam.`);
+      // Store uploaded file name
+      setUploadedFileName(paymentProof.name);
       
-      // Reset state
+      // Close payment modal and show success modal
       setShowPaymentModal(false);
+      setShowPaymentSuccessModal(true);
+      
+      // Reset payment proof
       setPaymentProof(null);
       
       // Refresh orders
@@ -221,6 +227,12 @@ export default function MyOrders() {
       console.error('❌ Error uploading payment proof:', error);
       alert('Gagal upload bukti pembayaran: ' + (error.response?.data?.error || error.message));
     }
+  };
+
+  const handleClosePaymentSuccess = () => {
+    setShowPaymentSuccessModal(false);
+    setUploadedFileName('');
+    setActiveView('list');
   };
 
   const getPaymentInstructions = (paymentMethod: string) => {
@@ -899,6 +911,46 @@ export default function MyOrders() {
               </DialogFooter>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Success Modal */}
+      <Dialog open={showPaymentSuccessModal} onOpenChange={setShowPaymentSuccessModal}>
+        <DialogContent className="max-w-md" style={{ backgroundColor: 'white' }}>
+          <DialogHeader>
+            <div className="flex flex-col items-center gap-4 py-4">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#D1FAE5' }}>
+                <CheckCircle className="w-10 h-10" style={{ color: '#10B981' }} />
+              </div>
+              <DialogTitle className="text-center" style={{ color: '#10B981' }}>
+                Bukti Pembayaran Berhasil Diupload!
+              </DialogTitle>
+            </div>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#F3F4F6' }}>
+              <p className="text-sm text-gray-600 mb-2">File yang diupload:</p>
+              <p className="font-semibold" style={{ color: '#4880FF' }}>{uploadedFileName}</p>
+            </div>
+
+            <div className="p-4 rounded-lg border-2" style={{ borderColor: '#10B981', backgroundColor: '#F0FDF4' }}>
+              <p className="text-sm text-center" style={{ color: '#065F46' }}>
+                Pembayaran Anda akan diverifikasi dalam <strong>1x24 jam</strong>. 
+                Anda akan menerima notifikasi setelah pembayaran dikonfirmasi.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              onClick={handleClosePaymentSuccess}
+              className="w-full text-white"
+              style={{ backgroundColor: '#4880FF' }}
+            >
+              OK
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

@@ -378,6 +378,12 @@ export const orderAPI = {
     const response = await api.get('/admin/orders/stats');
     return response.data;
   },
+
+  // Admin: Get order analytics (weekly trend, revenue, distribution)
+  getOrderAnalytics: async () => {
+    const response = await api.get('/admin/orders/analytics');
+    return response.data;
+  },
   
   // ✅ ADD THIS METHOD:
   uploadPaymentProof: async (orderId: number, file: File) => {

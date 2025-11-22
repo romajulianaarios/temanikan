@@ -1,27 +1,141 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Search, Flag, CheckCircle, XCircle, Eye } from '../icons';
+import { Search, XCircle, Eye, MessageSquare } from '../icons';
+import { forumAPI } from '../../services/api';
 
-interface ReportedContent {
+interface Reply {
   id: number;
-  type: 'post' | 'comment';
+  user_id: number;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
+
+interface Topic {
+  id: number;
   title: string;
-  content?: string;
-  author: string;
-  reporter: string;
-  reason: string;
-  status: 'pending' | 'approved' | 'rejected';
-  date: string;
-  severity: 'low' | 'medium' | 'high';
+  content: string;
+  category: string;
+  user_id: number;
+  is_pinned: boolean;
+  created_at: string;
+  updated_at: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  replies?: Reply[];
+  reply_count?: number;
 }
 
 export default function ForumModeration() {
-  const [reportedContent, setReportedContent] = useState<ReportedContent[]>([
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('Semua Kategori');
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [topicToDelete, setTopicToDelete] = useState<Topic | null>(null);
+
+  useEffect(() => {
+    fetchTopics();
+  }, []);
+
+  const fetchTopics = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('📡 Admin fetching forum topics...');
+      
+      const response = await forumAPI.getTopics(undefined, undefined);
+      
+      console.log('✅ Admin topics received:', response);
+      setTopics(response.topics || []);
+    } catch (error: any) {
+      console.error('❌ Error fetching topics:', error);
+      setError(error.response?.data?.error || 'Gagal memuat topik forum');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTopic = async (topicId: number) => {
+    try {
+      console.log('🗑️ Deleting topic:', topicId);
+      await forumAPI.deleteTopic(topicId);
+      
+      // Remove from local state
+      setTopics(topics.filter(t => t.id !== topicId));
+      setShowDeleteConfirm(false);
+      setTopicToDelete(null);
+      
+      alert('Topik berhasil dihapus');
+    } catch (error: any) {
+      console.error('❌ Error deleting topic:', error);
+      alert('Gagal menghapus topik: ' + (error.response?.data?.error || error.message));
+    }
+  };
+
+  const handleViewDetail = async (topic: Topic) => {
+    try {
+      console.log('📡 Fetching topic details...');
+      const response = await forumAPI.getTopic(topic.id);
+      console.log('✅ Topic details received:', response);
+      setSelectedTopic(response.topic);
+      setShowDetailModal(true);
+    } catch (error) {
+      console.error('❌ Error fetching topic details:', error);
+      setSelectedTopic(topic);
+      setShowDetailModal(true);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const filteredTopics = topics.filter(topic => {
+    const matchesSearch = 
+      topic.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      topic.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      topic.user?.name.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = categoryFilter === 'Semua Kategori' || topic.category === categoryFilter;
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  const totalTopics = topics.length;
+  const totalReplies = topics.reduce((sum, t) => sum + (t.reply_count || 0), 0);
+  const pinnedTopics = topics.filter(t => t.is_pinned).length;
+
+  const moderationStats = [
+    { label: 'Total Topik', value: totalTopics.toString(), color: '#608BC1' },
+    { label: 'Total Balasan', value: totalReplies.toString(), color: '#4880FF' },
+    { label: 'Topik Disematkan', value: pinnedTopics.toString(), color: '#10b981' },
+    { label: 'Kategori Aktif', value: '6', color: '#8B5CF6' },
+  ];
+
+  const reportedContent_mock = [
     {
       id: 1,
       type: 'post',
@@ -84,65 +198,6 @@ export default function ForumModeration() {
     },
   ]);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Pending');
-  const [severityFilter, setSeverityFilter] = useState('Semua Tingkat');
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<ReportedContent | null>(null);
-
-  // Filter reported content
-  const filteredContent = reportedContent.filter(item => {
-    const matchesSearch = 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.reporter.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    let matchesStatus = true;
-    if (statusFilter === 'Pending') matchesStatus = item.status === 'pending';
-    else if (statusFilter === 'Disetujui') matchesStatus = item.status === 'approved';
-    else if (statusFilter === 'Ditolak') matchesStatus = item.status === 'rejected';
-    
-    let matchesSeverity = true;
-    if (severityFilter === 'Tinggi') matchesSeverity = item.severity === 'high';
-    else if (severityFilter === 'Sedang') matchesSeverity = item.severity === 'medium';
-    else if (severityFilter === 'Rendah') matchesSeverity = item.severity === 'low';
-    
-    return matchesSearch && matchesStatus && matchesSeverity;
-  });
-
-  // Stats
-  const pendingCount = reportedContent.filter(r => r.status === 'pending').length;
-  const reviewedTodayCount = reportedContent.filter(r => r.date.includes('Nov 2025')).length;
-  const approvedCount = reportedContent.filter(r => r.status === 'approved').length;
-  const rejectedCount = reportedContent.filter(r => r.status === 'rejected').length;
-
-  const moderationStats = [
-    { label: 'Laporan Pending', value: pendingCount.toString(), color: '#f59e0b' },
-    { label: 'Direview Hari Ini', value: reviewedTodayCount.toString(), color: '#608BC1' },
-    { label: 'Disetujui', value: approvedCount.toString(), color: '#10b981' },
-    { label: 'Ditolak', value: rejectedCount.toString(), color: '#ef4444' },
-  ];
-
-  // Handle Approve
-  const handleApprove = (id: number) => {
-    setReportedContent(reportedContent.map(item =>
-      item.id === id ? { ...item, status: 'approved' as const } : item
-    ));
-  };
-
-  // Handle Reject & Delete
-  const handleRejectAndDelete = (id: number) => {
-    setReportedContent(reportedContent.map(item =>
-      item.id === id ? { ...item, status: 'rejected' as const } : item
-    ));
-  };
-
-  // Open Detail Modal
-  const openDetailModal = (report: ReportedContent) => {
-    setSelectedReport(report);
-    setShowDetailModal(true);
-  };
-
   return (
     <div className="space-y-6">
       {/* Stats */}
@@ -161,53 +216,55 @@ export default function ForumModeration() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input 
-              placeholder="Cari konten yang dilaporkan..."
+              placeholder="Cari topik forum..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger className="w-full md:w-[200px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Semua Status">Semua Status</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Disetujui">Disetujui</SelectItem>
-              <SelectItem value="Ditolak">Ditolak</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={severityFilter} onValueChange={setSeverityFilter}>
-            <SelectTrigger className="w-full md:w-[200px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Semua Tingkat">Semua Tingkat</SelectItem>
-              <SelectItem value="Tinggi">Tinggi</SelectItem>
-              <SelectItem value="Sedang">Sedang</SelectItem>
-              <SelectItem value="Rendah">Rendah</SelectItem>
+              <SelectItem value="Semua Kategori">Semua Kategori</SelectItem>
+              <SelectItem value="Panduan">Panduan</SelectItem>
+              <SelectItem value="Kesehatan">Kesehatan</SelectItem>
+              <SelectItem value="Peralatan">Peralatan</SelectItem>
+              <SelectItem value="Breeding">Breeding</SelectItem>
+              <SelectItem value="Diskusi Umum">Diskusi Umum</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </Card>
 
-      {/* Reported Content List */}
-      {filteredContent.length === 0 ? (
+      {/* Topics List */}
+      {loading ? (
         <Card className="p-12 text-center" style={{ backgroundColor: 'white' }}>
-          <Flag className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-gray-500">Tidak ada konten yang dilaporkan</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+          <p className="text-gray-600">Memuat topik forum...</p>
+        </Card>
+      ) : error ? (
+        <Card className="p-12 text-center" style={{ backgroundColor: 'white' }}>
+          <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+          <p className="text-red-600 mb-2">{error}</p>
+          <Button onClick={fetchTopics} variant="outline">Coba Lagi</Button>
+        </Card>
+      ) : filteredTopics.length === 0 ? (
+        <Card className="p-12 text-center" style={{ backgroundColor: 'white' }}>
+          <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500">Tidak ada topik forum</p>
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredContent.map((item) => (
+          {filteredTopics.map((item) => (
             <Card key={item.id} className="p-6" style={{ backgroundColor: 'white' }}>
               <div className="flex items-start gap-4">
                 <div 
                   className="p-3 rounded-lg flex-shrink-0"
                   style={{ backgroundColor: '#CBDCEB' }}
                 >
-                  <Flag className="w-6 h-6" style={{ color: '#608BC1' }} />
+                  <MessageSquare className="w-6 h-6" style={{ color: '#608BC1' }} />
                 </div>
 
                 <div className="flex-1">
@@ -215,84 +272,62 @@ export default function ForumModeration() {
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <h4 style={{ color: '#133E87' }}>{item.title}</h4>
-                        {item.severity === 'high' && (
-                          <Badge className="bg-red-100 text-red-800">Tinggi</Badge>
+                        {item.is_pinned && (
+                          <Badge className="bg-yellow-100 text-yellow-800">Disematkan</Badge>
                         )}
-                        {item.severity === 'medium' && (
-                          <Badge className="bg-yellow-100 text-yellow-800">Sedang</Badge>
-                        )}
-                        {item.severity === 'low' && (
-                          <Badge className="bg-blue-100 text-blue-800">Rendah</Badge>
-                        )}
+                        <Badge 
+                          variant="outline"
+                          className="text-xs"
+                          style={{ 
+                            backgroundColor: 'rgba(72, 128, 255, 0.1)', 
+                            color: '#4880FF', 
+                            borderColor: 'rgba(72, 128, 255, 0.2)' 
+                          }}
+                        >
+                          {item.category || 'Umum'}
+                        </Badge>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-gray-600">
-                        <span>Penulis: {item.author}</span>
+                        <span>Penulis: {item.user?.name || 'Anonymous'}</span>
                         <span>•</span>
-                        <span>Dilaporkan oleh: {item.reporter}</span>
+                        <span>{item.reply_count || 0} balasan</span>
                         <span>•</span>
-                        <span>{item.date}</span>
+                        <span>{formatDate(item.created_at)}</span>
                       </div>
                     </div>
-                    {item.status === 'pending' && (
-                      <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
-                    )}
-                    {item.status === 'approved' && (
-                      <Badge className="bg-green-100 text-green-800">Disetujui</Badge>
-                    )}
-                    {item.status === 'rejected' && (
-                      <Badge className="bg-red-100 text-red-800">Ditolak</Badge>
-                    )}
                   </div>
 
                   <div 
                     className="p-3 rounded-lg mb-4"
                     style={{ backgroundColor: '#F3F3E0' }}
                   >
-                    <p className="text-sm text-gray-700">
-                      <strong>Alasan Laporan:</strong> {item.reason}
+                    <p className="text-sm text-gray-700 line-clamp-2">
+                      {item.content}
                     </p>
                   </div>
 
-                  {item.status === 'pending' ? (
-                    <div className="flex items-center gap-3">
-                      <Button 
-                        size="sm"
-                        variant="outline"
-                        className="text-gray-700"
-                        onClick={() => openDetailModal(item)}
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Lihat Detail
-                      </Button>
-                      <Button 
-                        size="sm"
-                        className="text-white"
-                        style={{ backgroundColor: '#10b981' }}
-                        onClick={() => handleApprove(item.id)}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Setujui
-                      </Button>
-                      <Button 
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleRejectAndDelete(item.id)}
-                      >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        Tolak & Hapus
-                      </Button>
-                    </div>
-                  ) : (
+                  <div className="flex items-center gap-3">
                     <Button 
                       size="sm"
                       variant="outline"
                       className="text-gray-700"
-                      onClick={() => openDetailModal(item)}
+                      onClick={() => handleViewDetail(item)}
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       Lihat Detail
                     </Button>
-                  )}
+                    <Button 
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => {
+                        setTopicToDelete(item);
+                        setShowDeleteConfirm(true);
+                      }}
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Hapus Topik
+                    </Button>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -304,32 +339,35 @@ export default function ForumModeration() {
       <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle style={{ color: '#133E87' }}>Detail Laporan</DialogTitle>
+            <DialogTitle style={{ color: '#133E87' }}>Detail Topik Forum</DialogTitle>
           </DialogHeader>
-          {selectedReport && (
+          {selectedTopic && (
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Judul</p>
-                <p style={{ color: '#133E87' }}>{selectedReport.title}</p>
+                <p style={{ color: '#133E87' }}>{selectedTopic.title}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Tipe</p>
-                  <Badge variant="outline">
-                    {selectedReport.type === 'post' ? 'Post' : 'Komentar'}
+                  <p className="text-sm text-gray-600 mb-1">Kategori</p>
+                  <Badge 
+                    variant="outline"
+                    style={{ 
+                      backgroundColor: 'rgba(72, 128, 255, 0.1)', 
+                      color: '#4880FF', 
+                      borderColor: 'rgba(72, 128, 255, 0.2)' 
+                    }}
+                  >
+                    {selectedTopic.category || 'Umum'}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Tingkat Keparahan</p>
-                  {selectedReport.severity === 'high' && (
-                    <Badge className="bg-red-100 text-red-800">Tinggi</Badge>
-                  )}
-                  {selectedReport.severity === 'medium' && (
-                    <Badge className="bg-yellow-100 text-yellow-800">Sedang</Badge>
-                  )}
-                  {selectedReport.severity === 'low' && (
-                    <Badge className="bg-blue-100 text-blue-800">Rendah</Badge>
+                  <p className="text-sm text-gray-600 mb-1">Status</p>
+                  {selectedTopic.is_pinned ? (
+                    <Badge className="bg-yellow-100 text-yellow-800">Disematkan</Badge>
+                  ) : (
+                    <Badge className="bg-blue-100 text-blue-800">Normal</Badge>
                   )}
                 </div>
               </div>
@@ -337,110 +375,132 @@ export default function ForumModeration() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Penulis</p>
-                  <p className="text-gray-700">{selectedReport.author}</p>
+                  <p className="text-gray-700">{selectedTopic.user?.name || 'Anonymous'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Dilaporkan oleh</p>
-                  <p className="text-gray-700">{selectedReport.reporter}</p>
+                  <p className="text-sm text-gray-600 mb-1">Email Penulis</p>
+                  <p className="text-gray-700">{selectedTopic.user?.email || '-'}</p>
                 </div>
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-1">Alasan Laporan</p>
+                <p className="text-sm text-gray-600 mb-1">Konten Topik</p>
                 <div 
-                  className="p-3 rounded-lg"
-                  style={{ backgroundColor: '#F3F3E0' }}
-                >
-                  <p className="text-gray-700">{selectedReport.reason}</p>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Konten</p>
-                <div 
-                  className="p-4 rounded-lg border"
+                  className="p-4 rounded-lg border max-h-[300px] overflow-y-auto"
                   style={{ borderColor: '#CBDCEB', backgroundColor: '#F5F6FA' }}
                 >
-                  <p className="text-gray-700">
-                    {selectedReport.content || 'Konten tidak tersedia'}
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {selectedTopic.content}
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Tanggal Laporan</p>
-                  <p className="text-gray-700">{selectedReport.date}</p>
+                  <p className="text-sm text-gray-600 mb-1">Tanggal Dibuat</p>
+                  <p className="text-gray-700">{formatDate(selectedTopic.created_at)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Status</p>
-                  {selectedReport.status === 'pending' && (
-                    <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
-                  )}
-                  {selectedReport.status === 'approved' && (
-                    <Badge className="bg-green-100 text-green-800">Disetujui</Badge>
-                  )}
-                  {selectedReport.status === 'rejected' && (
-                    <Badge className="bg-red-100 text-red-800">Ditolak</Badge>
-                  )}
+                  <p className="text-sm text-gray-600 mb-1">Terakhir Diupdate</p>
+                  <p className="text-gray-700">{formatDate(selectedTopic.updated_at)}</p>
                 </div>
               </div>
 
-              {selectedReport.status === 'pending' && (
-                <div 
-                  className="p-4 rounded-lg border-l-4"
-                  style={{ 
-                    borderColor: '#f59e0b',
-                    backgroundColor: '#fef3c7'
-                  }}
-                >
-                  <p className="text-sm text-yellow-800">
-                    <strong>Tindakan diperlukan:</strong> Konten ini menunggu keputusan moderasi Anda.
-                  </p>
-                </div>
-              )}
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Balasan ({selectedTopic.replies?.length || 0})</p>
+                {selectedTopic.replies && selectedTopic.replies.length > 0 ? (
+                  <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                    {selectedTopic.replies.map((reply) => (
+                      <div 
+                        key={reply.id}
+                        className="p-3 rounded-lg border"
+                        style={{ borderColor: '#E5E7EB', backgroundColor: 'white' }}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm font-semibold" style={{ color: '#133E87' }}>
+                            {reply.user?.name || 'Anonymous'}
+                          </p>
+                          <span className="text-xs text-gray-500">
+                            {formatDate(reply.created_at)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700">{reply.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">Belum ada balasan</p>
+                )}
             </div>
           )}
           <DialogFooter className="gap-2">
-            {selectedReport?.status === 'pending' && (
-              <>
-                <Button 
-                  className="text-white"
-                  style={{ backgroundColor: '#10b981' }}
-                  onClick={() => {
-                    if (selectedReport) {
-                      handleApprove(selectedReport.id);
-                      setShowDetailModal(false);
-                      setSelectedReport(null);
-                    }
-                  }}
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Setujui
-                </Button>
-                <Button 
-                  variant="destructive"
-                  onClick={() => {
-                    if (selectedReport) {
-                      handleRejectAndDelete(selectedReport.id);
-                      setShowDetailModal(false);
-                      setSelectedReport(null);
-                    }
-                  }}
-                >
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Tolak & Hapus
-                </Button>
-              </>
-            )}
             <Button 
               variant="outline"
               onClick={() => {
                 setShowDetailModal(false);
-                setSelectedReport(null);
+                setSelectedTopic(null);
               }}
             >
               Tutup
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => {
+                if (selectedTopic) {
+                  setShowDetailModal(false);
+                  setTopicToDelete(selectedTopic);
+                  setShowDeleteConfirm(true);
+                }
+              }}
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Hapus Topik
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle style={{ color: '#ef4444' }}>Konfirmasi Hapus Topik</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus topik ini? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          {topicToDelete && (
+            <div className="py-4">
+              <div className="p-4 rounded-lg" style={{ backgroundColor: '#FEE2E2' }}>
+                <p className="text-sm text-red-800">
+                  <strong>Topik:</strong> {topicToDelete.title}
+                </p>
+                <p className="text-sm text-red-800 mt-1">
+                  <strong>Penulis:</strong> {topicToDelete.user?.name || 'Anonymous'}
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                setTopicToDelete(null);
+              }}
+            >
+              Batal
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => {
+                if (topicToDelete) {
+                  handleDeleteTopic(topicToDelete.id);
+                }
+              }}
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Hapus
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from '../Router';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -7,33 +7,71 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { MessageSquare, ThumbsUp, User, Plus } from '../icons';
 import { ScrollArea } from '../ui/scroll-area';
+import { forumAPI } from '../../services/api';
 
 interface Reply {
   id: number;
-  author: string;
+  user_id: number;
   content: string;
-  likes: number;
-  time: string;
+  created_at: string;
+  updated_at: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }
 
 interface Topic {
   id: number;
   title: string;
-  author: string;
+  content: string;
   category: string;
-  replies: number;
-  likes: number;
-  lastActivity: string;
-  isPopular: boolean;
-  replyList?: Reply[];
+  user_id: number;
+  is_pinned: boolean;
+  created_at: string;
+  updated_at: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  replies?: Reply[];
+  reply_count?: number;
 }
 
 export default function MemberForum() {
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [showReplies, setShowReplies] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('Semua Topik');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const forumTopics: Topic[] = [
+  // Fetch topics from backend
+  useEffect(() => {
+    fetchTopics();
+  }, [selectedCategory]);
+
+  const fetchTopics = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('📡 Fetching forum topics...');
+      
+      const response = await forumAPI.getTopics(selectedCategory || undefined, undefined);
+      
+      console.log('✅ Forum topics received:', response);
+      setTopics(response.topics || []);
+    } catch (error: any) {
+      console.error('❌ Error fetching topics:', error);
+      setError(error.response?.data?.error || 'Gagal memuat topik forum');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const forumTopics_mock: Topic[] = [
     {
       id: 1,
       title: 'Tips Merawat Ikan Koi untuk Pemula',
@@ -160,24 +198,42 @@ export default function MemberForum() {
   ];
 
   const categories = [
-    { name: 'Semua Topik', count: 157 },
-    { name: 'Panduan', count: 42 },
-    { name: 'Kesehatan', count: 38 },
-    { name: 'Peralatan', count: 25 },
-    { name: 'Breeding', count: 19 },
-    { name: 'Diskusi Umum', count: 33 },
+    { name: '', label: 'Semua Topik', count: topics.length },
+    { name: 'Panduan', label: 'Panduan', count: topics.filter(t => t.category === 'Panduan').length },
+    { name: 'Kesehatan', label: 'Kesehatan', count: topics.filter(t => t.category === 'Kesehatan').length },
+    { name: 'Peralatan', label: 'Peralatan', count: topics.filter(t => t.category === 'Peralatan').length },
+    { name: 'Breeding', label: 'Breeding', count: topics.filter(t => t.category === 'Breeding').length },
+    { name: 'Diskusi Umum', label: 'Diskusi Umum', count: topics.filter(t => t.category === 'Diskusi Umum').length },
   ];
 
-  const handleViewReplies = (topic: Topic) => {
-    setSelectedTopic(topic);
-    setShowReplies(true);
+  const handleViewReplies = async (topic: Topic) => {
+    try {
+      console.log('📡 Fetching topic details...');
+      const response = await forumAPI.getTopic(topic.id);
+      console.log('✅ Topic details received:', response);
+      setSelectedTopic(response.topic);
+      setShowReplies(true);
+    } catch (error) {
+      console.error('❌ Error fetching topic details:', error);
+      setSelectedTopic(topic);
+      setShowReplies(true);
+    }
   };
 
-  const getFilteredTopics = () => {
-    if (selectedCategory === 'Semua Topik') {
-      return forumTopics;
-    }
-    return forumTopics.filter(topic => topic.category === selectedCategory);
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 60) return `${diffMins} menit yang lalu`;
+    if (diffHours < 24) return `${diffHours} jam yang lalu`;
+    if (diffDays === 1) return '1 hari yang lalu';
+    if (diffDays < 7) return `${diffDays} hari yang lalu`;
+    
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   return (
@@ -229,7 +285,7 @@ export default function MemberForum() {
                   border: selectedCategory === category.name ? '1px solid rgba(72, 128, 255, 0.2)' : '1px solid transparent'
                 }}
               >
-                <span className="text-sm">{category.name}</span>
+                <span className="text-sm">{category.label}</span>
                 <Badge 
                   className="text-xs"
                   style={{
@@ -247,7 +303,31 @@ export default function MemberForum() {
 
         {/* Topics List */}
         <div className="lg:col-span-3 space-y-4">
-          {getFilteredTopics().map((topic) => (
+          {loading ? (
+            <Card className="p-12 text-center" style={{ backgroundColor: 'white' }}>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+              <p className="text-gray-600">Memuat topik forum...</p>
+            </Card>
+          ) : error ? (
+            <Card className="p-12 text-center" style={{ backgroundColor: 'white' }}>
+              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+              <p className="text-red-600 mb-2">{error}</p>
+              <Button onClick={fetchTopics} variant="outline">Coba Lagi</Button>
+            </Card>
+          ) : topics.length === 0 ? (
+            <Card className="p-12 text-center" style={{ backgroundColor: 'white' }}>
+              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-lg mb-2" style={{ color: '#1F2937' }}>Belum Ada Topik</h3>
+              <p className="text-gray-600 mb-4">Jadilah yang pertama membuat topik diskusi!</p>
+              <Link to="/member/forum/new">
+                <Button style={{ backgroundColor: '#4880FF', color: 'white' }}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Buat Topik Baru
+                </Button>
+              </Link>
+            </Card>
+          ) : (
+            topics.map((topic) => (
             <Card 
               key={topic.id}
               className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all"
@@ -267,15 +347,15 @@ export default function MemberForum() {
                       <Link to={`/member/forum/topic/${topic.id}`}>
                         <h4 className="mb-1 hover:underline cursor-pointer text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>
                           {topic.title}
-                          {topic.isPopular && (
+                          {topic.is_pinned && (
                             <Badge className="ml-2" style={{ backgroundColor: 'rgba(254, 197, 61, 0.1)', color: '#FEC53D', border: 'none' }}>
-                              Populer
+                              Disematkan
                             </Badge>
                           )}
                         </h4>
                       </Link>
                       <div className="flex items-center gap-3 text-sm" style={{ color: '#6B7280' }}>
-                        <span>{topic.author}</span>
+                        <span>{topic.user?.name || 'Anonymous'}</span>
                         <span>•</span>
                         <Badge 
                           variant="outline" 
@@ -286,10 +366,10 @@ export default function MemberForum() {
                             borderColor: 'rgba(72, 128, 255, 0.2)' 
                           }}
                         >
-                          {topic.category}
+                          {topic.category || 'Umum'}
                         </Badge>
                         <span>•</span>
-                        <span>{topic.lastActivity}</span>
+                        <span>{formatTimeAgo(topic.updated_at)}</span>
                       </div>
                     </div>
                   </div>
@@ -301,17 +381,14 @@ export default function MemberForum() {
                       style={{ color: '#4880FF', fontWeight: 500 }}
                     >
                       <MessageSquare className="w-4 h-4" />
-                      <span>{topic.replies} balasan</span>
+                      <span>{topic.reply_count || 0} balasan</span>
                     </button>
-                    <div className="flex items-center gap-2" style={{ color: '#8280FF', fontWeight: 500 }}>
-                      <ThumbsUp className="w-4 h-4" />
-                      <span>{topic.likes} suka</span>
-                    </div>
                   </div>
                 </div>
               </div>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -322,14 +399,14 @@ export default function MemberForum() {
             <>
               <DialogHeader>
                 <DialogTitle style={{ color: '#133E87' }}>
-                  {selectedTopic.replies} Balasan - {selectedTopic.title}
+                  {selectedTopic.replies?.length || 0} Balasan - {selectedTopic.title}
                 </DialogTitle>
               </DialogHeader>
               
               <ScrollArea className="h-[500px] pr-4">
                 <div className="space-y-4">
-                  {selectedTopic.replyList && selectedTopic.replyList.length > 0 ? (
-                    selectedTopic.replyList.map((reply) => (
+                  {selectedTopic.replies && selectedTopic.replies.length > 0 ? (
+                    selectedTopic.replies.map((reply) => (
                       <div 
                         key={reply.id}
                         className="p-4 rounded-lg"
@@ -344,14 +421,10 @@ export default function MemberForum() {
 
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm" style={{ color: '#133E87' }}>{reply.author}</span>
-                              <span className="text-xs text-gray-500">{reply.time}</span>
+                              <span className="text-sm" style={{ color: '#133E87' }}>{reply.user?.name || 'Anonymous'}</span>
+                              <span className="text-xs text-gray-500">{formatTimeAgo(reply.created_at)}</span>
                             </div>
                             <p className="text-sm text-gray-700 mb-3">{reply.content}</p>
-                            <div className="flex items-center gap-1 text-xs text-gray-600">
-                              <ThumbsUp className="w-3 h-3" />
-                              <span>{reply.likes} suka</span>
-                            </div>
                           </div>
                         </div>
                       </div>

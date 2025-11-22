@@ -47,6 +47,8 @@ export default function AdminOrders() {
   const [searchQuery, setSearchQuery] = useState('');
   const [paymentProofImage, setPaymentProofImage] = useState<string | null>(null);
   const [showPaymentProofModal, setShowPaymentProofModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   
   // Data from backend
   const [orders, setOrders] = useState<Order[]>([]);
@@ -54,31 +56,16 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock analytics data (will be replaced with real data later)
-  const weeklyTrend = [
-    { day: 'Sen', orders: 12 },
-    { day: 'Sel', orders: 19 },
-    { day: 'Rab', orders: 15 },
-    { day: 'Kam', orders: 22 },
-    { day: 'Jum', orders: 18 },
-    { day: 'Sab', orders: 25 },
-    { day: 'Min', orders: 20 }
-  ];
-
-  const weeklyRevenue = [
-    { day: 'Sen', revenue: 30000000 },
-    { day: 'Sel', revenue: 47500000 },
-    { day: 'Rab', revenue: 37500000 },
-    { day: 'Kam', revenue: 55000000 },
-    { day: 'Jum', revenue: 45000000 },
-    { day: 'Sab', revenue: 62500000 },
-    { day: 'Min', revenue: 50000000 }
-  ];
+  // Analytics data from backend
+  const [weeklyTrend, setWeeklyTrend] = useState<Array<{ day: string; orders: number }>>([]);
+  const [weeklyRevenue, setWeeklyRevenue] = useState<Array<{ day: string; revenue: number }>>([]);
+  const [statusDistribution, setStatusDistribution] = useState<any>(null);
 
   // Fetch data on mount
   useEffect(() => {
     fetchOrders();
     fetchStats();
+    fetchAnalytics();
   }, [selectedStatus, searchQuery]);
 
   const fetchOrders = async () => {
@@ -120,6 +107,24 @@ export default function AdminOrders() {
     }
   };
 
+  const fetchAnalytics = async () => {
+    try {
+      console.log('📊 Fetching analytics...');
+      
+      const response = await orderAPI.getOrderAnalytics();
+      
+      console.log('✅ Analytics received:', response);
+      
+      if (response.success && response.data) {
+        setWeeklyTrend(response.data.weekly_trend || []);
+        setWeeklyRevenue(response.data.weekly_revenue || []);
+        setStatusDistribution(response.data.status_distribution || null);
+      }
+    } catch (error: any) {
+      console.error('❌ Error fetching analytics:', error);
+    }
+  };
+
   const handleUpdateStatus = async (order: Order) => {
     setSelectedOrder(order);
     setNewStatus(order.status);
@@ -133,15 +138,36 @@ export default function AdminOrders() {
         
         await orderAPI.updateOrderStatus(selectedOrder.id, newStatus);
         
-        alert(`Status pesanan ${selectedOrder.order_number} berhasil diupdate ke "${getStatusConfig(newStatus).label}"`);
+        setSuccessMessage(`Status pesanan ${selectedOrder.order_number} berhasil diupdate ke "${getStatusConfig(newStatus).label}"`);
         setShowUpdateModal(false);
+        setShowSuccessModal(true);
         fetchOrders();
         fetchStats();
+        fetchAnalytics();
       } catch (error: any) {
         console.error('❌ Error updating status:', error);
         alert('Gagal update status: ' + (error.response?.data?.error || error.message));
       }
     }
+  };
+
+  const handleCloseSuccessModal = async () => {
+    setShowSuccessModal(false);
+    
+    // Refresh data pesanan yang dipilih dengan data terbaru
+    if (selectedOrder) {
+      try {
+        const response = await orderAPI.getAllOrders({});
+        const updatedOrder = response.data.find((o: Order) => o.id === selectedOrder.id);
+        if (updatedOrder) {
+          setSelectedOrder(updatedOrder);
+        }
+      } catch (error) {
+        console.error('Error refreshing order:', error);
+      }
+    }
+    
+    setShowDetailModal(true);
   };
 
   const formatCurrency = (amount: number) => {
@@ -217,6 +243,24 @@ export default function AdminOrders() {
   };
 
   const getStatusDistribution = () => {
+    // If we have data from backend, use it
+    if (statusDistribution) {
+      const statuses = [
+        { key: 'pending_payment', label: 'Menunggu Pembayaran', color: '#F59E0B' },
+        { key: 'processing', label: 'Diproses', color: '#3B82F6' },
+        { key: 'shipped', label: 'Dikirim', color: '#8B5CF6' },
+        { key: 'completed', label: 'Selesai', color: '#10B981' },
+        { key: 'cancelled', label: 'Dibatalkan', color: '#EF4444' }
+      ];
+      
+      return statuses.map(status => ({
+        name: status.label,
+        value: statusDistribution[status.key] || 0,
+        color: status.color
+      }));
+    }
+    
+    // Fallback to local calculation
     const statuses = [
       { key: 'pending_payment', label: 'Menunggu Pembayaran', color: '#F59E0B' },
       { key: 'processing', label: 'Diproses', color: '#3B82F6' },
@@ -267,7 +311,56 @@ export default function AdminOrders() {
   };
 
   const handleExportData = () => {
-    alert('Fitur export data akan segera tersedia!');
+    try {
+      // Prepare data untuk export
+      const exportData = orders.map(order => ({
+        'No. Pesanan': order.order_number,
+        'Tanggal': formatDate(order.created_at),
+        'Customer': order.user?.name || 'Customer',
+        'Email': order.user?.email || '-',
+        'Produk': order.product_name,
+        'Jumlah': order.quantity,
+        'Total Harga': order.total_price,
+        'Metode Pembayaran': order.payment_method || '-',
+        'Status Pesanan': getStatusConfig(order.status).label,
+        'Status Pembayaran': order.payment_status === 'paid' ? 'Lunas' : 'Belum Lunas',
+        'Alamat Pengiriman': order.shipping_address || '-',
+        'Catatan': order.notes || '-'
+      }));
+
+      // Convert to CSV
+      const headers = Object.keys(exportData[0]);
+      const csvContent = [
+        headers.join(','),
+        ...exportData.map(row => 
+          headers.map(header => {
+            const value = row[header as keyof typeof row];
+            // Handle values with commas or quotes
+            const stringValue = String(value).replace(/"/g, '""');
+            return stringValue.includes(',') || stringValue.includes('"') 
+              ? `"${stringValue}"` 
+              : stringValue;
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Create BOM for Excel UTF-8 support
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      
+      // Download file
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      const timestamp = new Date().toISOString().split('T')[0];
+      link.setAttribute('href', url);
+      link.setAttribute('download', `Pesanan_Temanikan_${timestamp}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error exporting data:', error);
+    }
   };
 
   // Loading state
@@ -395,12 +488,39 @@ export default function AdminOrders() {
         </Card>
       </div>
 
-      {/* Tabs Section */}
+      {/* Tabs Section - Large Toggle Buttons */}
       <Tabs defaultValue="orders" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2" style={{ backgroundColor: '#F3F4F6' }}>
-          <TabsTrigger value="orders">Daftar Pesanan</TabsTrigger>
-          <TabsTrigger value="analytics">Analitik</TabsTrigger>
-        </TabsList>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TabsList className="h-auto p-0 bg-transparent">
+            <TabsTrigger 
+              value="orders"
+              className="w-full data-[state=active]:bg-[#F3F3E0] data-[state=active]:border-2 data-[state=active]:border-[#4880FF] data-[state=active]:shadow-lg data-[state=inactive]:bg-white data-[state=inactive]:border-2 data-[state=inactive]:border-transparent hover:border-[#CBDCEB] p-6 rounded-xl transition-all shadow-sm h-auto"
+            >
+              <div className="flex items-center justify-center gap-3">
+                <ShoppingBag className="w-6 h-6" style={{ color: '#4880FF' }} />
+                <div className="text-left">
+                  <h3 style={{ color: '#4880FF' }}>Daftar Pesanan</h3>
+                  <p className="text-sm text-gray-600">Kelola semua pesanan</p>
+                </div>
+              </div>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsList className="h-auto p-0 bg-transparent">
+            <TabsTrigger 
+              value="analytics"
+              className="w-full data-[state=active]:bg-[#F3F3E0] data-[state=active]:border-2 data-[state=active]:border-[#4880FF] data-[state=active]:shadow-lg data-[state=inactive]:bg-white data-[state=inactive]:border-2 data-[state=inactive]:border-transparent hover:border-[#CBDCEB] p-6 rounded-xl transition-all shadow-sm h-auto"
+            >
+              <div className="flex items-center justify-center gap-3">
+                <TrendingUp className="w-6 h-6" style={{ color: '#4880FF' }} />
+                <div className="text-left">
+                  <h3 style={{ color: '#4880FF' }}>Analitik</h3>
+                  <p className="text-sm text-gray-600">Lihat statistik & tren</p>
+                </div>
+              </div>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Daftar Pesanan Tab */}
         <TabsContent value="orders" className="space-y-4 mt-6">
@@ -877,6 +997,36 @@ export default function AdminOrders() {
               </DialogFooter>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="max-w-md" style={{ backgroundColor: 'white' }}>
+          <DialogHeader>
+            <DialogTitle style={{ color: '#10B981' }}>Status Berhasil Diupdate</DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-6">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#D1FAE5' }}>
+                <CheckCircle className="w-10 h-10" style={{ color: '#10B981' }} />
+              </div>
+              <p className="text-lg" style={{ color: '#2D3436' }}>
+                {successMessage}
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              onClick={handleCloseSuccessModal}
+              style={{ backgroundColor: '#4880FF', color: 'white' }}
+              className="w-full"
+            >
+              OK
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
