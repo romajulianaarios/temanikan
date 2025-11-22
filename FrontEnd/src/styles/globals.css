@@ -1,6 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Allura&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -126,19 +126,19 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: "Nunito Sans", sans-serif;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Nunito Sans', sans-serif;
-    background-color: #F5F6FA;
+    font-family: "Nunito Sans", sans-serif;
+    background-color: #f5f6fa;
   }
-  
+
   /* Dashboard uses Nunito Sans */
   .dashboard-container,
   .dashboard-container * {
-    font-family: 'Nunito Sans', sans-serif !important;
+    font-family: "Nunito Sans", sans-serif !important;
   }
 
   /* Dashboard headings should be bold */
@@ -149,19 +149,19 @@
   .dashboard-container h5,
   .dashboard-container h6 {
     font-weight: 700 !important;
-    color: #2D3436;
+    color: #2d3436;
   }
-  
+
   /* Primary text color */
   .dashboard-container p,
   .dashboard-container span {
-    color: #2D3436;
+    color: #2d3436;
   }
-  
+
   /* Secondary text color */
   .dashboard-container .text-secondary,
   .dashboard-container .text-muted {
-    color: #636E72 !important;
+    color: #636e72 !important;
   }
 }
 
@@ -226,11 +226,11 @@ html {
 
 /* Temanikan Custom Gradient for #133E87 */
 .bg-primary-gradient {
-  background: linear-gradient(135deg, #133E87 0%, #1a4ea3 100%);
+  background: linear-gradient(135deg, #133e87 0%, #1a4ea3 100%);
 }
 
 .bg-primary-gradient-subtle {
-  background: linear-gradient(180deg, #133E87 0%, #164799 100%);
+  background: linear-gradient(180deg, #133e87 0%, #164799 100%);
 }
 
 /* Subtle Pastel Gradient Background (Blue, Pink, White) */
@@ -247,10 +247,8 @@ html {
 
 /* Floating Shadow Effect for Hero Image */
 .floating-shadow {
-  box-shadow: 
-    0 20px 60px rgba(19, 62, 135, 0.15),
-    0 10px 30px rgba(96, 139, 193, 0.1),
-    0 5px 15px rgba(203, 220, 235, 0.2);
+  box-shadow: 0 20px 60px rgba(19, 62, 135, 0.15),
+    0 10px 30px rgba(96, 139, 193, 0.1), 0 5px 15px rgba(203, 220, 235, 0.2);
 }
 
 /* Professional Dashboard Animations */
@@ -270,7 +268,8 @@ html {
 }
 
 @keyframes pulse-soft {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -286,7 +285,7 @@ html {
 
 /* Glassmorphism Effects */
 .glass-navbar {
-  background: #133E87;
+  background: #133e87;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -343,19 +342,14 @@ html {
 }
 
 .hero-gradient-animated {
-  background: linear-gradient(
-    135deg,
-    rgba(19, 62, 135, 0.75),
-    rgba(96, 139, 193, 0.85),
-    rgba(96, 139, 193, 0.8),
-    rgba(19, 62, 135, 0.75)
-  );
+  background: linear-gradient(135deg, #0f5be5 0%, #ffd6d6 100%);
   background-size: 200% 200%;
   animation: gradient-shift 15s ease infinite;
 }
 
 @keyframes gradient-shift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -478,7 +472,7 @@ html {
 .card-hover-interactive:hover {
   transform: translateY(-4px) scale(1.02);
   box-shadow: 0 12px 24px rgba(19, 62, 135, 0.15);
-  border-color: #608BC1;
+  border-color: #608bc1;
 }
 
 /* Navbar Link Hover Effects */
@@ -488,13 +482,13 @@ html {
 }
 
 .nav-link::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -4px;
   left: 0;
   width: 0;
   height: 2px;
-  background-color: #133E87;
+  background-color: #133e87;
   transition: width 0.3s ease;
 }
 
@@ -535,12 +529,24 @@ html {
 }
 
 /* Stagger animation delays for multiple items */
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
-.stagger-4 { animation-delay: 0.4s; }
-.stagger-5 { animation-delay: 0.5s; }
-.stagger-6 { animation-delay: 0.6s; }
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+.stagger-4 {
+  animation-delay: 0.4s;
+}
+.stagger-5 {
+  animation-delay: 0.5s;
+}
+.stagger-6 {
+  animation-delay: 0.6s;
+}
 
 /* Smooth scroll behavior */
 html {
@@ -566,7 +572,8 @@ html {
 }
 
 @keyframes gentle-sway-left {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0) rotate(0deg);
   }
   50% {
@@ -575,7 +582,8 @@ html {
 }
 
 @keyframes gentle-sway-right {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0) rotate(0deg);
   }
   50% {
@@ -584,7 +592,8 @@ html {
 }
 
 @keyframes gentle-sway-center {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0) rotate(0deg);
   }
   25% {
@@ -629,7 +638,8 @@ html {
 
 /* Water Particles Animation */
 @keyframes water-particle-float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0);
     opacity: 0.4;
   }
@@ -684,7 +694,8 @@ html {
 
 /* Coral Floating Animations */
 @keyframes coral-float-1 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) scale(1);
   }
   50% {
@@ -693,7 +704,8 @@ html {
 }
 
 @keyframes coral-float-2 {
-  0%, 100% {
+  0%,
+  100% {
     transform: rotate(0deg) translateY(0);
   }
   33% {
@@ -705,7 +717,8 @@ html {
 }
 
 @keyframes coral-float-3 {
-  0%, 100% {
+  0%,
+  100% {
     transform: rotate(0deg) scale(1) translateY(0);
   }
   25% {
@@ -737,7 +750,7 @@ html {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .hero-bg-animated {
     animation: none;
   }
