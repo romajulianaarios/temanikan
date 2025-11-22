@@ -378,6 +378,46 @@ export const orderAPI = {
     const response = await api.get('/admin/orders/stats');
     return response.data;
   },
+  
+  // ✅ ADD THIS METHOD:
+  uploadPaymentProof: async (orderId: number, file: File) => {
+    const token = localStorage.getItem('access_token');
+    const formData = new FormData();
+    formData.append('payment_proof', file);
+    
+    const response = await fetch(`${API_BASE_URL}/orders/${orderId}/upload-payment-proof`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to upload payment proof');
+    }
+    
+    return await response.json();
+  },
+  
+  // ✅ ADD THIS METHOD TOO:
+  getPaymentProof: async (orderId: number) => {
+    const token = localStorage.getItem('access_token');
+    
+    const response = await fetch(`${API_BASE_URL}/orders/${orderId}/payment-proof`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to get payment proof');
+    }
+    
+    return await response.json();
+  }
 };
 
 // Notification API

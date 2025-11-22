@@ -19,10 +19,13 @@ def register_routes(app):
     
     UPLOAD_FOLDER = 'uploads/payment_proofs'
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+
+    # Make sure upload folder exists
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
     def allowed_file(filename):
-        return '.' in filename and filename.rsplit('.', 1).lower() in ALLOWED_EXTENSIONS
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
     # Authentication Routes
     @app.route('/api/auth/register', methods=['POST'])
@@ -1102,31 +1105,47 @@ def register_routes(app):
         except Exception as e:
             return jsonify({'error': str(e)}), 500
     
-    @app.route('/api/orders/<int:order_id>/payment-proof', methods=['POST'])
+    # Upload Payment Proof (Member)
+    # Upload Payment Proof (Member)
+    @app.route('/api/orders/<int:order_id>/upload-payment-proof', methods=['POST', 'OPTIONS'])
     @jwt_required()
     def upload_payment_proof(order_id):
         """Upload payment proof for an order"""
+        # Handle preflight CORS request
+        if request.method == 'OPTIONS':
+            return '', 200
+        
         try:
             current_user_id = get_jwt_identity()
             
-            # Get the order
+            # Get order and verify ownership
             order = Order.query.filter_by(id=order_id, user_id=current_user_id).first()
+            
             if not order:
+                print(f"❌ Order {order_id} not found for user {current_user_id}")
                 return jsonify({'error': 'Order not found'}), 404
             
+            print(f"✅ Found order: {order.order_number}")
+            
             # Check if file is in request
-            if 'file' not in request.files:
+            if 'payment_proof' not in request.files:
+                print("❌ No file in request.files")
                 return jsonify({'error': 'No file provided'}), 400
             
-            file = request.files['file']
+            file = request.files['payment_proof']
+            print(f"✅ File received: {file.filename}")
             
             # Check if file is selected
             if file.filename == '':
+                print("❌ Empty filename")
                 return jsonify({'error': 'No file selected'}), 400
             
             # Validate file type
             if not allowed_file(file.filename):
+                print(f"❌ Invalid file type: {file.filename}")
                 return jsonify({'error': 'Invalid file type. Only PNG, JPG, JPEG, and PDF are allowed'}), 400
+            
+            print(f"✅ File type valid")
             
             # Generate unique filename
             filename = secure_filename(file.filename)
@@ -1134,15 +1153,22 @@ def register_routes(app):
             unique_filename = f"{order.order_number}_{timestamp}_{filename}"
             filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
             
+            print(f"✅ Saving to: {filepath}")
+            
             # Save file
             file.save(filepath)
+            print(f"✅ File saved successfully!")
             
             # Update order with payment proof path
             order.payment_proof = filepath
             order.payment_status = 'pending_verification'
+            order.updated_at = datetime.utcnow()
+            
             db.session.commit()
+            print(f"✅ Order {order_id} updated in database")
             
             return jsonify({
+                'success': True,
                 'message': 'Payment proof uploaded successfully',
                 'data': {
                     'order_id': order.id,
@@ -1154,10 +1180,13 @@ def register_routes(app):
             
         except Exception as e:
             db.session.rollback()
-            print(f"Error uploading payment proof: {str(e)}")
+            print(f"❌ ERROR uploading payment proof: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return jsonify({'error': str(e)}), 500
     
     
+    # Get Payment Proof (Member & Admin)
     @app.route('/api/orders/<int:order_id>/payment-proof', methods=['GET'])
     @jwt_required()
     def get_payment_proof(order_id):
@@ -1185,26 +1214,27 @@ def register_routes(app):
             # Read file and convert to base64
             with open(order.payment_proof, 'rb') as f:
                 file_data = f.read()
-                base64_data = base64.b64encode(file_data).decode('utf-8')
-                
-                # Determine file type
-                file_ext = order.payment_proof.split('.')[-1].lower()
-                mime_type = 'image/jpeg' if file_ext in ['jpg', 'jpeg'] else f'image/{file_ext}'
-                
-                if file_ext == 'pdf':
-                    mime_type = 'application/pdf'
+            
+            base64_data = base64.b64encode(file_data).decode('utf-8')
+            
+            # Determine file type
+            file_ext = order.payment_proof.split('.')[-1].lower()
+            mime_type = 'image/jpeg' if file_ext in ['jpg', 'jpeg'] else f'image/{file_ext}'
+            if file_ext == 'pdf':
+                mime_type = 'application/pdf'
             
             return jsonify({
+                'success': True,
                 'data': {
                     'filename': os.path.basename(order.payment_proof),
-                    'mime_type': mime_type,
+                    'mimetype': mime_type,
                     'base64': base64_data,
                     'url': f'/api/orders/{order_id}/payment-proof/file'
                 }
             }), 200
             
         except Exception as e:
-            print(f"Error getting payment proof: {str(e)}")
+            print(f"❌ Error getting payment proof: {str(e)}")
             return jsonify({'error': str(e)}), 500
     
     

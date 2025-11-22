@@ -241,9 +241,19 @@ export default function AdminOrders() {
       try {
         console.log('📥 Loading payment proof for order:', order.id);
         const response = await orderAPI.getPaymentProof(order.id);
-        setPaymentProofImage(`data:${response.data.data.mime_type};base64,${response.data.data.base64}`);
+        
+        // ✅ FIX: Correct response structure
+        console.log('✅ Payment proof response:', response);
+        
+        if (response.success && response.data) {
+          // Use correct path: response.data.mimetype (not response.data.data.mime_type)
+          setPaymentProofImage(`data:${response.data.mimetype};base64,${response.data.base64}`);
+        } else {
+          console.warn('⚠️ No payment proof data in response');
+          setPaymentProofImage(null);
+        }
       } catch (error) {
-        console.error('Error loading payment proof:', error);
+        console.error('❌ Error loading payment proof:', error);
         setPaymentProofImage(null);
       }
     } else {
