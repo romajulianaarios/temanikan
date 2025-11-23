@@ -4,6 +4,7 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, User, Device, WaterMonitoring, CleaningHistory, DiseaseDetection
 from models import FishSpecies, ForumTopic, ForumReply, Order, Notification
+from models import ForumTopicLike, ForumReplyLike, ForumReport
 from datetime import datetime, timedelta
 import random
 import string
@@ -644,31 +645,81 @@ def register_routes(app):
     # Forum Routes
     @app.route('/api/forum/topics', methods=['GET'])
     def get_forum_topics():
-        category = request.args.get('category', '')
-        search = request.args.get('search', '')
-        
-        query = ForumTopic.query
-        
-        if category:
-            query = query.filter_by(category=category)
-        
-        if search:
-            query = query.filter(ForumTopic.title.ilike(f'%{search}%'))
-        
-        topics = query.order_by(
-            ForumTopic.is_pinned.desc(),
-            ForumTopic.updated_at.desc()
-        ).all()
-        
-        return jsonify({
-            'topics': [t.to_dict() for t in topics],
-            'count': len(topics)
-        }), 200
+        """Get all forum topics"""
+        try:
+            # Get filters
+            category = request.args.get('category')
+            search = request.args.get('search')
+            
+            # Build query
+            query = ForumTopic.query
+            
+            if category:
+                query = query.filter_by(category=category)
+            
+            if search:
+                query = query.filter(
+                    db.or_(
+                        ForumTopic.title.ilike(f'%{search}%'),
+                        ForumTopic.content.ilike(f'%{search}%')
+                    )
+                )
+            
+            # Order by: pinned first, then by created_at desc
+            topics = query.order_by(
+                ForumTopic.is_pinned.desc(),
+                ForumTopic.created_at.desc()
+            ).all()
+            
+            # Get current user if authenticated
+            current_user_id = None
+            try:
+                from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+                verify_jwt_in_request(optional=True)
+                current_user_id = get_jwt_identity()
+            except:
+                pass
+            
+            return jsonify({
+                'success': True,
+                'topics': [topic.to_dict(current_user_id=current_user_id) for topic in topics],
+                'count': len(topics)
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Error fetching topics: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/forum/my-topics', methods=['GET'])
+    @jwt_required()
+    def get_my_forum_topics():
+        """Get topics created by current user"""
+        try:
+            user_id = get_jwt_identity()
+            
+            # Get all topics by current user
+            topics = ForumTopic.query.filter_by(author_id=user_id).order_by(
+                ForumTopic.created_at.desc()
+            ).all()
+            
+            return jsonify({
+                'success': True,
+                'topics': [topic.to_dict(current_user_id=user_id) for topic in topics],
+                'count': len(topics)
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Error fetching user topics: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': str(e)}), 500
     
     @app.route('/api/forum/topics/<int:topic_id>', methods=['GET'])
-    def get_forum_topic(topic_id):
+    def get_forum_topic_updated(topic_id):
+        """Get forum topic detail with replies"""
         topic = ForumTopic.query.get(topic_id)
-        
         if not topic:
             return jsonify({'error': 'Topic not found'}), 404
         
@@ -676,7 +727,19 @@ def register_routes(app):
         topic.views += 1
         db.session.commit()
         
-        return jsonify({'topic': topic.to_dict(include_replies=True)}), 200
+        # Get current user if authenticated
+        current_user_id = None
+        try:
+            from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+            verify_jwt_in_request(optional=True)
+            current_user_id = get_jwt_identity()
+        except:
+            pass
+        
+        return jsonify({
+            'success': True,
+            'topic': topic.to_dict(include_replies=True, current_user_id=current_user_id)
+        }), 200
     
     @app.route('/api/forum/topics', methods=['POST'])
     @jwt_required()
@@ -834,6 +897,322 @@ def register_routes(app):
         
         return jsonify({'message': 'Reply deleted successfully'}), 200
     
+# ==================== FORUM LIKES ROUTES ====================
+
+    @app.route('/api/forum/topics/<int:topic_id>/like', methods=['POST'])
+    @jwt_required()
+    def toggle_topic_like(topic_id):
+        """Toggle like on a forum topic"""
+        try:
+            current_user_id = get_jwt_identity()
+            
+            # Check if topic exists
+            topic = ForumTopic.query.get(topic_id)
+            if not topic:
+                return jsonify({'error': 'Topic not found'}), 404
+            
+            # Check if user already liked this topic
+            from models import ForumTopicLike
+            existing_like = ForumTopicLike.query.filter_by(
+                topic_id=topic_id,
+                user_id=current_user_id
+            ).first()
+            
+            if existing_like:
+                # Unlike
+                db.session.delete(existing_like)
+                db.session.commit()
+                
+                # Get new like count
+                like_count = ForumTopicLike.query.filter_by(topic_id=topic_id).count()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Topic unliked',
+                    'liked': False,
+                    'like_count': like_count
+                }), 200
+            else:
+                # Like
+                new_like = ForumTopicLike(
+                    topic_id=topic_id,
+                    user_id=current_user_id
+                )
+                db.session.add(new_like)
+                db.session.commit()
+                
+                # Get new like count
+                like_count = ForumTopicLike.query.filter_by(topic_id=topic_id).count()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Topic liked',
+                    'liked': True,
+                    'like_count': like_count
+                }), 200
+                
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error toggling topic like: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': str(e)}), 500
+
+    @app.route('/api/forum/replies/<int:reply_id>/like', methods=['POST'])
+    @jwt_required()
+    def toggle_reply_like(reply_id):
+        """Toggle like on a forum reply"""
+        try:
+            current_user_id = get_jwt_identity()
+            
+            # Check if reply exists
+            reply = ForumReply.query.get(reply_id)
+            if not reply:
+                return jsonify({'error': 'Reply not found'}), 404
+            
+            # Check if user already liked this reply
+            from models import ForumReplyLike
+            existing_like = ForumReplyLike.query.filter_by(
+                reply_id=reply_id,
+                user_id=current_user_id
+            ).first()
+            
+            if existing_like:
+                # Unlike
+                db.session.delete(existing_like)
+                db.session.commit()
+                
+                # Get new like count
+                like_count = ForumReplyLike.query.filter_by(reply_id=reply_id).count()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Reply unliked',
+                    'liked': False,
+                    'like_count': like_count
+                }), 200
+            else:
+                # Like
+                new_like = ForumReplyLike(
+                    reply_id=reply_id,
+                    user_id=current_user_id
+                )
+                db.session.add(new_like)
+                db.session.commit()
+                
+                # Get new like count
+                like_count = ForumReplyLike.query.filter_by(reply_id=reply_id).count()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Reply liked',
+                    'liked': True,
+                    'like_count': like_count
+                }), 200
+                
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error toggling reply like: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': str(e)}), 500
+
+# ==================== FORUM REPORTS ROUTES ====================
+
+    @app.route('/api/forum/topics/<int:topic_id>/report', methods=['POST'])
+    @jwt_required()
+    def report_topic(topic_id):
+        """Report a forum topic"""
+        try:
+            current_user_id = get_jwt_identity()
+            data = request.get_json()
+            
+            # Validation
+            if not data.get('reason'):
+                return jsonify({'error': 'Reason is required'}), 400
+            
+            # Check if topic exists
+            topic = ForumTopic.query.get(topic_id)
+            if not topic:
+                return jsonify({'error': 'Topic not found'}), 404
+            
+            # Check if user already reported this topic
+            from models import ForumReport
+            existing_report = ForumReport.query.filter_by(
+                topic_id=topic_id,
+                reporter_id=current_user_id,
+                status='pending'
+            ).first()
+            
+            if existing_report:
+                return jsonify({'error': 'You have already reported this topic'}), 400
+            
+            # Create report
+            report = ForumReport(
+                topic_id=topic_id,
+                reporter_id=current_user_id,
+                reason=data['reason'],
+                description=data.get('description', ''),
+                status='pending'
+            )
+            
+            db.session.add(report)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Topic reported successfully. Admin will review it.',
+                'report': report.to_dict()
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error reporting topic: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': str(e)}), 500
+
+    # Admin: Get all reports
+    @app.route('/api/admin/forum/reports', methods=['GET'])
+    @jwt_required()
+    def admin_get_forum_reports():
+        """Get all forum reports (Admin only)"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            if current_user.role != 'admin':
+                return jsonify({'error': 'Unauthorized'}), 403
+            
+            # Get status filter
+            status = request.args.get('status', 'pending')
+            
+            # Build query
+            from models import ForumReport
+            query = ForumReport.query
+            
+            if status and status != 'all':
+                query = query.filter_by(status=status)
+            
+            reports = query.order_by(ForumReport.created_at.desc()).all()
+            
+            return jsonify({
+                'success': True,
+                'reports': [report.to_dict() for report in reports],
+                'count': len(reports)
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Error fetching reports: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': str(e)}), 500
+
+    # Admin: Approve report (delete topic)
+    @app.route('/api/admin/forum/reports/<int:report_id>/approve', methods=['POST'])
+    @jwt_required()
+    def admin_approve_report(report_id):
+        """Approve report and delete topic (Admin only)"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            print(f"🔍 Admin {current_user.name} approving report {report_id}")
+            
+            if current_user.role != 'admin':
+                print(f"❌ User {current_user.name} is not admin")
+                return jsonify({'error': 'Unauthorized'}), 403
+            
+            # Get report
+            report = ForumReport.query.get(report_id)
+            if not report:
+                print(f"❌ Report {report_id} not found")
+                return jsonify({'error': 'Report not found'}), 404
+            
+            # Get data
+            data = request.get_json() or {}
+            admin_notes = data.get('admin_notes', '')
+            
+            print(f"📝 Admin notes: {admin_notes}")
+            
+            # Get topic
+            topic = ForumTopic.query.get(report.topic_id)
+            
+            # Update report status
+            report.status = 'approved'
+            report.reviewed_by = current_user_id
+            report.reviewed_at = datetime.utcnow()
+            report.admin_notes = admin_notes
+            
+            # Delete topic if exists
+            if topic:
+                print(f"🗑️  Deleting topic: {topic.title}")
+                db.session.delete(topic)
+            
+            db.session.commit()
+            
+            print(f"✅ Report approved and topic deleted")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Report approved and topic deleted successfully'
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error approving report: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': str(e)}), 500
+
+    @app.route('/api/admin/forum/reports/<int:report_id>/reject', methods=['POST'])
+    @jwt_required()
+    def admin_reject_report(report_id):
+        """Reject report and keep topic (Admin only)"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            print(f"🔍 Admin {current_user.name} rejecting report {report_id}")
+            
+            if current_user.role != 'admin':
+                print(f"❌ User {current_user.name} is not admin")
+                return jsonify({'error': 'Unauthorized'}), 403
+            
+            # Get report
+            report = ForumReport.query.get(report_id)
+            if not report:
+                print(f"❌ Report {report_id} not found")
+                return jsonify({'error': 'Report not found'}), 404
+            
+            # Get data
+            data = request.get_json() or {}
+            admin_notes = data.get('admin_notes', '')
+            
+            print(f"📝 Admin notes: {admin_notes}")
+            
+            # Update report status (topic stays)
+            report.status = 'rejected'
+            report.reviewed_by = current_user_id
+            report.reviewed_at = datetime.utcnow()
+            report.admin_notes = admin_notes
+            
+            db.session.commit()
+            
+            print(f"✅ Report rejected, topic preserved")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Report rejected. Topic remains published.'
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error rejecting report: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': str(e)}), 500
+
     # User Routes
     @app.route('/api/users/profile', methods=['GET'])
     @jwt_required()

@@ -349,16 +349,7 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
       </main>
 
       {/* Footer */}
-      <footer 
-        className="py-6 text-center border-t mt-12 relative z-10"
-        style={{ 
-          backgroundColor: 'transparent',
-          borderColor: 'rgba(229, 231, 235, 0.5)',
-          color: '#6B7280'
-        }}
-      >
-        <p className="text-sm">© 2025 Temanikan. All rights reserved.</p>
-      </footer>
+      
     </div>
   );
 }

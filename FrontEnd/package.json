@@ -11,11 +11,13 @@
             "cmdk": "*",
             "embla-carousel-react": "*",
             "input-otp": "*",
+            "lucide-react": "^0.554.0",
             "next-themes": "*",
             "react": "^18.3.1",
             "react-dom": "^18.3.1",
             "react-hook-form": "^7.55.0",
             "react-resizable-panels": "*",
+            "react-router-dom": "^7.9.6",
             "recharts": "*",
             "sonner": "*",
             "vaul": "*"

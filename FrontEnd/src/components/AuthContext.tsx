@@ -1,6 +1,42 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { authAPI } from '../services/api';
 
+// ✅ TOKEN & USER Storage Utility (Session-based per tab)
+const TokenStorage = {
+  getToken: (): string | null => {
+    return sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
+  },
+  
+  setToken: (token: string) => {
+    sessionStorage.setItem('access_token', token);  // Per tab
+    localStorage.setItem('access_token', token);    // Backup persist
+  },
+  
+  removeToken: () => {
+    sessionStorage.removeItem('access_token');
+    localStorage.removeItem('access_token');
+  },
+
+  getUser: (): any | null => {
+    const sessionUser = sessionStorage.getItem('user');
+    const localUser = localStorage.getItem('user');
+    if (sessionUser) return JSON.parse(sessionUser);
+    if (localUser) return JSON.parse(localUser);
+    return null;
+  },
+  
+  setUser: (user: any) => {
+    sessionStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('user', JSON.stringify(user));
+  },
+  
+  removeUser: () => {
+    sessionStorage.removeItem('user');
+    localStorage.removeItem('user');
+  }
+};
+
+
 interface User {
   id: number;
   name: string;
@@ -31,8 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check if user is already logged in on mount
   useEffect(() => {
     const initAuth = () => {
-      const token = localStorage.getItem('access_token');
-      const savedUser = localStorage.getItem('user');
+      const token = TokenStorage.getToken();                     // ✅ GANTI LINE 1
+      const savedUser = TokenStorage.getUser();                  // ✅ GANTI LINE 2
       
       console.log('🔍 Init auth check:');
       console.log('  - Token:', token ? 'Ada' : 'TIDAK ADA');
@@ -40,25 +76,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (token && savedUser) {
         try {
-          const parsedUser = JSON.parse(savedUser);
-          
-          // Check if token expired
+          // ✅ FIX: Check if token expired dengan safety check
           const payload = JSON.parse(atob(token.split('.')[1]));
-          const isExpired = payload.exp * 1000 < Date.now();
           
-          if (isExpired) {
-            console.log('❌ Token expired, clearing...');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('user');
-            setUser(null);
+          // Cek apakah token punya expiry
+          if (payload.exp) {
+            const isExpired = payload.exp * 1000 < Date.now();
+            
+            if (isExpired) {
+              console.log('❌ Token expired, clearing...');
+              TokenStorage.removeToken();
+              TokenStorage.removeUser();
+              setUser(null);
+            } else {
+              console.log('✅ Valid token found, restoring user');
+              setUser(savedUser);
+            }
           } else {
-            console.log('✅ Valid token found, restoring user');
-            setUser(parsedUser);
+            // Token tidak punya exp claim, anggap valid (untuk development)
+            console.log('⚠️ Token without expiry, restoring user anyway');
+            setUser(savedUser);
           }
         } catch (error) {
-          console.error('Error parsing saved data:', error);
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('user');
+          // ✅ JANGAN langsung clear! Log dulu, baru clear jika benar-benar invalid
+          console.error('⚠️ Error parsing token:', error);
+          
+          // Coba restore user meskipun token parsing error
+          // Biarkan backend yang validasi token saat API call
+          console.log('⚠️ Restoring user despite token parsing error');
+          setUser(savedUser);
         }
       }
       
@@ -78,14 +124,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // ✨ PENTING: Simpan token dan user
       if (response.access_token) {
-        localStorage.setItem('access_token', response.access_token);
+        TokenStorage.setToken(response.access_token);                 // ✅ GANTI LINE 7
         console.log('✅ Token saved:', response.access_token.substring(0, 20) + '...');
       } else {
         console.error('❌ No access_token in response!');
       }
       
       if (response.user) {
-        localStorage.setItem('user', JSON.stringify(response.user));
+        TokenStorage.setUser(response.user);                          // ✅ GANTI LINE 8
         setUser(response.user);
         console.log('✅ User saved:', response.user);
       }
@@ -123,7 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = async (data: { name?: string; phone?: string; address?: string; age?: number; primary_fish_type?: string; password?: string }) => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = TokenStorage.getToken();  // ✅ GANTI
       console.log('Token dari localStorage:', token ? 'Ada (length: ' + token.length + ')' : 'TIDAK ADA');
       console.log('User dari state:', user);
 
@@ -172,7 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         const result = await response.json();
         setUser(result.user);
-        localStorage.setItem('user', JSON.stringify(result.user));
+        TokenStorage.setUser(result.user);  // ✅ GANTI
         return {
           success: true,
           message: result.message || 'Profil berhasil diperbarui',
@@ -204,8 +250,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
   const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user');
+    TokenStorage.removeToken();  // ✅ GANTI LINE 11
+    TokenStorage.removeUser();   // ✅ GANTI LINE 12
     setUser(null);
   };
 

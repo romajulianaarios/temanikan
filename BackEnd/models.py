@@ -211,22 +211,40 @@ class ForumTopic(db.Model):
     # Relationships
     replies = db.relationship('ForumReply', backref='topic', lazy=True, cascade='all, delete-orphan')
     
-    def to_dict(self, include_replies=False):
+    def to_dict(self, include_replies=False, current_user_id=None):
+        from models import ForumTopicLike  # Import di dalam method untuk avoid circular import
+        
+        # Count likes
+        like_count = ForumTopicLike.query.filter_by(topic_id=self.id).count()
+        
+        # Check if current user liked this topic
+        user_liked = False
+        if current_user_id:
+            user_liked = ForumTopicLike.query.filter_by(
+                topic_id=self.id, 
+                user_id=current_user_id
+            ).first() is not None
+        
         data = {
             'id': self.id,
             'title': self.title,
             'content': self.content,
             'category': self.category,
             'author': self.author.to_dict() if self.author else None,
+            'author_id': self.author_id,
             'views': self.views,
             'is_pinned': self.is_pinned,
             'is_locked': self.is_locked,
             'reply_count': len(self.replies),
+            'like_count': like_count,
+            'user_liked': user_liked,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
+        
         if include_replies:
-            data['replies'] = [reply.to_dict() for reply in self.replies]
+            data['replies'] = [reply.to_dict(current_user_id=current_user_id) for reply in self.replies]
+        
         return data
 
 class ForumReply(db.Model):
@@ -239,12 +257,28 @@ class ForumReply(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    def to_dict(self):
+    def to_dict(self, current_user_id=None):
+        from models import ForumReplyLike  # Import di dalam method untuk avoid circular import
+        
+        # Count likes
+        like_count = ForumReplyLike.query.filter_by(reply_id=self.id).count()
+        
+        # Check if current user liked this reply
+        user_liked = False
+        if current_user_id:
+            user_liked = ForumReplyLike.query.filter_by(
+                reply_id=self.id, 
+                user_id=current_user_id
+            ).first() is not None
+        
         return {
             'id': self.id,
             'topic_id': self.topic_id,
             'author': self.author.to_dict() if self.author else None,
+            'author_id': self.author_id,
             'content': self.content,
+            'like_count': like_count,
+            'user_liked': user_liked,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
@@ -263,9 +297,9 @@ class Order(db.Model):
     payment_method = db.Column(db.String(50))
     payment_status = db.Column(db.String(20), default='pending')
     notes = db.Column(db.Text)
+    payment_proof = db.Column(db.String(500))  # Path to uploaded payment proof file
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    payment_proof = db.Column(db.Text)
     
     # Relationship
     user = db.relationship('User', back_populates='orders')
@@ -293,6 +327,83 @@ class Order(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'payment_proof': self.payment_proof,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+class ForumTopicLike(db.Model):
+    """Like untuk topik forum"""
+    __tablename__ = 'forum_topic_likes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    topic_id = db.Column(db.Integer, db.ForeignKey('forum_topics.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Unique constraint: satu user hanya bisa like satu kali per topik
+    __table_args__ = (db.UniqueConstraint('topic_id', 'user_id', name='unique_topic_like'),)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'topic_id': self.topic_id,
+            'user_id': self.user_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class ForumReplyLike(db.Model):
+    """Like untuk balasan forum"""
+    __tablename__ = 'forum_reply_likes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    reply_id = db.Column(db.Integer, db.ForeignKey('forum_replies.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Unique constraint: satu user hanya bisa like satu kali per reply
+    __table_args__ = (db.UniqueConstraint('reply_id', 'user_id', name='unique_reply_like'),)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'reply_id': self.reply_id,
+            'user_id': self.user_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class ForumReport(db.Model):
+    """Laporan topik forum yang melanggar"""
+    __tablename__ = 'forum_reports'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    topic_id = db.Column(db.Integer, db.ForeignKey('forum_topics.id', ondelete='SET NULL'), nullable=True)  # ← UBAH nullable=True
+    reporter_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    reason = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    status = db.Column(db.String(20), default='pending')
+    reviewed_by = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    reviewed_at = db.Column(db.DateTime)
+    admin_notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships (updated for nullable topic_id)
+    topic = db.relationship('ForumTopic', backref='reports', foreign_keys=[topic_id], passive_deletes=True)
+    reporter = db.relationship('User', backref='reports_made', foreign_keys=[reporter_id])
+    reviewer = db.relationship('User', backref='reports_reviewed', foreign_keys=[reviewed_by])
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'topic_id': self.topic_id,
+            'topic_title': self.topic.title if self.topic else '[Deleted Topic]',  # ← Handle null topic
+            'reporter_id': self.reporter_id,
+            'reporter_name': self.reporter.name if self.reporter else 'Anonymous',
+            'reason': self.reason,
+            'description': self.description,
+            'status': self.status,
+            'reviewed_by': self.reviewed_by,
+            'reviewed_at': self.reviewed_at.isoformat() if self.reviewed_at else None,
+            'admin_notes': self.admin_notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'topic': self.topic.to_dict(include_replies=True) if self.topic else None  # ← Handle null topic
         }
 
 class Notification(db.Model):

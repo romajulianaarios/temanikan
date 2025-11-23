@@ -1,30 +1,83 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from '../Router';
+import { useAuth } from '../AuthContext';
+import { forumAPI } from '../../services/api';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Label } from '../ui/label';
+import { Dialog, DialogContent } from '../ui/dialog';
 import { ArrowLeft } from '../icons';
 
 export default function NewTopic() {
   const navigate = useNavigate();
+  const { user, isLoggedIn } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     category: '',
     content: ''
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // In production, this would send data to backend
-    console.log('New topic submitted:', formData);
+    // Validasi
+    if (!formData.title.trim()) {
+      setError('Judul topik harus diisi');
+      return;
+    }
     
-    // Show success message and redirect
-    alert('Topik baru berhasil dibuat!');
-    navigate('/member/forum');
+    if (!formData.category) {
+      setError('Kategori harus dipilih');
+      return;
+    }
+    
+    if (formData.content.length < 20) {
+      setError('Isi topik minimal 20 karakter');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setError(null);
+
+      console.log('📤 Sending topic data:', {
+        title: formData.title,
+        content: formData.content,
+        category: formData.category
+      });
+
+      // Kirim data ke backend
+      const response = await forumAPI.createTopic({
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        category: formData.category
+      });
+
+      console.log('✅ Topic created successfully:', response);
+
+      if (response.message || response.success || response.topic) {
+        setShowSuccessModal(true);
+      } else {
+        setError('Response tidak valid dari server');
+      }
+    } catch (err: any) {
+      console.error('❌ Error creating topic:', err);
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message || 'Gagal membuat topik';
+      setError(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    navigate('/member/forum/my-topics');
   };
 
   const handleCancel = () => {
@@ -48,6 +101,13 @@ export default function NewTopic() {
       {/* Form */}
       <Card className="p-6" style={{ backgroundColor: 'white' }}>
         <h2 className="mb-6" style={{ color: '#133E87' }}>Buat Topik Baru</h2>
+        
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-4 rounded-lg bg-red-50 border border-red-200">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
@@ -73,7 +133,6 @@ export default function NewTopic() {
             <Select 
               value={formData.category} 
               onValueChange={(value) => setFormData({ ...formData, category: value })}
-              required
             >
               <SelectTrigger className="mt-2">
                 <SelectValue placeholder="Pilih kategori topik" />
@@ -128,20 +187,66 @@ export default function NewTopic() {
               type="submit"
               className="text-white"
               style={{ backgroundColor: '#133E87' }}
-              disabled={!formData.title || !formData.category || !formData.content}
+              disabled={!formData.title || !formData.category || !formData.content || submitting}
             >
-              Publikasikan Topik
+              {submitting ? 'Mempublikasikan...' : 'Publikasikan Topik'}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={handleCancel}
+              disabled={submitting}
             >
               Batal
             </Button>
           </div>
         </form>
       </Card>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex flex-col items-center justify-center text-center p-6">
+            {/* Success Icon */}
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+              style={{ backgroundColor: '#CBFFA9' }}
+            >
+              <svg
+                className="w-8 h-8"
+                style={{ color: '#133E87' }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+
+            {/* Success Message */}
+            <h3 className="text-xl font-bold mb-2" style={{ color: '#133E87' }}>
+              Topik baru berhasil dibuat!
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Topik Anda telah dipublikasikan dan dapat dilihat oleh member lain.
+            </p>
+
+            {/* OK Button */}
+            <Button
+              onClick={handleSuccessModalClose}
+              className="w-full text-white font-semibold"
+              style={{ backgroundColor: '#4880FF' }}
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

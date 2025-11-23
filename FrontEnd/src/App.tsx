@@ -19,7 +19,6 @@ function AppContent() {
   useEffect(() => {
     const hash = window.location.hash;
     if (hash) {
-      // Small delay to ensure DOM is ready
       setTimeout(() => {
         const element = document.getElementById(hash.substring(1));
         if (element) {
@@ -27,7 +26,7 @@ function AppContent() {
         }
       }, 100);
     }
-  }, []); // Fixed: removed invalid dependency
+  }, []);
 
   const handleAuthClick = (mode: 'login' | 'register') => {
     setAuthModalMode(mode);
@@ -44,10 +43,8 @@ function AppContent() {
     } else if (page === 'home') {
       navigate('/');
     } else if (page.startsWith('home#')) {
-      // Smart navigation with hash
       const hash = page.split('#')[1];
-      navigate('/')
-      // Scroll after navigation completes
+      navigate('/');
       setTimeout(() => {
         const element = document.getElementById(hash);
         if (element) {
@@ -58,8 +55,6 @@ function AppContent() {
   };
 
   const handleSmartNavigate = (target: string) => {
-    // Smart navigation for anchor links from any page
-    // Navigate to home and scroll to section
     navigate('/');
     setTimeout(() => {
       const element = document.getElementById(target === 'beranda' ? 'hero' : target);
@@ -68,33 +63,63 @@ function AppContent() {
       }
     }, 100);
   };
-  
+
   return (
     <>
       <Routes>
-        <Route path="/" element={<LandingPageNew onAuthClick={handleAuthClick} onNavigate={handleNavigate} onSmartNavigate={handleSmartNavigate} />} />
-        <Route path="/fishpedia" element={<PublicFishpedia onAuthClick={handleAuthClick} onNavigateHome={() => handleNavigate('home')} onSmartNavigate={handleSmartNavigate} />} />
-        <Route path="/produk" element={<PublicProduk onAuthClick={handleAuthClick} onNavigateHome={() => handleNavigate('home')} onSmartNavigate={handleSmartNavigate} />} />
-        <Route 
-          path="/member/*" 
+        <Route
+          path="/"
+          element={
+            <LandingPageNew
+              onAuthClick={handleAuthClick}
+              onNavigate={handleNavigate}
+              onSmartNavigate={handleSmartNavigate}
+            />
+          }
+        />
+        <Route
+          path="/fishpedia"
+          element={
+            <PublicFishpedia
+              onAuthClick={handleAuthClick}
+              onNavigate={() => handleNavigate('home')}
+              onSmartNavigate={handleSmartNavigate}
+            />
+          }
+        />
+        <Route
+          path="/produk"
+          element={
+            <PublicProduk
+              onAuthClick={handleAuthClick}
+              onNavigate={() => handleNavigate('home')}
+              onSmartNavigate={handleSmartNavigate}
+            />
+          }
+        />
+
+        <Route
+          path="/member/*"
           element={
             <ProtectedRoute requiredRole="member">
               <MemberDashboard />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/*" 
+
+        <Route
+          path="/admin/*"
           element={
             <ProtectedRoute requiredRole="admin">
               <AdminDashboard />
             </ProtectedRoute>
-          } 
+          }
         />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      
-      <AuthModal 
+
+      <AuthModal
         open={authModalOpen}
         onOpenChange={setAuthModalOpen}
         initialMode={authModalMode}
@@ -105,10 +130,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <AppContent />
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }

@@ -1,108 +1,209 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from '../Router';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback } from '../ui/avatar';
-import { ThumbsUp, MessageSquare, ArrowLeft, User } from '../icons';
+import { Dialog, DialogContent } from '../ui/dialog';
+import { ThumbsUp, MessageSquare, ArrowLeft, User, Eye } from '../icons';
+import { forumAPI } from '../../services/api';
 
 interface Reply {
   id: number;
-  author: string;
+  author_name: string;
   content: string;
   likes: number;
-  time: string;
+  created_at: string;
 }
 
 interface Topic {
   id: number;
   title: string;
-  author: string;
+  author_name: string;
   category: string;
   content: string;
   likes: number;
   replies: Reply[];
-  time: string;
-  badge?: string;
+  views: number;
+  created_at: string;
+  is_pinned?: boolean;
 }
 
 export default function TopicDetail() {
   const navigate = useNavigate();
   const { topicId } = useParams();
   const [newReply, setNewReply] = useState('');
+  const [topic, setTopic] = useState<Topic | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  
+  // Modal states
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  
+  // Like state
+  const [likingTopic, setLikingTopic] = useState(false);
 
-  // Mock data - in production, this would be fetched based on topicId
-  const topic: Topic = {
-    id: Number(topicId) || 1,
-    title: 'Tips Merawat Ikan Koi untuk Pemula',
-    author: 'Ahmad Wijaya',
-    category: 'Panduan',
-    content: `Halo semuanya! Saya ingin berbagi beberapa tips untuk merawat ikan Koi, terutama bagi pemula seperti saya dulu.
+  // Fetch topic detail from database
+  useEffect(() => {
+    fetchTopicDetail();
+  }, [topicId]);
 
-1. **Kualitas Air**: Ini adalah hal terpenting. Pastikan pH air berkisar 6.5-7.5 dan suhu 24-26°C. Investasi di test kit sangat worth it!
-
-2. **Filter yang Baik**: Jangan pelit beli filter. Ikan Koi menghasilkan banyak kotoran, jadi filter yang kuat itu wajib.
-
-3. **Pemberian Makan**: Jangan overfeeding! Beri makan 2-3 kali sehari dengan porsi yang bisa dihabiskan dalam 5 menit.
-
-4. **Ukuran Kolam/Akuarium**: Minimal 1000 liter untuk 3-5 ekor Koi dewasa. Mereka butuh ruang untuk tumbuh.
-
-5. **Karantina Ikan Baru**: Selalu karantina ikan baru minimal 2 minggu sebelum digabung dengan ikan lain.
-
-Ada yang mau menambahkan? Atau ada pertanyaan tentang perawatan Koi?`,
-    likes: 45,
-    replies: [
-      {
-        id: 1,
-        author: 'Siti Nurhaliza',
-        content: 'Terima kasih sharingnya! Saya mau tanya, untuk test kit air yang bagus mereknya apa ya? Budget sekitar 200-300rb.',
-        likes: 8,
-        time: '1 jam yang lalu'
-      },
-      {
-        id: 2,
-        author: 'Budi Santoso',
-        content: 'Setuju banget sama poin karantina! Dulu saya skip ini dan akhirnya semua ikan kena white spot. Pelajaran yang mahal 😅',
-        likes: 12,
-        time: '45 menit yang lalu'
-      },
-      {
-        id: 3,
-        author: 'Dewi Lestari',
-        content: 'Untuk pemula, saya sarankan mulai dari 2-3 ekor dulu. Jangan langsung banyak, nanti kewalahan kalau ada masalah.',
-        likes: 15,
-        time: '30 menit yang lalu'
-      },
-      {
-        id: 4,
-        author: 'Rudi Hermawan',
-        content: 'Mau nambahin: Perhatikan juga sirkulasi air dan oksigen. Pakai aerator kalau perlu, terutama saat cuaca panas.',
-        likes: 9,
-        time: '20 menit yang lalu'
-      },
-      {
-        id: 5,
-        author: 'Linda Wijaya',
-        content: 'Untuk makanan, saya biasanya kombinasi pelet berkualitas dengan sayuran seperti wortel dan selada. Koi saya suka banget!',
-        likes: 11,
-        time: '15 menit yang lalu'
+  const fetchTopicDetail = async () => {
+    try {
+      setLoading(true);
+      const id = Number(topicId);
+      
+      if (!id) {
+        navigate('/member/forum');
+        return;
       }
-    ],
-    time: '2 jam yang lalu',
-    badge: 'Populer'
-  };
 
-  const handleSubmitReply = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (newReply.trim()) {
-      // In production, this would send to backend
-      console.log('New reply:', newReply);
-      alert('Balasan berhasil dikirim!');
-      setNewReply('');
+      const response = await forumAPI.getTopic(id);
+      console.log('📥 Topic detail from database:', response);
+
+      if (response.success && response.topic) {
+        // Map backend data to frontend format
+        const mappedTopic: Topic = {
+          id: response.topic.id,
+          title: response.topic.title,
+          author_name: response.topic.author?.name || response.topic.author?.username || 'Anonymous',
+          category: response.topic.category || 'Umum',
+          content: response.topic.content,
+          likes: response.topic.like_count || 0,
+          views: response.topic.views || 0,
+          created_at: response.topic.created_at,
+          is_pinned: response.topic.is_pinned || false,
+          replies: response.topic.replies?.map((reply: any) => ({
+            id: reply.id,
+            author_name: reply.author?.name || reply.author?.username || 'Anonymous',
+            content: reply.content,
+            likes: reply.like_count || 0,
+            created_at: reply.created_at
+          })) || []
+        };
+        
+        setTopic(mappedTopic);
+      } else {
+        setModalMessage('Topik tidak ditemukan');
+        setShowErrorModal(true);
+        setTimeout(() => navigate('/member/forum'), 2000);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching topic:', err);
+      setModalMessage('Gagal memuat topik');
+      setShowErrorModal(true);
+      setTimeout(() => navigate('/member/forum'), 2000);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleSubmitReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newReply.trim()) {
+      setModalMessage('Balasan tidak boleh kosong');
+      setShowErrorModal(true);
+      return;
+    }
+
+    if (newReply.trim().length < 10) {
+      setModalMessage('Balasan minimal 10 karakter');
+      setShowErrorModal(true);
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const id = Number(topicId);
+      
+      console.log('📤 Sending reply:', {
+        topic_id: id,
+        content: newReply.trim()
+      });
+
+      const response = await forumAPI.addReply(id, newReply.trim());
+
+      console.log('✅ Reply created:', response);
+
+      if (response.success || response.reply) {
+        setNewReply('');
+        setModalMessage('Balasan berhasil dikirim!');
+        setShowSuccessModal(true);
+        // Refresh topic to show new reply
+        fetchTopicDetail();
+      }
+    } catch (err: any) {
+      console.error('❌ Error creating reply:', err);
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Gagal mengirim balasan';
+      setModalMessage(errorMessage);
+      setShowErrorModal(true);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Handle Like Topic
+  const handleLikeTopic = async () => {
+    if (likingTopic || !topic) return;
+    
+    try {
+      setLikingTopic(true);
+      const id = Number(topicId);
+      
+      const response = await forumAPI.toggleTopicLike(id);
+      console.log('👍 Like toggled:', response);
+      
+      // Update topic like count
+      if (response.like_count !== undefined) {
+        setTopic({ ...topic, likes: response.like_count });
+      }
+    } catch (err: any) {
+      console.error('❌ Error toggling like:', err);
+      setModalMessage('Gagal menyukai topik');
+      setShowErrorModal(true);
+    } finally {
+      setLikingTopic(false);
+    }
+  };
+
+  // Format waktu relatif
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'Baru saja';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit yang lalu`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
+    return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat topik...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No topic found
+  if (!topic) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-gray-600">Topik tidak ditemukan</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -132,16 +233,16 @@ Ada yang mau menambahkan? Atau ada pertanyaan tentang perawatan Koi?`,
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <h2 style={{ color: '#133E87' }}>{topic.title}</h2>
-                  {topic.badge && (
-                    <Badge className="bg-orange-100 text-orange-600">{topic.badge}</Badge>
+                  {topic.is_pinned && (
+                    <Badge className="bg-orange-100 text-orange-600">Populer</Badge>
                   )}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span style={{ color: '#133E87' }}>{topic.author}</span>
+                  <span style={{ color: '#133E87' }}>{topic.author_name}</span>
                   <span>•</span>
                   <Badge variant="outline">{topic.category}</Badge>
                   <span>•</span>
-                  <span>{topic.time}</span>
+                  <span>{formatTimeAgo(topic.created_at)}</span>
                 </div>
               </div>
             </div>
@@ -151,13 +252,28 @@ Ada yang mau menambahkan? Atau ada pertanyaan tentang perawatan Koi?`,
             </div>
 
             <div className="flex items-center gap-4 pt-3 border-t" style={{ borderColor: '#CBDCEB' }}>
-              <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition">
+              <button
+                onClick={handleLikeTopic}
+                disabled={likingTopic}
+                className="flex items-center gap-2 text-sm hover:opacity-70 transition disabled:opacity-50"
+                style={{ color: '#8280FF', fontWeight: 500 }}
+              >
                 <ThumbsUp className="w-4 h-4" />
-                <span>{topic.likes} suka</span>
+                <span>{topic.likes}</span>
               </button>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div
+                className="flex items-center gap-2 text-sm"
+                style={{ color: '#4880FF', fontWeight: 500 }}
+              >
                 <MessageSquare className="w-4 h-4" />
-                <span>{topic.replies.length} balasan</span>
+                <span>{topic.replies.length}</span>
+              </div>
+              <div
+                className="flex items-center gap-2 text-sm"
+                style={{ color: '#6B7280', fontWeight: 500 }}
+              >
+                <Eye className="w-4 h-4" />
+                <span>{topic.views}</span>
               </div>
             </div>
           </div>
@@ -186,13 +302,16 @@ Ada yang mau menambahkan? Atau ada pertanyaan tentang perawatan Koi?`,
 
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm" style={{ color: '#133E87' }}>{reply.author}</span>
-                    <span className="text-xs text-gray-500">{reply.time}</span>
+                    <span className="text-sm" style={{ color: '#133E87' }}>{reply.author_name}</span>
+                    <span className="text-xs text-gray-500">{formatTimeAgo(reply.created_at)}</span>
                   </div>
                   <p className="text-sm text-gray-700 mb-3">{reply.content}</p>
-                  <button className="flex items-center gap-1 text-xs text-gray-600 hover:text-blue-600 transition">
-                    <ThumbsUp className="w-3 h-3" />
-                    <span>{reply.likes}</span>
+                  <button 
+                    className="text-xs hover:opacity-70 transition"
+                    style={{ color: '#4880FF' }}
+                    title="Balas"
+                  >
+                    <MessageSquare className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -219,9 +338,9 @@ Ada yang mau menambahkan? Atau ada pertanyaan tentang perawatan Koi?`,
               type="submit"
               className="text-white"
               style={{ backgroundColor: '#133E87' }}
-              disabled={!newReply.trim()}
+              disabled={!newReply.trim() || submitting}
             >
-              Kirim Balasan
+              {submitting ? 'Mengirim...' : 'Kirim Balasan'}
             </Button>
             <Button
               type="button"
@@ -233,6 +352,84 @@ Ada yang mau menambahkan? Atau ada pertanyaan tentang perawatan Koi?`,
           </div>
         </form>
       </Card>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex flex-col items-center justify-center text-center p-6">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+              style={{ backgroundColor: '#CBFFA9' }}
+            >
+              <svg
+                className="w-8 h-8"
+                style={{ color: '#133E87' }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+
+            <h3 className="text-xl font-bold mb-2" style={{ color: '#133E87' }}>
+              {modalMessage}
+            </h3>
+
+            <Button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full text-white font-semibold mt-4"
+              style={{ backgroundColor: '#4880FF' }}
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Modal */}
+      <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex flex-col items-center justify-center text-center p-6">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+              style={{ backgroundColor: '#FEE2E2' }}
+            >
+              <svg
+                className="w-8 h-8"
+                style={{ color: '#EF4444' }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </div>
+
+            <h3 className="text-xl font-bold mb-2" style={{ color: '#133E87' }}>
+              {modalMessage}
+            </h3>
+
+            <Button
+              onClick={() => setShowErrorModal(false)}
+              className="w-full text-white font-semibold mt-4"
+              style={{ backgroundColor: '#4880FF' }}
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

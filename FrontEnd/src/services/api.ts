@@ -2,6 +2,35 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// TOKEN & USER Storage Utility
+const TokenStorage = {
+  getToken: () => sessionStorage.getItem("access_token") || localStorage.getItem("access_token"),
+  setToken: (token: string) => {
+    sessionStorage.setItem("access_token", token);  // per tab
+    localStorage.setItem("access_token", token);    // sebagai backup persist
+  },
+  removeToken: () => {
+    sessionStorage.removeItem("access_token");
+    localStorage.removeItem("access_token");
+  },
+
+  getUser: () => {
+    const s = sessionStorage.getItem("user");
+    const l = localStorage.getItem("user");
+    if(s) return JSON.parse(s);
+    if(l) return JSON.parse(l);
+    return null;
+  },
+  setUser: (user: object) => {
+    sessionStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("user", JSON.stringify(user));
+  },
+  removeUser: () => {
+    sessionStorage.removeItem("user"); localStorage.removeItem("user");
+  }
+};
+
+
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -14,7 +43,7 @@ const api = axios.create({
 // Add request interceptor to add JWT token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    const token = TokenStorage.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -35,55 +64,83 @@ api.interceptors.response.use(
       // Log untuk debugging
       console.log('🔴 401 Error on URL:', originalRequest?.url);
       console.log('📍 Current path:', window.location.pathname);
-      
-      // Jangan auto-logout kalau:
+
+      // ✅ Jangan auto-logout kalau:
       const currentPath = window.location.pathname;
-      const isPublicPath = currentPath === '/' || currentPath.includes('/login');
-      const isAuthEndpoint = originalRequest?.url?.includes('/auth/');
-      
-      // Kalau sudah di public page atau ini request auth, skip
+      const isPublicPath = currentPath === '/' || currentPath.includes('login');
+      const isAuthEndpoint = originalRequest?.url?.includes('auth');
+
       if (isPublicPath || isAuthEndpoint) {
         return Promise.reject(error);
       }
-      
-      // Cek apakah ini retry attempt
+
+      // ✅ HANYA retry SATU KALI
       if (!originalRequest._retry) {
         originalRequest._retry = true;
         
         // Validasi token
-        const token = localStorage.getItem('access_token');
-        
+        const token = TokenStorage.getToken();
         if (token) {
-          try {
-            // Decode JWT untuk cek expiry
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const isExpired = payload.exp * 1000 < Date.now();
-            
-            if (!isExpired) {
-              // Token masih valid, retry request
-              console.log('✅ Token still valid, retrying request...');
-              return api(originalRequest);
-            }
-          } catch (e) {
-            console.error('Token decode error:', e);
-          }
+          console.log('🔄 Retrying request with token...');
+          originalRequest.headers['Authorization'] = `Bearer ${token}`;
+          return api(originalRequest);
         }
       }
+
+      // ✅ TOKEN REFRESH MECHANISM (OPSIONAL)
+      // ⚠️ HANYA AKTIFKAN JIKA BACKEND PUNYA ENDPOINT /auth/refresh
+      /*
+      // Setelah retry gagal, coba refresh token
+      if (originalRequest._retry && !originalRequest._refreshRetry) {
+        originalRequest._refreshRetry = true;
+        
+        try {
+          console.log('🔄 Attempting to refresh token...');
+          
+          // Coba refresh token (jika backend support)
+          const refreshToken = TokenStorage.getRefreshToken(); // Anda perlu tambahkan method ini
+          
+          if (refreshToken) {
+            const refreshResponse = await api.post('/auth/refresh', { 
+              refresh_token: refreshToken 
+            });
+            
+            if (refreshResponse.data.access_token) {
+              console.log('✅ Token refreshed successfully!');
+              
+              // Set token baru
+              TokenStorage.setToken(refreshResponse.data.access_token);
+              
+              // Update Authorization header dengan token baru
+              originalRequest.headers['Authorization'] = `Bearer ${refreshResponse.data.access_token}`;
+              
+              // Retry request dengan token baru
+              return api(originalRequest);
+            }
+          }
+        } catch (refreshError) {
+          console.log('❌ Refresh token failed:', refreshError);
+          
+          // Refresh token gagal, clear session dan redirect ke login
+          TokenStorage.removeToken();
+          TokenStorage.removeUser();
+          window.location.href = '/';
+          return Promise.reject(refreshError);
+        }
+      }
+      */
+
+      // ✅ Jika tidak ada refresh token mechanism, jangan langsung clear
+      console.log('⚠️ 401 after retry, but NOT clearing token automatically');
       
-      // Kalau sampai sini, berarti token bener-bener expired/invalid
-      console.log('🚪 Logging out due to invalid token');
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user');
-      
-      // Pakai timeout untuk avoid race condition
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
+      // Biarkan AuthContext yang handle logout melalui UI
+      // TIDAK auto-redirect ke login
     }
     
     return Promise.reject(error);
   }
 );
+
 
 // Authentication API
 export const authAPI = {
@@ -94,12 +151,21 @@ export const authAPI = {
   
   login: async (email: string, password: string) => {
     const response = await api.post('/auth/login', { email, password });
+    if (response.data.success && response.data.access_token) {
+      TokenStorage.setToken(response.data.access_token);  // ✅ BARU
+      TokenStorage.setUser(response.data.user);           // ✅ BARU
+    }
     return response.data;
   },
   
-  getCurrentUser: async () => {
-    const response = await api.get('/auth/me');
-    return response.data;
+  logout: () => {
+    TokenStorage.removeToken();  // ✅ BARU
+    TokenStorage.removeUser();   // ✅ BARU
+    window.location.href = '/';
+  },
+
+  getCurrentUser: () => {
+    return TokenStorage.getUser();  // ✅ BARU
   },
 
     updateProfile: async (data: { 
@@ -110,7 +176,7 @@ export const authAPI = {
     primary_fish_type?: string; 
     password?: string 
   }) => {
-    const token = localStorage.getItem('access_token');
+    const token = TokenStorage.getToken();  // ✅ BARU
     
     if (!token) {
       throw new Error('No token found');
@@ -125,6 +191,11 @@ export const authAPI = {
         }
       }
     );
+
+    // ✅ TAMBAHKAN INI: Update user di storage setelah profile update
+    if (response.data.success && response.data.user) {
+      TokenStorage.setUser(response.data.user);
+    }
     
     return response.data;
   },
@@ -268,18 +339,21 @@ export const fishpediaAPI = {
 
 // Forum API
 export const forumAPI = {
+  // Get all topics
   getTopics: async (category?: string, search?: string) => {
     const response = await api.get('/forum/topics', {
       params: { category, search }
     });
     return response.data;
   },
-  
+
+  // Get single topic detail with replies
   getTopic: async (topicId: number) => {
     const response = await api.get(`/forum/topics/${topicId}`);
     return response.data;
   },
-  
+
+  // Create new topic
   createTopic: async (data: {
     title: string;
     content: string;
@@ -288,29 +362,120 @@ export const forumAPI = {
     const response = await api.post('/forum/topics', data);
     return response.data;
   },
-  
+
+  // Update topic
   updateTopic: async (topicId: number, data: any) => {
     const response = await api.put(`/forum/topics/${topicId}`, data);
     return response.data;
   },
-  
+
+  // Delete topic
   deleteTopic: async (topicId: number) => {
     const response = await api.delete(`/forum/topics/${topicId}`);
     return response.data;
   },
-  
+
+  // Add reply to topic
   addReply: async (topicId: number, content: string) => {
     const response = await api.post(`/forum/topics/${topicId}/replies`, { content });
     return response.data;
   },
-  
+
+  // Update reply
   updateReply: async (replyId: number, content: string) => {
     const response = await api.put(`/forum/replies/${replyId}`, { content });
     return response.data;
   },
-  
+
+  // Delete reply
   deleteReply: async (replyId: number) => {
     const response = await api.delete(`/forum/replies/${replyId}`);
+    return response.data;
+  },
+
+  // ==================== NEW: LIKE ENDPOINTS ====================
+  
+  // Toggle like on topic
+  toggleTopicLike: async (topicId: number) => {
+    const response = await api.post(`/forum/topics/${topicId}/like`);
+    return response.data;
+  },
+
+  // Toggle like on reply
+  toggleReplyLike: async (replyId: number) => {
+    const response = await api.post(`/forum/replies/${replyId}/like`);
+    return response.data;
+  },
+
+  // ==================== NEW: REPORT ENDPOINTS ====================
+  
+  // Report a topic
+  reportTopic: async (topicId: number, data: {
+    reason: string;
+    description?: string;
+  }) => {
+    const response = await api.post(`/forum/topics/${topicId}/report`, data);
+    return response.data;
+  },
+
+  // ==================== NEW: ADMIN ENDPOINTS ====================
+  
+  // Admin: Get all reports
+  getReports: async (status: string = 'pending') => {
+    const response = await api.get('/admin/forum/reports', {
+      params: { status }
+    });
+    return response.data;
+  },
+
+  // Admin: Approve report (delete topic)
+  approveReport: async (reportId: number, adminNotes?: string) => {
+    const response = await api.post(`/admin/forum/reports/${reportId}/approve`, {
+      admin_notes: adminNotes
+    });
+    return response.data;
+  },
+
+  // Admin: Reject report (keep topic)
+  rejectReport: async (reportId: number, adminNotes?: string) => {
+    const response = await api.post(`/admin/forum/reports/${reportId}/reject`, {
+      admin_notes: adminNotes
+    });
+    return response.data;
+  },
+
+  getAllTopics: async () => {
+    const response = await api.get('/forum/topics');
+    return response.data;
+  },
+
+  // Get topik milik user (Topik Saya)
+  getUserTopics: async () => {
+    const response = await api.get('/forum/my-topics');
+    return response.data;
+  },
+
+  // Get replies untuk topik tertentu
+  getTopicReplies: async (topicId: number) => {
+    const response = await api.get(`/forum/topics/${topicId}/replies`);
+    return response.data;
+  },
+
+  // Delete topic
+  deleteTopic: async (topicId: number) => {
+    const response = await api.delete(`/forum/topics/${topicId}`);
+    return response.data;
+  },
+
+  // Update topic
+  updateTopic: async (topicId: number, data: { title: string; content: string; category: string }) => {
+    const response = await api.put(`/forum/topics/${topicId}`, data);
+    return response.data;
+  },
+
+  // Create topic baru
+  createTopic: async (data: { title: string; content: string; category: string }) => {
+    const response = await api.post('/forum/topics', data);
     return response.data;
   },
 };
@@ -387,7 +552,7 @@ export const orderAPI = {
   
   // ✅ ADD THIS METHOD:
   uploadPaymentProof: async (orderId: number, file: File) => {
-    const token = localStorage.getItem('access_token');
+    const token = TokenStorage.getToken();  // ✅ BARU
     const formData = new FormData();
     formData.append('payment_proof', file);
     
@@ -408,7 +573,7 @@ export const orderAPI = {
   
   // ✅ ADD THIS METHOD TOO:
   getPaymentProof: async (orderId: number) => {
-    const token = localStorage.getItem('access_token');
+    const token = TokenStorage.getToken();  // ✅ BARU
     
     const response = await fetch(`${API_BASE_URL}/orders/${orderId}/payment-proof`, {
       method: 'GET',
