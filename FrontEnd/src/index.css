@@ -4053,3 +4053,35 @@ html {
     transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));
   }
 }
+
+/* Navbar Specific Styles - High Specificity to Override Global Styles */
+header.sticky nav a.navbar-link,
+header.sticky nav a[href^="#"],
+header.sticky nav a[href^="/"] {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: rgb(107, 114, 128) !important;
+  text-decoration: none !important;
+}
+
+header.sticky nav a.navbar-link.active,
+header.sticky nav a[href^="#"].active,
+header.sticky nav a[href^="/"].active {
+  color: rgb(72, 128, 255) !important;
+}
+
+header.sticky button.navbar-login-btn {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: rgb(72, 128, 255) !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+
+header.sticky button.navbar-register-btn {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  background-color: #78B0E8 !important;
+  color: #000000 !important;
+  border: none !important;
+}

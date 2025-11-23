@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Fish, Droplet, Activity, Bot, Search, Menu, X, ChevronRight, Star, MessageSquare, Users, Quote } from './icons';
 import Navbar from './Navbar';
+import landingPageImage from '../assets/Landingpage_Ikan.png';
 
 interface LandingPageProps {
   onAuthClick?: (mode: 'login' | 'register') => void;
@@ -54,48 +55,68 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F3E0]">
+    <div className="min-h-screen bg-white">
       {/* Header/Navigation */}
       <Navbar onAuthClick={onAuthClick} onSmartNavigate={onSmartNavigate} />
       
       {/* Hero Section */}
-      <section id="beranda" className="relative py-12 md:py-20 overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[#608BC1] rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#CBDCEB] rounded-full blur-3xl"></div>
+      <section id="beranda" className="relative py-12 md:py-20 overflow-hidden bg-white">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#0F5BE5] rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#FFD6D6] rounded-full blur-3xl"></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl mb-6">
+            <div style={{ marginLeft: '-2.5cm' }}>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl mb-6 font-bold" style={{ color: '#000000' }}>
                 Platform Edukasi, Komunitas, dan Monitoring Ikan Hias Berbasis Machine Learning
               </h1>
-              <p className="text-lg text-gray-600 mb-8">
+              {/* Decorative curved line */}
+              <div className="mb-6">
+                <svg width="400" height="16" viewBox="0 0 400 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path 
+                    d="M0 8C60 0, 140 0, 200 8C260 16, 340 16, 400 8" 
+                    stroke="#0F5BE5" 
+                    strokeWidth="4" 
+                    strokeLinecap="round"
+                    style={{ opacity: 0.9 }}
+                  />
+                </svg>
+              </div>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
                 Rawat ikan hiasmu dengan cerdas! Temanikan sebagai solusi edukatif, komunitas aktif, dan sistem monitoring akuarium pintar.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
                 <button 
                   onClick={() => handleAuthClick('register')}
-                  className="px-8 py-4 bg-[#608BC1] text-white rounded-full hover:bg-[#133E87] transition-colors flex items-center justify-center gap-2"
+                  className="px-8 py-4 rounded-full hover:bg-[#0D4BC4] hover:text-white transition-colors flex items-center justify-center gap-2 font-bold"
+                  style={{ backgroundColor: '#78B0E8', color: '#000000' }}
                 >
                   Mulai Sekarang
-                  <ChevronRight className="w-5 h-5" />
                 </button>
-                <button 
+                <a 
+                  href="#tentang"
                   onClick={(e) => handleSmartNavigation(e, 'tentang')}
-                  className="px-8 py-4 border-2 border-[#608BC1] text-[#133E87] rounded-full hover:bg-[#608BC1] hover:text-white transition-colors"
+                  className="text-gray-600 hover:text-[#0F5BE5] transition-colors underline decoration-gray-400 hover:decoration-[#0F5BE5] font-medium cursor-pointer"
                 >
                   Pelajari Selengkapnya
-                </button>
+                </a>
               </div>
             </div>
-            <div className="relative">
+            <div className="relative" style={{ marginLeft: '3cm', marginTop: '-1.5cm' }}>
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <ImageWithFallback
-                  src="https://images.unsplash.com/photo-1631300692372-d96d2d13c20c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cm9waWNhbCUyMGZpc2glMjBhcXVhcml1bXxlbnwxfHx8fDE3NjMzNTA1ODh8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="Tropical Fish Aquarium"
+                  src={landingPageImage}
+                  alt="Beautiful Underwater Aquarium Scene with Colorful Fish and Corals"
                   className="w-full h-auto"
+                  style={{ 
+                    maxHeight: '650px', 
+                    minHeight: '400px',
+                    objectFit: 'cover',
+                    width: '100%',
+                    display: 'block'
+                  }}
                 />
               </div>
             </div>
@@ -107,20 +128,20 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center p-6 rounded-xl bg-[#F3F3E0]">
-              <div className="text-3xl md:text-4xl text-[#133E87] mb-2">10K+</div>
+            <div className="text-center p-6 rounded-xl bg-[#FFD6D6] hover:bg-[#FFE5E5] transition-colors">
+              <div className="text-3xl md:text-4xl text-[#0F5BE5] mb-2 font-bold">10K+</div>
               <div className="text-sm text-gray-600">Pengguna Aktif</div>
             </div>
-            <div className="text-center p-6 rounded-xl bg-[#F3F3E0]">
-              <div className="text-3xl md:text-4xl text-[#133E87] mb-2">500+</div>
+            <div className="text-center p-6 rounded-xl bg-[#FFD6D6] hover:bg-[#FFE5E5] transition-colors">
+              <div className="text-3xl md:text-4xl text-[#0F5BE5] mb-2 font-bold">500+</div>
               <div className="text-sm text-gray-600">Spesies Ikan</div>
             </div>
-            <div className="text-center p-6 rounded-xl bg-[#F3F3E0]">
-              <div className="text-3xl md:text-4xl text-[#133E87] mb-2">9000+</div>
+            <div className="text-center p-6 rounded-xl bg-[#FFD6D6] hover:bg-[#FFE5E5] transition-colors">
+              <div className="text-3xl md:text-4xl text-[#0F5BE5] mb-2 font-bold">9000+</div>
               <div className="text-sm text-gray-600">Robot Terpasang</div>
             </div>
-            <div className="text-center p-6 rounded-xl bg-[#F3F3E0]">
-              <div className="text-3xl md:text-4xl text-[#133E87] mb-2">95%</div>
+            <div className="text-center p-6 rounded-xl bg-[#FFD6D6] hover:bg-[#FFE5E5] transition-colors">
+              <div className="text-3xl md:text-4xl text-[#0F5BE5] mb-2 font-bold">95%</div>
               <div className="text-sm text-gray-600">Akurasi Deteksi</div>
             </div>
           </div>
@@ -128,11 +149,11 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
       </section>
 
       {/* Tentang Kami Section */}
-      <section id="tentang" className="py-16 md:py-24 bg-[#F3F3E0]">
+      <section id="tentang" className="py-16 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl md:text-5xl mb-6">Tentang Temanikan</h2>
+              <h2 className="text-3xl md:text-5xl mb-6" style={{ color: '#0F5BE5' }}>Tentang Temanikan</h2>
               <p className="text-lg text-gray-600 mb-6">
                 TEMANIKAN adalah platform one-stop solution yang dirancang khusus untuk para aquarist. Kami adalah jembatan yang menghubungkan kecintaan Anda pada ikan hias dengan teknologi canggih Machine Learning dan dukungan komunitas, semuanya terpusat dalam satu website.
               </p>
@@ -153,24 +174,24 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             </div>
 
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-xl shadow-lg">
-                <Activity className="w-8 h-8 text-[#133E87] mb-4" />
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:bg-[#FFD6D6] transition-colors">
+                <Activity className="w-8 h-8 text-[#0F5BE5] mb-4" />
                 <h3 className="mb-2">Arsitektur Teknis</h3>
                 <p className="text-sm text-gray-600">
                   Integrasi IoT dan Machine Learning untuk monitoring real-time
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-xl shadow-lg">
-                <Bot className="w-8 h-8 text-[#133E87] mb-4" />
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:bg-[#FFD6D6] transition-colors">
+                <Bot className="w-8 h-8 text-[#0F5BE5] mb-4" />
                 <h3 className="mb-2">Integrasi IoT</h3>
                 <p className="text-sm text-gray-600">
                   ESP32-CAM mengirim data sensor ke database terpusat
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-xl shadow-lg col-span-2">
-                <Search className="w-8 h-8 text-[#133E87] mb-4" />
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:bg-[#FFD6D6] transition-colors col-span-2">
+                <Search className="w-8 h-8 text-[#0F5BE5] mb-4" />
                 <h3 className="mb-2">Modul Machine Learning</h3>
                 <p className="text-sm text-gray-600">
                   Model YOLO untuk analisis kesehatan ikan dengan akurasi tinggi
@@ -193,33 +214,33 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="text-center p-8 rounded-2xl bg-[#F3F3E0] hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-[#CBDCEB] rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search className="w-8 h-8 text-[#133E87]" />
+            <div className="text-center p-8 rounded-2xl bg-white border border-gray-100 hover:bg-[#FFD6D6] hover:shadow-lg transition-all">
+              <div className="w-16 h-16 bg-[#0F5BE5] rounded-full flex items-center justify-center mx-auto mb-6">
+                <Search className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl mb-4">Diagnosa ML</h3>
+              <h3 className="text-xl mb-4" style={{ color: '#0F5BE5' }}>Diagnosa ML</h3>
               <p className="text-gray-600">
                 Deteksi penyakit ikan secara otomatis menggunakan teknologi Machine Learning dengan akurasi hingga 95%. Upload foto ikan dan dapatkan diagnosis instan.
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div className="text-center p-8 rounded-2xl bg-[#F3F3E0] hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-[#CBDCEB] rounded-full flex items-center justify-center mx-auto mb-6">
-                <Activity className="w-8 h-8 text-[#133E87]" />
+            <div className="text-center p-8 rounded-2xl bg-white border border-gray-100 hover:bg-[#FFD6D6] hover:shadow-lg transition-all">
+              <div className="w-16 h-16 bg-[#0F5BE5] rounded-full flex items-center justify-center mx-auto mb-6">
+                <Activity className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl mb-4">Monitoring Kualitas Air</h3>
+              <h3 className="text-xl mb-4" style={{ color: '#0F5BE5' }}>Monitoring Kualitas Air</h3>
               <p className="text-gray-600">
                 Pantau parameter air seperti suhu, pH, dan TDS secara real-time melalui dashboard. Dapatkan notifikasi otomatis jika ada parameter yang tidak normal.
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div className="text-center p-8 rounded-2xl bg-[#F3F3E0] hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-[#CBDCEB] rounded-full flex items-center justify-center mx-auto mb-6">
-                <Fish className="w-8 h-8 text-[#133E87]" />
+            <div className="text-center p-8 rounded-2xl bg-white border border-gray-100 hover:bg-[#FFD6D6] hover:shadow-lg transition-all">
+              <div className="w-16 h-16 bg-[#0F5BE5] rounded-full flex items-center justify-center mx-auto mb-6">
+                <Fish className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl mb-4">Komunitas Pecinta Ikan</h3>
+              <h3 className="text-xl mb-4" style={{ color: '#0F5BE5' }}>Komunitas Pecinta Ikan</h3>
               <p className="text-gray-600">
                 Bergabung dengan ribuan pecinta ikan hias. Berbagi pengalaman, bertanya, dan berdiskusi tentang perawatan ikan favorit Anda.
               </p>
@@ -228,42 +249,42 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
 
           {/* Additional Features List */}
           <div className="mt-16 grid md:grid-cols-2 gap-6">
-            <div className="flex items-start gap-4 p-6 rounded-xl bg-[#F3F3E0]">
-              <div className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-100 hover:bg-[#FFD6D6] transition-colors">
+              <div className="w-10 h-10 bg-[#0F5BE5] rounded-full flex items-center justify-center flex-shrink-0">
                 <Search className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h4 className="mb-2">Deteksi Penyakit Ikan</h4>
+                <h4 className="mb-2" style={{ color: '#0F5BE5' }}>Deteksi Penyakit Ikan</h4>
                 <p className="text-sm text-gray-600">Identifikasi penyakit ikan dengan akurat menggunakan AI</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-6 rounded-xl bg-[#F3F3E0]">
-              <div className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-100 hover:bg-[#FFD6D6] transition-colors">
+              <div className="w-10 h-10 bg-[#0F5BE5] rounded-full flex items-center justify-center flex-shrink-0">
                 <Fish className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h4 className="mb-2">FishPedia</h4>
+                <h4 className="mb-2" style={{ color: '#0F5BE5' }}>FishPedia</h4>
                 <p className="text-sm text-gray-600">Ensiklopedia lengkap 500+ spesies ikan hias</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-6 rounded-xl bg-[#F3F3E0]">
-              <div className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-100 hover:bg-[#FFD6D6] transition-colors">
+              <div className="w-10 h-10 bg-[#0F5BE5] rounded-full flex items-center justify-center flex-shrink-0">
                 <Bot className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h4 className="mb-2">Kontrol Robot</h4>
+                <h4 className="mb-2" style={{ color: '#0F5BE5' }}>Kontrol Robot</h4>
                 <p className="text-sm text-gray-600">Kendalikan robot pembersih akuarium dari smartphone</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-6 rounded-xl bg-[#F3F3E0]">
-              <div className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-100 hover:bg-[#FFD6D6] transition-colors">
+              <div className="w-10 h-10 bg-[#0F5BE5] rounded-full flex items-center justify-center flex-shrink-0">
                 <Droplet className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h4 className="mb-2">Monitoring Air</h4>
+                <h4 className="mb-2" style={{ color: '#0F5BE5' }}>Monitoring Air</h4>
                 <p className="text-sm text-gray-600">Pantau kualitas air 24/7 dengan sensor IoT</p>
               </div>
             </div>
@@ -272,10 +293,10 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
       </section>
 
       {/* Forum Section (Teaser) */}
-      <section id="forum" className="py-16 md:py-24 bg-[#F3F3E0]">
+      <section id="forum" className="py-16 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl mb-4">Forum Komunitas Temanikan</h2>
+            <h2 className="text-3xl md:text-5xl mb-4" style={{ color: '#0F5BE5' }}>Forum Komunitas Temanikan</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Bergabunglah dengan komunitas pecinta ikan hias terbesar di Indonesia. Berbagi pengalaman, bertanya, dan berdiskusi dengan sesama aquarist.
             </p>
@@ -283,13 +304,13 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
 
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             {/* Forum Feature 1 */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:bg-[#FFD6D6] hover:shadow-xl transition-all">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-[#608BC1] rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-[#0F5BE5] rounded-full flex items-center justify-center flex-shrink-0">
                   <MessageSquare className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl mb-3">Diskusi Interaktif</h3>
+                  <h3 className="text-xl mb-3" style={{ color: '#0F5BE5' }}>Diskusi Interaktif</h3>
                   <p className="text-gray-600">
                     Tanyakan apa saja tentang perawatan ikan hias, penyakit, atau tips membangun akuarium. Dapatkan jawaban dari komunitas yang berpengalaman.
                   </p>
@@ -298,13 +319,13 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             </div>
 
             {/* Forum Feature 2 */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:bg-[#FFD6D6] hover:shadow-xl transition-all">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-[#608BC1] rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-[#0F5BE5] rounded-full flex items-center justify-center flex-shrink-0">
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl mb-3">Komunitas Aktif</h3>
+                  <h3 className="text-xl mb-3" style={{ color: '#0F5BE5' }}>Komunitas Aktif</h3>
                   <p className="text-gray-600">
                     10,000+ anggota aktif siap membantu Anda. Dari pemula hingga expert, semua berkumpul untuk berbagi passion tentang ikan hias.
                   </p>
@@ -313,13 +334,13 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             </div>
 
             {/* Forum Feature 3 */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:bg-[#FFD6D6] hover:shadow-xl transition-all">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-[#608BC1] rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-[#0F5BE5] rounded-full flex items-center justify-center flex-shrink-0">
                   <Fish className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl mb-3">Tips & Trik Perawatan</h3>
+                  <h3 className="text-xl mb-3" style={{ color: '#0F5BE5' }}>Tips & Trik Perawatan</h3>
                   <p className="text-gray-600">
                     Akses ribuan thread diskusi tentang perawatan ikan, teknik breeding, water parameters, dan berbagai tips dari para ahli.
                   </p>
@@ -328,13 +349,13 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             </div>
 
             {/* Forum Feature 4 */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:bg-[#FFD6D6] hover:shadow-xl transition-all">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-[#608BC1] rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-[#0F5BE5] rounded-full flex items-center justify-center flex-shrink-0">
                   <Activity className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl mb-3">Update Real-time</h3>
+                  <h3 className="text-xl mb-3" style={{ color: '#0F5BE5' }}>Update Real-time</h3>
                   <p className="text-gray-600">
                     Dapatkan notifikasi real-time ketika ada balasan di thread Anda. Ikuti topik favorit dan jangan lewatkan diskusi menarik.
                   </p>
@@ -345,16 +366,16 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
 
           {/* Forum Stats */}
           <div className="grid grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
-            <div className="text-center p-6 bg-white rounded-xl shadow-md">
-              <div className="text-3xl text-[#133E87] mb-2">10K+</div>
+            <div className="text-center p-6 bg-white rounded-xl shadow-md border border-gray-100">
+              <div className="text-3xl text-[#0F5BE5] mb-2 font-bold">10K+</div>
               <div className="text-sm text-gray-600">Anggota Aktif</div>
             </div>
-            <div className="text-center p-6 bg-white rounded-xl shadow-md">
-              <div className="text-3xl text-[#133E87] mb-2">5K+</div>
+            <div className="text-center p-6 bg-white rounded-xl shadow-md border border-gray-100">
+              <div className="text-3xl text-[#0F5BE5] mb-2 font-bold">5K+</div>
               <div className="text-sm text-gray-600">Topik Diskusi</div>
             </div>
-            <div className="text-center p-6 bg-white rounded-xl shadow-md">
-              <div className="text-3xl text-[#133E87] mb-2">50K+</div>
+            <div className="text-center p-6 bg-white rounded-xl shadow-md border border-gray-100">
+              <div className="text-3xl text-[#0F5BE5] mb-2 font-bold">50K+</div>
               <div className="text-sm text-gray-600">Komentar</div>
             </div>
           </div>
@@ -363,7 +384,7 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
           <div className="text-center">
             <button 
               onClick={() => handleAuthClick('login')}
-              className="px-8 py-4 bg-[#608BC1] text-white rounded-full hover:bg-[#133E87] transition-colors flex items-center justify-center gap-2 mx-auto"
+              className="px-8 py-4 bg-[#0F5BE5] text-white rounded-full hover:bg-[#0D4BC4] transition-colors flex items-center justify-center gap-2 mx-auto"
             >
               Bergabung dengan Forum
               <ChevronRight className="w-5 h-5" />
@@ -385,13 +406,13 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Testimonial 1 */}
-            <div className="bg-[#F3F3E0] p-8 rounded-2xl shadow-lg relative">
-              <Quote className="w-10 h-10 text-[#608BC1] mb-4 opacity-50" />
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 relative hover:bg-[#FFD6D6] transition-colors">
+              <Quote className="w-10 h-10 text-[#0F5BE5] mb-4 opacity-50" />
               <p className="text-gray-600 mb-6">
                 "Temanikan sangat membantu saya dalam merawat ikan cupang. Fitur deteksi penyakit menggunakan ML sangat akurat dan cepat. Sekarang saya tidak khawatir lagi!"
               </p>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#608BC1] rounded-full flex items-center justify-center text-white">
+                <div className="w-12 h-12 bg-[#0F5BE5] rounded-full flex items-center justify-center text-white">
                   <span>AW</span>
                 </div>
                 <div>
@@ -402,13 +423,13 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             </div>
 
             {/* Testimonial 2 */}
-            <div className="bg-[#F3F3E0] p-8 rounded-2xl shadow-lg relative">
-              <Quote className="w-10 h-10 text-[#608BC1] mb-4 opacity-50" />
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 relative hover:bg-[#FFD6D6] transition-colors">
+              <Quote className="w-10 h-10 text-[#0F5BE5] mb-4 opacity-50" />
               <p className="text-gray-600 mb-6">
                 "Forum komunitas di Temanikan luar biasa! Saya belajar banyak dari para expert dan bisa sharing pengalaman breeding Guppy. Recommended banget!"
               </p>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#608BC1] rounded-full flex items-center justify-center text-white">
+                <div className="w-12 h-12 bg-[#0F5BE5] rounded-full flex items-center justify-center text-white">
                   <span>SP</span>
                 </div>
                 <div>
@@ -419,13 +440,13 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             </div>
 
             {/* Testimonial 3 */}
-            <div className="bg-[#F3F3E0] p-8 rounded-2xl shadow-lg relative">
-              <Quote className="w-10 h-10 text-[#608BC1] mb-4 opacity-50" />
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 relative hover:bg-[#FFD6D6] transition-colors">
+              <Quote className="w-10 h-10 text-[#0F5BE5] mb-4 opacity-50" />
               <p className="text-gray-600 mb-6">
                 "Robot Temanikan menghemat waktu saya banget! Monitoring air otomatis dan pembersihan akuarium jadi lebih mudah. Worth it!"
               </p>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#608BC1] rounded-full flex items-center justify-center text-white">
+                <div className="w-12 h-12 bg-[#0F5BE5] rounded-full flex items-center justify-center text-white">
                   <span>BP</span>
                 </div>
                 <div>
@@ -439,13 +460,13 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
           {/* Additional Testimonials */}
           <div className="grid md:grid-cols-2 gap-8 mt-8">
             {/* Testimonial 4 */}
-            <div className="bg-[#F3F3E0] p-8 rounded-2xl shadow-lg relative">
-              <Quote className="w-10 h-10 text-[#608BC1] mb-4 opacity-50" />
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 relative hover:bg-[#FFD6D6] transition-colors">
+              <Quote className="w-10 h-10 text-[#0F5BE5] mb-4 opacity-50" />
               <p className="text-gray-600 mb-6">
                 "Fishpedia sangat lengkap! Saya sebagai pemula terbantu sekali dengan informasi detail setiap spesies. Plus ada panduan perawatannya juga!"
               </p>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#608BC1] rounded-full flex items-center justify-center text-white">
+                <div className="w-12 h-12 bg-[#0F5BE5] rounded-full flex items-center justify-center text-white">
                   <span>RN</span>
                 </div>
                 <div>
@@ -456,13 +477,13 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             </div>
 
             {/* Testimonial 5 */}
-            <div className="bg-[#F3F3E0] p-8 rounded-2xl shadow-lg relative">
-              <Quote className="w-10 h-10 text-[#608BC1] mb-4 opacity-50" />
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 relative hover:bg-[#FFD6D6] transition-colors">
+              <Quote className="w-10 h-10 text-[#0F5BE5] mb-4 opacity-50" />
               <p className="text-gray-600 mb-6">
                 "Dashboard monitoring real-time sangat membantu. Saya bisa pantau kualitas air dari kantor. Notifikasi otomatis juga sangat berguna!"
               </p>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#608BC1] rounded-full flex items-center justify-center text-white">
+                <div className="w-12 h-12 bg-[#0F5BE5] rounded-full flex items-center justify-center text-white">
                   <span>DK</span>
                 </div>
                 <div>
@@ -476,17 +497,17 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-[#133E87] text-white">
+      <section className="py-16 md:py-24 bg-[#0F5BE5] text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-5xl mb-6">
             Siap Memulai Perjalanan Anda?
           </h2>
-          <p className="text-lg md:text-xl text-[#CBDCEB] mb-8">
+          <p className="text-lg md:text-xl text-blue-100 mb-8">
             Bergabunglah dengan 10,000+ pecinta ikan hias yang telah mempercayai Temanikan untuk perawatan akuarium mereka
           </p>
           <button 
             onClick={() => handleAuthClick('register')}
-            className="px-8 py-4 bg-white text-[#133E87] rounded-full hover:bg-[#CBDCEB] transition-colors"
+            className="px-8 py-4 bg-white text-[#0F5BE5] rounded-full hover:bg-[#FFD6D6] hover:text-[#0F5BE5] transition-colors font-semibold"
           >
             Daftar Gratis Sekarang
           </button>
@@ -494,7 +515,7 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#133E87] text-white py-12 border-t border-[#608BC1]">
+      <footer className="bg-[#0F5BE5] text-white py-12 border-t border-blue-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             {/* Column 1 - Brand */}
@@ -503,7 +524,7 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
                 <Fish className="w-8 h-8" />
                 <span className="text-2xl" style={{ fontFamily: 'Allura, cursive' }}>Temanikan</span>
               </div>
-              <p className="text-sm text-[#CBDCEB]">
+              <p className="text-sm text-blue-100">
                 Platform edukasi, komunitas, dan monitoring ikan hias berbasis Machine Learning
               </p>
             </div>
@@ -512,10 +533,10 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             <div>
               <h3 className="mb-4">Navigasi Cepat</h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="#tentang" className="text-[#CBDCEB] hover:text-white transition-colors">Tentang Kami</a></li>
-                <li><button onClick={handleNavigateToFishpedia} className="text-[#CBDCEB] hover:text-white transition-colors">Fishpedia</button></li>
-                <li><a href="#fitur" className="text-[#CBDCEB] hover:text-white transition-colors">Fitur</a></li>
-                <li><button onClick={handleNavigateToProduk} className="text-[#CBDCEB] hover:text-white transition-colors">Produk</button></li>
+                <li><a href="#tentang" className="text-blue-100 hover:text-white transition-colors">Tentang Kami</a></li>
+                <li><button onClick={handleNavigateToFishpedia} className="text-blue-100 hover:text-white transition-colors">Fishpedia</button></li>
+                <li><a href="#fitur" className="text-blue-100 hover:text-white transition-colors">Fitur</a></li>
+                <li><button onClick={handleNavigateToProduk} className="text-blue-100 hover:text-white transition-colors">Produk</button></li>
               </ul>
             </div>
 
@@ -523,10 +544,10 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             <div>
               <h3 className="mb-4">Dukungan</h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">FAQ</a></li>
-                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">Kontak</a></li>
-                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">Bantuan</a></li>
-                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">Dokumentasi</a></li>
+                <li><a href="#" className="text-blue-100 hover:text-white transition-colors">FAQ</a></li>
+                <li><a href="#" className="text-blue-100 hover:text-white transition-colors">Kontak</a></li>
+                <li><a href="#" className="text-blue-100 hover:text-white transition-colors">Bantuan</a></li>
+                <li><a href="#" className="text-blue-100 hover:text-white transition-colors">Dokumentasi</a></li>
               </ul>
             </div>
 
@@ -534,19 +555,19 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             <div>
               <h3 className="mb-4">Ikuti Kami</h3>
               <div className="flex gap-3">
-                <a href="#" className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center hover:bg-[#CBDCEB] transition-colors">
+                <a href="#" className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:bg-[#FFD6D6] hover:text-[#0F5BE5] transition-colors">
                   <span className="sr-only">Facebook</span>
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
                 </a>
-                <a href="#" className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center hover:bg-[#CBDCEB] transition-colors">
+                <a href="#" className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:bg-[#FFD6D6] hover:text-[#0F5BE5] transition-colors">
                   <span className="sr-only">Instagram</span>
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                   </svg>
                 </a>
-                <a href="#" className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center hover:bg-[#CBDCEB] transition-colors">
+                <a href="#" className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:bg-[#FFD6D6] hover:text-[#0F5BE5] transition-colors">
                   <span className="sr-only">Twitter</span>
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
@@ -556,7 +577,7 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             </div>
           </div>
 
-          <div className="pt-8 border-t border-[#608BC1] flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#CBDCEB]">
+          <div className="pt-8 border-t border-blue-400 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-blue-100">
             <p>© 2025 Temanikan. All rights reserved.</p>
             <div className="flex gap-6">
               <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>

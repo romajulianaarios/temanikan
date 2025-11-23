@@ -196,7 +196,7 @@ export default function ForumModeration() {
       date: '1 Nov 2025',
       severity: 'high'
     },
-  ]);
+  ];
 
   return (
     <div className="space-y-6">
@@ -431,6 +431,7 @@ export default function ForumModeration() {
                 ) : (
                   <p className="text-sm text-gray-500 italic">Belum ada balasan</p>
                 )}
+              </div>
             </div>
           )}
           <DialogFooter className="gap-2">
