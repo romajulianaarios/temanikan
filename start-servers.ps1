@@ -3,16 +3,31 @@
 Write-Host "🚀 Starting Temanikan Backend & Frontend..." -ForegroundColor Cyan
 Write-Host ""
 
+# Determine project root
+$projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$backendPath = Join-Path $projectRoot "BackEnd"
+$frontendPath = Join-Path $projectRoot "FrontEnd"
+
 # Start Backend in background
 Write-Host "📦 Starting Backend (Flask)..." -ForegroundColor Yellow
-$backendPath = "c:\WEBSITE TEMANIKAN\BackEnd"
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$backendPath'; python app.py"
+Set-Location $backendPath
+
+# Check for Python command
+$pythonCommand = "python"
+if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
+    if (Get-Command py -ErrorAction SilentlyContinue) {
+        $pythonCommand = "py"
+    }
+}
+
+$backendCommand = "cd '$backendPath'; & '$pythonCommand' app.py"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCommand
 
 Start-Sleep -Seconds 3
 
 # Start Frontend in background
 Write-Host "⚛️  Starting Frontend (React + Vite)..." -ForegroundColor Green
-$frontendPath = "c:\WEBSITE TEMANIKAN\FrontEnd"
+Set-Location $frontendPath
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$frontendPath'; npm run dev"
 
 Start-Sleep -Seconds 2
