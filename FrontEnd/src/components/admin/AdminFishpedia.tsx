@@ -10,6 +10,26 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Search, Plus, Edit, Trash2, Eye, Upload } from '../icons';
 import { fishpediaAPI } from '../../services/api';
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// Create axios instance with auth
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add JWT token to requests
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 interface FishEntry {
   id: number;
@@ -21,6 +41,8 @@ interface FishEntry {
   views: number;
   lastUpdated: string;
   description?: string;
+  family?: string;
+  habitat?: string;
   image?: string;
   phMin?: number;
   phMax?: number;
@@ -47,6 +69,8 @@ export default function AdminFishpedia() {
   const [formCategory, setFormCategory] = useState('');
   const [formDifficulty, setFormDifficulty] = useState<'Mudah' | 'Menengah' | 'Sulit'>('Mudah');
   const [formDescription, setFormDescription] = useState('');
+  const [formFamily, setFormFamily] = useState('');
+  const [formHabitat, setFormHabitat] = useState('');
   const [formPhMin, setFormPhMin] = useState('');
   const [formPhMax, setFormPhMax] = useState('');
   const [formTempMin, setFormTempMin] = useState('');
@@ -64,17 +88,25 @@ export default function AdminFishpedia() {
     try {
       setLoading(true);
       setError(null);
+      
+      // ✅ Use correct public endpoint that returns all species
       const response = await fishpediaAPI.getSpecies();
+      
+      console.log('📥 Fishpedia response:', response);
+      
       if (response.success && response.species) {
+        // Backend sudah return format yang benar (camelCase)
         setFishEntries(response.species);
       }
     } catch (err: any) {
-      console.error('Error fetching fish data:', err);
+      console.error('❌ Error fetching fish data:', err);
       setError(err.message || 'Gagal memuat data ikan');
     } finally {
       setLoading(false);
     }
   };
+
+
 
   // Filter fish entries
   const filteredEntries = fishEntries.filter(fish => {
@@ -101,6 +133,8 @@ export default function AdminFishpedia() {
       formData.append('category', formCategory);
       formData.append('difficulty', formDifficulty);
       formData.append('description', formDescription);
+      formData.append('family', formFamily);
+      formData.append('habitat', formHabitat);
       formData.append('ph_min', formPhMin);
       formData.append('ph_max', formPhMax);
       formData.append('temp_min', formTempMin);
@@ -111,18 +145,21 @@ export default function AdminFishpedia() {
         formData.append('image', formImage);
       }
 
-      const response = await fishpediaAPI.addSpecies(formData);
+      const response = await api.post('/fishpedia', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       
-      if (response.success) {
-        await fetchFishData(); // Refresh list
+      if (response.data.success) {
+        await fetchFishData();
         setShowAddModal(false);
         resetForm();
+        alert('Ikan berhasil ditambahkan!');
       } else {
-        alert(response.message || 'Gagal menambahkan ikan');
+        alert(response.data.message || 'Gagal menambahkan ikan');
       }
     } catch (err: any) {
-      console.error('Error adding fish:', err);
-      alert(err.message || 'Gagal menambahkan ikan');
+      console.error('❌ Error adding fish:', err);
+      alert(err.response?.data?.message || err.message || 'Gagal menambahkan ikan');
     }
   };
 
@@ -138,6 +175,8 @@ export default function AdminFishpedia() {
       formData.append('category', formCategory);
       formData.append('difficulty', formDifficulty);
       formData.append('description', formDescription);
+      formData.append('family', formFamily);
+      formData.append('habitat', formHabitat);
       formData.append('ph_min', formPhMin);
       formData.append('ph_max', formPhMax);
       formData.append('temp_min', formTempMin);
@@ -148,19 +187,22 @@ export default function AdminFishpedia() {
         formData.append('image', formImage);
       }
 
-      const response = await fishpediaAPI.updateSpecies(selectedFish.id, formData);
+      const response = await api.put(`/fishpedia/${selectedFish.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       
-      if (response.success) {
-        await fetchFishData(); // Refresh list
+      if (response.data.success) {
+        await fetchFishData();
         setShowEditModal(false);
         setSelectedFish(null);
         resetForm();
+        alert('Ikan berhasil diupdate!');
       } else {
-        alert(response.message || 'Gagal mengupdate ikan');
+        alert(response.data.message || 'Gagal mengupdate ikan');
       }
     } catch (err: any) {
-      console.error('Error updating fish:', err);
-      alert(err.message || 'Gagal mengupdate ikan');
+      console.error('❌ Error updating fish:', err);
+      alert(err.response?.data?.message || err.message || 'Gagal mengupdate ikan');
     }
   };
 
@@ -169,18 +211,19 @@ export default function AdminFishpedia() {
     if (!selectedFish) return;
     
     try {
-      const response = await fishpediaAPI.deleteSpecies(selectedFish.id);
+      const response = await api.delete(`/fishpedia/${selectedFish.id}`);
       
-      if (response.success) {
-        await fetchFishData(); // Refresh list
+      if (response.data.success) {
+        await fetchFishData();
         setShowDeleteConfirm(false);
         setSelectedFish(null);
+        alert('Ikan berhasil dihapus!');
       } else {
-        alert(response.message || 'Gagal menghapus ikan');
+        alert(response.data.message || 'Gagal menghapus ikan');
       }
     } catch (err: any) {
-      console.error('Error deleting fish:', err);
-      alert(err.message || 'Gagal menghapus ikan');
+      console.error('❌ Error deleting fish:', err);
+      alert(err.response?.data?.message || err.message || 'Gagal menghapus ikan');
     }
   };
 
@@ -198,6 +241,8 @@ export default function AdminFishpedia() {
     setFormCategory(fish.category);
     setFormDifficulty(fish.difficulty);
     setFormDescription(fish.description || '');
+    setFormFamily(fish.family || '');
+    setFormHabitat(fish.habitat || '');
     setFormPhMin(fish.phMin?.toString() || '');
     setFormPhMax(fish.phMax?.toString() || '');
     setFormTempMin(fish.tempMin?.toString() || '');
@@ -236,6 +281,8 @@ export default function AdminFishpedia() {
     setFormCategory('');
     setFormDifficulty('Mudah');
     setFormDescription('');
+    setFormFamily('');
+    setFormHabitat('');
     setFormPhMin('');
     setFormPhMax('');
     setFormTempMin('');
@@ -408,7 +455,6 @@ export default function AdminFishpedia() {
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   required
-                  placeholder="Masukkan nama ikan"
                 />
               </div>
               <div>
@@ -418,7 +464,6 @@ export default function AdminFishpedia() {
                   value={formScientificName}
                   onChange={(e) => setFormScientificName(e.target.value)}
                   required
-                  placeholder="Masukkan nama ilmiah"
                 />
               </div>
             </div>
@@ -458,7 +503,28 @@ export default function AdminFishpedia() {
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 rows={4}
-                placeholder="Masukkan deskripsi lengkap tentang ikan"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="add-family">Famili</Label>
+              <Input 
+                id="add-family"
+                value={formFamily}
+                onChange={(e) => setFormFamily(e.target.value)}
+                placeholder="Contoh: Cyprinidae, Poeciliidae"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="add-habitat">Habitat</Label>
+              <Textarea 
+                id="add-habitat"
+                value={formHabitat}
+                onChange={(e) => setFormHabitat(e.target.value)}
+                rows={3}
                 required
               />
             </div>
@@ -649,6 +715,29 @@ export default function AdminFishpedia() {
               />
             </div>
 
+            <div>
+              <Label htmlFor="edit-family">Famili</Label>
+              <Input 
+                id="edit-family"
+                value={formFamily}
+                onChange={(e) => setFormFamily(e.target.value)}
+                placeholder="Contoh: Cyprinidae, Poeciliidae"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-habitat">Habitat</Label>
+              <Textarea 
+                id="edit-habitat"
+                value={formHabitat}
+                onChange={(e) => setFormHabitat(e.target.value)}
+                rows={3}
+                placeholder="Masukkan habitat alami ikan"
+                required
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="edit-ph-min">pH Minimum</Label>
@@ -770,82 +859,96 @@ export default function AdminFishpedia() {
 
       {/* View Fish Modal */}
       <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle style={{ color: '#133E87' }}>Detail Ikan</DialogTitle>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#F3F3E0', border: 'none' }}>
+          <DialogHeader className="border-b pb-4" style={{ borderColor: '#CBDCEB' }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-2xl font-bold" style={{ color: '#133E87' }}>Detail Ikan</DialogTitle>
+                {selectedFish && (
+                  <p className="text-sm italic text-gray-600 mt-1">{selectedFish.scientificName}</p>
+                )}
+              </div>
+              {selectedFish && (
+                <div>
+                  {selectedFish.status === 'published' ? (
+                    <Badge className="bg-green-100 text-green-800">Published</Badge>
+                  ) : (
+                    <Badge className="bg-gray-100 text-gray-800">Draft</Badge>
+                  )}
+                </div>
+              )}
+            </div>
           </DialogHeader>
           {selectedFish && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Nama Ikan</p>
-                  <p style={{ color: '#133E87' }}>{selectedFish.name}</p>
+            <div className="space-y-4 pt-4">
+              {/* Basic Info Cards */}
+              <div className="grid md:grid-cols-4 gap-3">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Nama Ikan</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.name}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Nama Ilmiah</p>
-                  <p className="italic text-gray-700">{selectedFish.scientificName}</p>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Famili</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.family || 'N/A'}</p>
                 </div>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Kategori</p>
-                <Badge variant="outline">{selectedFish.category}</Badge>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Kesulitan</p>
-                {selectedFish.difficulty === 'Mudah' ? (
-                  <Badge className="bg-green-100 text-green-800">Mudah</Badge>
-                ) : selectedFish.difficulty === 'Menengah' ? (
-                  <Badge className="bg-yellow-100 text-yellow-800">Menengah</Badge>
-                ) : (
-                  <Badge className="bg-red-100 text-red-800">Sulit</Badge>
-                )}
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Status</p>
-                {selectedFish.status === 'published' ? (
-                  <Badge className="bg-green-100 text-green-800">Published</Badge>
-                ) : (
-                  <Badge className="bg-gray-100 text-gray-800">Draft</Badge>
-                )}
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Deskripsi</p>
-                <p className="text-gray-700">{selectedFish.description || 'Tidak ada deskripsi'}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div 
-                  className="p-4 rounded-lg"
-                  style={{ backgroundColor: '#F3F3E0' }}
-                >
-                  <p className="text-sm text-gray-600 mb-1">Rentang pH</p>
-                  <p style={{ color: '#133E87' }}>
-                    {selectedFish.phMin} - {selectedFish.phMax}
-                  </p>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Kategori</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.category}</p>
                 </div>
-                <div 
-                  className="p-4 rounded-lg"
-                  style={{ backgroundColor: '#F3F3E0' }}
-                >
-                  <p className="text-sm text-gray-600 mb-1">Rentang Suhu</p>
-                  <p style={{ color: '#133E87' }}>
-                    {selectedFish.tempMin}°C - {selectedFish.tempMax}°C
-                  </p>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Kesulitan</span>
+                  <div className="mt-1">
+                    {selectedFish.difficulty === 'Mudah' ? (
+                      <Badge className="bg-green-100 text-green-800">Mudah</Badge>
+                    ) : selectedFish.difficulty === 'Menengah' ? (
+                      <Badge className="bg-yellow-100 text-yellow-800">Menengah</Badge>
+                    ) : (
+                      <Badge className="bg-red-100 text-red-800">Sulit</Badge>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Total Views</p>
-                  <p style={{ color: '#133E87' }}>{selectedFish.views}</p>
+              {/* Description */}
+              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>📝 Deskripsi</h3>
+                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.description || 'Tidak ada deskripsi'}</p>
+              </div>
+
+              {/* Habitat */}
+              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>🌍 Habitat</h3>
+                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.habitat || 'Tidak ada informasi habitat'}</p>
+              </div>
+
+              {/* Parameters */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>💧 Parameter Air</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>pH Range</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.phMin} - {selectedFish.phMax}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Suhu</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.tempMin}°C - {selectedFish.tempMax}°C</span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Terakhir Diupdate</p>
-                  <p style={{ color: '#133E87' }}>{selectedFish.lastUpdated}</p>
+
+                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>📊 Statistik</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Views</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.views}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Last Updated</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.lastUpdated}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

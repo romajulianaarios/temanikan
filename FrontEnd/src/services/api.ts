@@ -309,31 +309,83 @@ export const diseaseAPI = {
 
 // Fishpedia API
 export const fishpediaAPI = {
+  // ===== PUBLIC ENDPOINTS (untuk Member & Public) =====
   getSpecies: async (search?: string, category?: string) => {
-    const response = await api.get('/fishpedia', {
-      params: { search, category }
-    });
+    const response = await api.get('/fishpedia', { params: { search, category } });
     return response.data;
   },
-  
+
   getSpeciesDetail: async (speciesId: number) => {
     const response = await api.get(`/fishpedia/${speciesId}`);
     return response.data;
   },
-  
-  addSpecies: async (data: any) => {
-    const response = await api.post('/fishpedia', data);
-    return response.data;
-  },
-  
-  updateSpecies: async (speciesId: number, data: any) => {
-    const response = await api.put(`/fishpedia/${speciesId}`, data);
-    return response.data;
-  },
-  
-  deleteSpecies: async (speciesId: number) => {
-    const response = await api.delete(`/fishpedia/${speciesId}`);
-    return response.data;
+
+  // ===== ADMIN ENDPOINTS (untuk Admin CRUD) =====
+  admin: {
+    // Get all articles (for admin management table)
+    getAllArticles: async (params?: {
+      search?: string;
+      category?: string;
+      page?: number;
+      per_page?: number;
+    }) => {
+      const response = await api.get('/admin/fishpedia', { params });
+      return response.data;
+    },
+
+    // Get article detail for editing
+    getArticleById: async (articleId: number) => {
+      const response = await api.get(`/admin/fishpedia/${articleId}`);
+      return response.data;
+    },
+
+    // Create new article
+    createArticle: async (data: {
+      title: string;
+      name_latin: string;
+      category: string;
+      habitat: string;
+      size?: string;
+      temperament?: string;
+      diet?: string;
+      care_level?: string;
+      ph_range?: string;
+      temperature_range?: string;
+      tank_size?: string;
+      lifespan?: string;
+      breeding?: string;
+      image_url?: string;
+    }) => {
+      const response = await api.post('/admin/fishpedia', data);
+      return response.data;
+    },
+
+    // Update article
+    updateArticle: async (articleId: number, data: {
+      title?: string;
+      name_latin?: string;
+      category?: string;
+      habitat?: string;
+      size?: string;
+      temperament?: string;
+      diet?: string;
+      care_level?: string;
+      ph_range?: string;
+      temperature_range?: string;
+      tank_size?: string;
+      lifespan?: string;
+      breeding?: string;
+      image_url?: string;
+    }) => {
+      const response = await api.put(`/admin/fishpedia/${articleId}`, data);
+      return response.data;
+    },
+
+    // Delete article
+    deleteArticle: async (articleId: number) => {
+      const response = await api.delete(`/admin/fishpedia/${articleId}`);
+      return response.data;
+    },
   },
 };
 

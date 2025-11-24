@@ -1,18 +1,40 @@
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_file
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, User, Device, WaterMonitoring, CleaningHistory, DiseaseDetection
 from models import FishSpecies, ForumTopic, ForumReply, Order, Notification
 from models import ForumTopicLike, ForumReplyLike, ForumReport
 from datetime import datetime, timedelta
+from functools import wraps  # ✅ TAMBAHKAN BARIS INI
 import random
 import string
 from werkzeug.utils import secure_filename
 import os
 import base64
-from datetime import datetime
-from flask import send_file
+
+def admin_required(fn):
+    """
+    Decorator to require admin role for endpoint access.
+    Automatically handles JWT verification internally.
+    """
+    @wraps(fn)
+    @jwt_required()  # ← TAMBAHKAN BARIS INI
+    def wrapper(*args, **kwargs):
+        # Get current user ID from JWT
+        current_user_id = get_jwt_identity()
+        # Get user from database
+        user = User.query.get(current_user_id)
+        
+        # Check if user exists and is admin
+        if not user:
+            return jsonify({'success': False, 'message': 'User not found'}), 404
+        
+        if user.role != 'admin':
+            return jsonify({'success': False, 'message': 'Admin access required'}), 403
+        
+        # User is admin, proceed to endpoint
+        return fn(*args, **kwargs)
+    return wrapper
 
 
 def register_routes(app):
@@ -600,6 +622,8 @@ def register_routes(app):
             scientific_name=data.get('scientific_name'),
             category=data.get('category'),
             description=data.get('description'),
+            family=data.get('family'),
+            habitat=data.get('habitat'),
             care_level=data.get('difficulty'),  # Map difficulty to care_level
             temperament=data.get('temperament'),
             max_size=data.get('max_size'),
@@ -647,6 +671,10 @@ def register_routes(app):
             species.category = data['category']
         if 'description' in data:
             species.description = data['description']
+        if 'family' in data:
+            species.family = data['family']
+        if 'habitat' in data:
+            species.habitat = data['habitat']
         if 'difficulty' in data:
             species.care_level = data['difficulty']
         if 'temperament' in data:
@@ -710,6 +738,216 @@ def register_routes(app):
             'success': True,
             'message': 'Fish species deleted successfully'
         }), 200
+    
+    # ============================================================================
+    # ADMIN FISHPEDIA MANAGEMENT ROUTES (CRUD)
+    # ============================================================================
+
+    @app.route('/api/admin/fishpedia', methods=['GET'])
+    @admin_required
+    def admin_get_all_fishpedia():
+        """Admin: Get all fish articles for management"""
+        try:
+            # Get query parameters
+            search = request.args.get('search', '').strip()
+            category = request.args.get('category', '').strip()
+            page = int(request.args.get('page', 1))
+            per_page = int(request.args.get('per_page', 10))
+            
+            # Build query
+            query = FishSpecies.query
+            
+            # Apply search filter
+            if search:
+                search_filter = or_(
+                    FishSpecies.name.ilike(f'%{search}%'),
+                    FishSpecies.category.ilike(f'%{search}%')
+                )
+                query = query.filter(search_filter)
+            
+            # Apply category filter
+            if category:
+                query = query.filter(FishSpecies.category == category)
+            
+            # Get total count
+            total = query.count()
+            
+            # Apply pagination
+            articles = query.order_by(FishSpecies.created_at.desc())\
+                        .paginate(page=page, per_page=per_page, error_out=False)
+            
+            return jsonify({
+                'success': True,
+                'data': [article.to_dict() for article in articles.items],
+                'pagination': {
+                    'page': page,
+                    'per_page': per_page,
+                    'total': total,
+                    'pages': articles.pages
+                }
+            }), 200
+            
+        except Exception as e:
+            print(f"Error getting admin fishpedia: {str(e)}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+
+    @app.route('/api/admin/fishpedia', methods=['POST'])
+    @admin_required
+    def admin_create_fishpedia():
+        """Admin: Create new fish article"""
+        try:
+            data = request.get_json()
+            
+            # Validate required fields
+            required_fields = ['name', 'scientific_name', 'category']
+            for field in required_fields:
+                if field not in data or not data[field].strip():
+                    return jsonify({
+                        'success': False,
+                        'message': f'Field {field} is required'
+                    }), 400
+            
+            # Create new article
+            new_article = FishSpecies(
+                name=data['name'].strip(),
+                scientific_name=data['scientific_name'].strip(),
+                category=data['category'].strip(),
+                habitat=data['habitat'].strip(),
+                size=data.get('size', '').strip(),
+                temperament=data.get('temperament', '').strip(),
+                diet=data.get('diet', '').strip(),
+                care_level=data.get('care_level', '').strip(),
+                ph_range=data.get('ph_range', '').strip(),
+                temperature_range=data.get('temperature_range', '').strip(),
+                tank_size=data.get('tank_size', '').strip(),
+                lifespan=data.get('lifespan', '').strip(),
+                breeding=data.get('breeding', '').strip(),
+                image_url=data.get('image_url', '').strip()
+            )
+            
+            db.session.add(new_article)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Fish article created successfully',
+                'data': new_article.to_dict()
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error creating fishpedia article: {str(e)}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+
+    @app.route('/api/admin/fishpedia/<int:article_id>', methods=['GET'])
+    @admin_required
+    def admin_get_fishpedia_detail(article_id):
+        """Admin: Get fish article detail for editing"""
+        try:
+            article = FishSpecies.query.get(article_id)
+            
+            if not article:
+                return jsonify({
+                    'success': False,
+                    'message': 'Article not found'
+                }), 404
+            
+            return jsonify({
+                'success': True,
+                'data': article.to_dict()
+            }), 200
+            
+        except Exception as e:
+            print(f"Error getting fishpedia detail: {str(e)}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+
+    @app.route('/api/admin/fishpedia/<int:article_id>', methods=['PUT'])
+    @admin_required
+    def admin_update_fishpedia(article_id):
+        """Admin: Update fish article"""
+        try:
+            article = FishSpecies.query.get(article_id)
+            
+            if not article:
+                return jsonify({
+                    'success': False,
+                    'message': 'Article not found'
+                }), 404
+            
+            data = request.get_json()
+            
+            # Update fields if provided
+            if 'name' in data:
+                article.name = data['name'].strip()
+            if 'scientific_name' in data:
+                article.scientific_name = data['scientific_name'].strip()
+            if 'category' in data:
+                article.category = data['category'].strip()
+            if 'habitat' in data:
+                article.habitat = data['habitat'].strip()
+            if 'size' in data:
+                article.size = data['size'].strip()
+            if 'temperament' in data:
+                article.temperament = data['temperament'].strip()
+            if 'diet' in data:
+                article.diet = data['diet'].strip()
+            if 'care_level' in data:
+                article.care_level = data['care_level'].strip()
+            if 'ph_range' in data:
+                article.ph_range = data['ph_range'].strip()
+            if 'temperature_range' in data:
+                article.temperature_range = data['temperature_range'].strip()
+            if 'tank_size' in data:
+                article.tank_size = data['tank_size'].strip()
+            if 'lifespan' in data:
+                article.lifespan = data['lifespan'].strip()
+            if 'breeding' in data:
+                article.breeding = data['breeding'].strip()
+            if 'image_url' in data:
+                article.image_url = data['image_url'].strip()
+            
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Fish article updated successfully',
+                'data': article.to_dict()
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating fishpedia article: {str(e)}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+
+    @app.route('/api/admin/fishpedia/<int:article_id>', methods=['DELETE'])
+    @admin_required
+    def admin_delete_fishpedia(article_id):
+        """Admin: Delete fish article"""
+        try:
+            article = FishSpecies.query.get(article_id)
+            
+            if not article:
+                return jsonify({
+                    'success': False,
+                    'message': 'Article not found'
+                }), 404
+            
+            db.session.delete(article)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Fish article deleted successfully'
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error deleting fishpedia article: {str(e)}")
+            return jsonify({'success': False, 'message': str(e)}), 500
     
     # Forum Routes
     @app.route('/api/forum/topics', methods=['GET'])

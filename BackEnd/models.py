@@ -167,6 +167,8 @@ class FishSpecies(db.Model):
     description = db.Column(db.Text)
     care_level = db.Column(db.String(20))  # easy, moderate, difficult (Mudah, Menengah, Sulit)
     temperament = db.Column(db.String(50))
+    family = db.Column(db.String(100))  # Famili ikan (contoh: Cyprinidae, Poeciliidae)
+    habitat = db.Column(db.Text)  # Habitat alami ikan
     max_size = db.Column(db.String(50))
     min_tank_size = db.Column(db.String(50))
     water_temp = db.Column(db.String(50))
@@ -215,6 +217,8 @@ class FishSpecies(db.Model):
             'description': self.description,
             'difficulty': self.care_level,  # Map care_level ke difficulty
             'temperament': self.temperament,
+            'family': self.family,  # Famili ikan
+            'habitat': self.habitat,
             'maxSize': self.max_size,
             'minTankSize': self.min_tank_size,
             'waterTemp': self.water_temp,

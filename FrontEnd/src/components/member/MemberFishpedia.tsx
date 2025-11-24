@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Search, Fish, ChevronRight } from '../icons';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { fishpediaAPI } from '../../services/api';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 interface FishSpecies {
   id: number;
@@ -12,25 +15,82 @@ interface FishSpecies {
   scientificName: string;
   category: string;
   difficulty: string;
-  temperament: string;
-  size: string;
-  temperature: string;
-  ph: string;
+  temperament?: string;
+  size?: string;
+  temperature?: string;
+  ph?: string;
   description: string;
-  imageUrl: string;
-  detailedDescription: string;
-  family: string;
-  habitat: string;
-  diet: string;
-  lifespan: string;
+  imageUrl?: string;
+  image?: string;
+  detailedDescription?: string;
+  family?: string;
+  habitat?: string;
+  diet?: string;
+  lifespan?: string;
+  phMin?: number;
+  phMax?: number;
+  tempMin?: number;
+  tempMax?: number;
 }
 
 export default function MemberFishpedia() {
   const [selectedFish, setSelectedFish] = useState<FishSpecies | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Semua');
+  const [fishSpecies, setFishSpecies] = useState<FishSpecies[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fishSpecies: FishSpecies[] = [
+  // Fetch fish data from API
+  useEffect(() => {
+    fetchFishData();
+  }, []);
+
+  const fetchFishData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fishpediaAPI.getSpecies();
+      
+      if (response.success && response.species) {
+        // Transform data dari backend ke format komponen
+        const transformedData = response.species
+          .filter((fish: any) => fish.status === 'published') // Hanya tampilkan yang published
+          .map((fish: any) => ({
+            id: fish.id,
+            name: fish.name,
+            scientificName: fish.scientificName,
+            category: fish.category,
+            difficulty: fish.difficulty,
+            description: fish.description,
+            habitat: fish.habitat,
+            imageUrl: fish.image ? `${API_BASE_URL}${fish.image}` : '',
+            image: fish.image,
+            ph: fish.phMin && fish.phMax ? `${fish.phMin}-${fish.phMax}` : '7.0',
+            temperature: fish.tempMin && fish.tempMax ? `${fish.tempMin}-${fish.tempMax}°C` : '25°C',
+            phMin: fish.phMin,
+            phMax: fish.phMax,
+            tempMin: fish.tempMin,
+            tempMax: fish.tempMax,
+            // Field tambahan dengan default values
+            temperament: 'Damai',
+            size: '10-15 cm',
+            detailedDescription: fish.description,
+            family: 'N/A',
+            diet: 'Informasi diet tidak tersedia',
+            lifespan: '3-5 tahun'
+          }));
+        setFishSpecies(transformedData);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching fish data:', err);
+      setError('Gagal memuat data ikan');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fishSpeciesHardcoded: FishSpecies[] = [
     {
       id: 1,
       name: 'Ikan Koi',
@@ -175,7 +235,7 @@ export default function MemberFishpedia() {
       diet: 'Omnivora - pelet mikro, cacing darah kecil, kutu air',
       lifespan: '5-8 tahun'
     }
-  ];
+  ]; // Hardcoded data as fallback
 
   const difficultyLevels = ['Semua', 'Mudah', 'Menengah', 'Sulit'];
 
@@ -201,6 +261,18 @@ export default function MemberFishpedia() {
 
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Memuat data ikan...</p>
+        </div>
+      )}
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl mb-3" style={{ color: '#2D3436' }}>Fishpedia</h1>
@@ -306,96 +378,95 @@ export default function MemberFishpedia() {
 
       {/* Fish Detail Dialog */}
       <Dialog open={selectedFish !== null} onOpenChange={() => setSelectedFish(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'white' }}>
-          <DialogHeader>
-            <DialogTitle className="text-2xl" style={{ color: '#4880FF' }}>{selectedFish?.name}</DialogTitle>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#F3F3E0', border: 'none' }}>
+          <DialogHeader className="border-b pb-4" style={{ borderColor: '#CBDCEB' }}>
+            <DialogTitle className="text-2xl font-bold" style={{ color: '#133E87' }}>{selectedFish?.name}</DialogTitle>
+            <p className="text-sm italic text-gray-600 mt-1">{selectedFish?.scientificName}</p>
           </DialogHeader>
           
           {selectedFish && (
-            <div className="space-y-6">
-              {/* Image and Basic Info */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="relative h-64 rounded-lg overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200">
-                  <ImageWithFallback
-                    src={selectedFish.imageUrl}
-                    alt={selectedFish.name}
-                    className="w-full h-full object-cover"
-                  />
+            <div className="space-y-4 pt-4">
+              {/* Image */}
+              <div className="relative h-72 rounded-xl overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 shadow-lg">
+                <ImageWithFallback
+                  src={selectedFish.imageUrl}
+                  alt={selectedFish.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-4 right-4">
+                  <Badge className={getDifficultyColor(selectedFish.difficulty) + ' text-sm px-3 py-1 shadow-md'}>
+                    {selectedFish.difficulty}
+                  </Badge>
                 </div>
-                
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-sm" style={{ color: '#636E72' }}>Nama Ilmiah</span>
-                    <p className="font-medium italic" style={{ color: '#2D3436' }}>{selectedFish.scientificName}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm" style={{ color: '#636E72' }}>Famili</span>
-                    <p className="font-medium" style={{ color: '#2D3436' }}>{selectedFish.family}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm" style={{ color: '#636E72' }}>Kategori</span>
-                    <p className="font-medium" style={{ color: '#2D3436' }}>{selectedFish.category}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm" style={{ color: '#636E72' }}>Tingkat Kesulitan</span>
-                    <Badge className={getDifficultyColor(selectedFish.difficulty) + ' mt-1'}>
-                      {selectedFish.difficulty}
-                    </Badge>
-                  </div>
+              </div>
+
+              {/* Basic Info Cards */}
+              <div className="grid md:grid-cols-3 gap-3">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Kategori</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.category}</p>
+                </div>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Famili</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.family || 'N/A'}</p>
+                </div>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Temperamen</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.temperament || 'Damai'}</p>
                 </div>
               </div>
 
               {/* Description */}
-              <div>
-                <h3 className="text-lg mb-2" style={{ color: '#4880FF' }}>Deskripsi</h3>
-                <p className="leading-relaxed" style={{ color: '#636E72' }}>{selectedFish.detailedDescription}</p>
+              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>📝 Deskripsi</h3>
+                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.detailedDescription || selectedFish.description}</p>
               </div>
 
               {/* Parameters Grid */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg" style={{ color: '#4880FF' }}>Parameter Air</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>💧 Parameter Air</h3>
                   <div className="space-y-3">
-                    <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
-                      <span style={{ color: '#636E72' }}>Suhu</span>
-                      <span className="font-medium" style={{ color: '#2D3436' }}>{selectedFish.temperature}</span>
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Suhu</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.temperature}</span>
                     </div>
-                    <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
-                      <span style={{ color: '#636E72' }}>pH</span>
-                      <span className="font-medium" style={{ color: '#2D3436' }}>{selectedFish.ph}</span>
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>pH</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.ph}</span>
                     </div>
-                    <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
-                      <span style={{ color: '#636E72' }}>Ukuran Maksimal</span>
-                      <span className="font-medium" style={{ color: '#2D3436' }}>{selectedFish.size}</span>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Ukuran Maksimal</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.size}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-lg" style={{ color: '#4880FF' }}>Informasi Lainnya</h3>
+                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>ℹ️ Informasi Lainnya</h3>
                   <div className="space-y-3">
-                    <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
-                      <span style={{ color: '#636E72' }}>Temperamen</span>
-                      <span className="font-medium" style={{ color: '#2D3436' }}>{selectedFish.temperament}</span>
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Temperamen</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.temperament}</span>
                     </div>
-                    <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
-                      <span style={{ color: '#636E72' }}>Lama Hidup</span>
-                      <span className="font-medium" style={{ color: '#2D3436' }}>{selectedFish.lifespan}</span>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Lama Hidup</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.lifespan}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Habitat */}
-              <div>
-                <h3 className="text-lg mb-2" style={{ color: '#4880FF' }}>Habitat Alami</h3>
-                <p className="leading-relaxed" style={{ color: '#636E72' }}>{selectedFish.habitat}</p>
+              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>🌍 Habitat Alami</h3>
+                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.habitat || 'Informasi habitat tidak tersedia'}</p>
               </div>
 
               {/* Diet */}
-              <div>
-                <h3 className="text-lg mb-2" style={{ color: '#4880FF' }}>Makanan & Diet</h3>
-                <p className="leading-relaxed" style={{ color: '#636E72' }}>{selectedFish.diet}</p>
+              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>🍽️ Makanan & Diet</h3>
+                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.diet || 'Informasi diet tidak tersedia'}</p>
               </div>
             </div>
           )}
