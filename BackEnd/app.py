@@ -93,15 +93,22 @@ def create_app(config_name='development'):
     return app
 
 if __name__ == '__main__':
-    app = create_app('development')
-    
-    # Create tables if they don't exist
-    with app.app_context():
-        db.create_all()
-        print("✅ Database tables created/verified")
-    
-    print("\n🚀 Starting Flask server...")
-    print("📍 Server running on: http://localhost:5000")
-    print("=" * 70)
-    
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    try:
+        app = create_app('development')
+        
+        # Create tables if they don't exist
+        with app.app_context():
+            db.create_all()
+            print("✅ Database tables created/verified")
+        
+        print("\n🚀 Starting Flask server...")
+        print("📍 Server running on: http://localhost:5000")
+        print("=" * 70)
+        
+        # Use debug=False to avoid auto-reload issues
+        app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+    except Exception as e:
+        print(f"\n❌ ERROR starting server: {e}")
+        import traceback
+        traceback.print_exc()
+        input("Press Enter to exit...")

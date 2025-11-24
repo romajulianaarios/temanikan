@@ -543,6 +543,7 @@ def register_routes(app):
         species = query.all()
         
         return jsonify({
+            'success': True,
             'species': [s.to_dict() for s in species],
             'count': len(species)
         }), 200
@@ -552,9 +553,9 @@ def register_routes(app):
         species = FishSpecies.query.get(species_id)
         
         if not species:
-            return jsonify({'error': 'Species not found'}), 404
+            return jsonify({'success': False, 'message': 'Species not found'}), 404
         
-        return jsonify({'species': species.to_dict()}), 200
+        return jsonify({'success': True, 'fish': species.to_dict()}), 200
     
     @app.route('/api/fishpedia', methods=['POST'])
     @jwt_required()
@@ -563,32 +564,59 @@ def register_routes(app):
         user = User.query.get(user_id)
         
         if user.role != 'admin':
-            return jsonify({'error': 'Admin access required'}), 403
+            return jsonify({'success': False, 'message': 'Admin access required'}), 403
         
-        data = request.get_json()
+        # Handle FormData for file upload
+        data = request.form
         
         if not data.get('name'):
-            return jsonify({'error': 'Species name is required'}), 400
+            return jsonify({'success': False, 'message': 'Species name is required'}), 400
+        
+        # Parse pH range from ph_min and ph_max
+        ph_min = data.get('ph_min', '')
+        ph_max = data.get('ph_max', '')
+        ph_range = f"{ph_min}-{ph_max}" if ph_min and ph_max else ''
+        
+        # Parse water temp from temp_min and temp_max
+        temp_min = data.get('temp_min', '')
+        temp_max = data.get('temp_max', '')
+        water_temp = f"{temp_min}-{temp_max}°C" if temp_min and temp_max else ''
+        
+        # Handle image upload
+        image_url = ''
+        if 'image' in request.files:
+            image = request.files['image']
+            if image.filename:
+                # For now, just keep the URL from form or use a placeholder
+                # In production, save to uploads folder
+                pass
+        
+        # Get image URL from form if no file uploaded
+        if not image_url:
+            image_url = data.get('image_url', '')
         
         species = FishSpecies(
             name=data['name'],
             scientific_name=data.get('scientific_name'),
             category=data.get('category'),
             description=data.get('description'),
-            care_level=data.get('care_level'),
+            care_level=data.get('difficulty'),  # Map difficulty to care_level
             temperament=data.get('temperament'),
             max_size=data.get('max_size'),
             min_tank_size=data.get('min_tank_size'),
-            water_temp=data.get('water_temp'),
-            ph_range=data.get('ph_range'),
+            water_temp=water_temp,
+            ph_range=ph_range,
             diet=data.get('diet'),
-            image_url=data.get('image_url')
+            image_url=image_url,
+            status=data.get('status', 'published'),
+            views=0
         )
         
         db.session.add(species)
         db.session.commit()
         
         return jsonify({
+            'success': True,
             'message': 'Fish species added successfully',
             'species': species.to_dict()
         }), 201
@@ -600,25 +628,63 @@ def register_routes(app):
         user = User.query.get(user_id)
         
         if user.role != 'admin':
-            return jsonify({'error': 'Admin access required'}), 403
+            return jsonify({'success': False, 'message': 'Admin access required'}), 403
         
         species = FishSpecies.query.get(species_id)
         
         if not species:
-            return jsonify({'error': 'Species not found'}), 404
+            return jsonify({'success': False, 'message': 'Species not found'}), 404
         
-        data = request.get_json()
+        # Handle FormData for file upload
+        data = request.form
         
-        for key in ['name', 'scientific_name', 'category', 'description', 'care_level',
-                    'temperament', 'max_size', 'min_tank_size', 'water_temp', 
-                    'ph_range', 'diet', 'image_url']:
-            if key in data:
-                setattr(species, key, data[key])
+        # Update fields
+        if 'name' in data:
+            species.name = data['name']
+        if 'scientific_name' in data:
+            species.scientific_name = data['scientific_name']
+        if 'category' in data:
+            species.category = data['category']
+        if 'description' in data:
+            species.description = data['description']
+        if 'difficulty' in data:
+            species.care_level = data['difficulty']
+        if 'temperament' in data:
+            species.temperament = data['temperament']
+        if 'max_size' in data:
+            species.max_size = data['max_size']
+        if 'min_tank_size' in data:
+            species.min_tank_size = data['min_tank_size']
+        if 'diet' in data:
+            species.diet = data['diet']
+        if 'status' in data:
+            species.status = data['status']
+        
+        # Parse pH range
+        if 'ph_min' in data and 'ph_max' in data:
+            ph_min = data['ph_min']
+            ph_max = data['ph_max']
+            species.ph_range = f"{ph_min}-{ph_max}" if ph_min and ph_max else species.ph_range
+        
+        # Parse water temp
+        if 'temp_min' in data and 'temp_max' in data:
+            temp_min = data['temp_min']
+            temp_max = data['temp_max']
+            species.water_temp = f"{temp_min}-{temp_max}°C" if temp_min and temp_max else species.water_temp
+        
+        # Handle image upload if provided
+        if 'image' in request.files:
+            image = request.files['image']
+            if image.filename:
+                # For now, keep existing image_url
+                # In production, save to uploads folder
+                pass
         
         species.updated_at = datetime.utcnow()
         db.session.commit()
         
         return jsonify({
+            'success': True,
             'message': 'Fish species updated successfully',
             'species': species.to_dict()
         }), 200
@@ -630,17 +696,20 @@ def register_routes(app):
         user = User.query.get(user_id)
         
         if user.role != 'admin':
-            return jsonify({'error': 'Admin access required'}), 403
+            return jsonify({'success': False, 'message': 'Admin access required'}), 403
         
         species = FishSpecies.query.get(species_id)
         
         if not species:
-            return jsonify({'error': 'Species not found'}), 404
+            return jsonify({'success': False, 'message': 'Species not found'}), 404
         
         db.session.delete(species)
         db.session.commit()
         
-        return jsonify({'message': 'Fish species deleted successfully'}), 200
+        return jsonify({
+            'success': True,
+            'message': 'Fish species deleted successfully'
+        }), 200
     
     # Forum Routes
     @app.route('/api/forum/topics', methods=['GET'])

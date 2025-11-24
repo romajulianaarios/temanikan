@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Search, Plus, Edit, Trash2, Eye, Upload } from '../icons';
+import { fishpediaAPI } from '../../services/api';
 
 interface FishEntry {
   id: number;
@@ -28,83 +29,9 @@ interface FishEntry {
 }
 
 export default function AdminFishpedia() {
-  const [fishEntries, setFishEntries] = useState<FishEntry[]>([
-    {
-      id: 1,
-      name: 'Ikan Koi',
-      scientificName: 'Cyprinus carpio',
-      category: 'Air Tawar',
-      difficulty: 'Menengah',
-      status: 'published',
-      views: 1245,
-      lastUpdated: '1 Nov 2025',
-      description: 'Ikan koi adalah ikan hias yang populer dengan berbagai warna indah.',
-      phMin: 7.0,
-      phMax: 8.0,
-      tempMin: 15,
-      tempMax: 25
-    },
-    {
-      id: 2,
-      name: 'Ikan Cupang',
-      scientificName: 'Betta splendens',
-      category: 'Air Tawar',
-      difficulty: 'Mudah',
-      status: 'published',
-      views: 987,
-      lastUpdated: '28 Okt 2025',
-      description: 'Ikan cupang dikenal dengan siripnya yang indah dan sifat agresifnya.',
-      phMin: 6.5,
-      phMax: 7.5,
-      tempMin: 24,
-      tempMax: 28
-    },
-    {
-      id: 3,
-      name: 'Ikan Mas Koki',
-      scientificName: 'Carassius auratus',
-      category: 'Air Tawar',
-      difficulty: 'Mudah',
-      status: 'published',
-      views: 854,
-      lastUpdated: '25 Okt 2025',
-      description: 'Ikan mas koki adalah ikan hias yang mudah dipelihara.',
-      phMin: 6.5,
-      phMax: 7.5,
-      tempMin: 18,
-      tempMax: 24
-    },
-    {
-      id: 4,
-      name: 'Ikan Discus',
-      scientificName: 'Symphysodon spp.',
-      category: 'Air Tawar',
-      difficulty: 'Sulit',
-      status: 'draft',
-      views: 0,
-      lastUpdated: '4 Nov 2025',
-      description: 'Ikan discus adalah ikan air tawar yang cantik namun memerlukan perawatan khusus.',
-      phMin: 6.0,
-      phMax: 7.0,
-      tempMin: 26,
-      tempMax: 30
-    },
-    {
-      id: 5,
-      name: 'Ikan Guppy',
-      scientificName: 'Poecilia reticulata',
-      category: 'Air Tawar',
-      difficulty: 'Mudah',
-      status: 'published',
-      views: 723,
-      lastUpdated: '20 Okt 2025',
-      description: 'Ikan guppy adalah ikan kecil yang mudah berkembang biak.',
-      phMin: 7.0,
-      phMax: 8.0,
-      tempMin: 22,
-      tempMax: 28
-    },
-  ]);
+  const [fishEntries, setFishEntries] = useState<FishEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('Semua');
@@ -117,14 +44,37 @@ export default function AdminFishpedia() {
   // Form states
   const [formName, setFormName] = useState('');
   const [formScientificName, setFormScientificName] = useState('');
-  const [formCategory, setFormCategory] = useState('Air Tawar');
+  const [formCategory, setFormCategory] = useState('');
   const [formDifficulty, setFormDifficulty] = useState<'Mudah' | 'Menengah' | 'Sulit'>('Mudah');
   const [formDescription, setFormDescription] = useState('');
-  const [formPhMin, setFormPhMin] = useState('6.5');
-  const [formPhMax, setFormPhMax] = useState('7.5');
-  const [formTempMin, setFormTempMin] = useState('22');
-  const [formTempMax, setFormTempMax] = useState('28');
+  const [formPhMin, setFormPhMin] = useState('');
+  const [formPhMax, setFormPhMax] = useState('');
+  const [formTempMin, setFormTempMin] = useState('');
+  const [formTempMax, setFormTempMax] = useState('');
   const [formStatus, setFormStatus] = useState<'published' | 'draft'>('draft');
+  const [formImage, setFormImage] = useState<File | null>(null);
+  const [formImagePreview, setFormImagePreview] = useState<string>('');
+
+  // Fetch fish data from API
+  useEffect(() => {
+    fetchFishData();
+  }, []);
+
+  const fetchFishData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fishpediaAPI.getSpecies();
+      if (response.success && response.species) {
+        setFishEntries(response.species);
+      }
+    } catch (err: any) {
+      console.error('Error fetching fish data:', err);
+      setError(err.message || 'Gagal memuat data ikan');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter fish entries
   const filteredEntries = fishEntries.filter(fish => {
@@ -141,62 +91,97 @@ export default function AdminFishpedia() {
   const draftCount = fishEntries.filter(f => f.status === 'draft').length;
 
   // Handle Add Fish
-  const handleAddFish = (e: React.FormEvent) => {
+  const handleAddFish = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newFish: FishEntry = {
-      id: fishEntries.length + 1,
-      name: formName,
-      scientificName: formScientificName,
-      category: formCategory,
-      difficulty: formDifficulty,
-      status: formStatus,
-      views: 0,
-      lastUpdated: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
-      description: formDescription,
-      phMin: parseFloat(formPhMin),
-      phMax: parseFloat(formPhMax),
-      tempMin: parseFloat(formTempMin),
-      tempMax: parseFloat(formTempMax)
-    };
-    setFishEntries([...fishEntries, newFish]);
-    setShowAddModal(false);
-    resetForm();
+    
+    try {
+      const formData = new FormData();
+      formData.append('name', formName);
+      formData.append('scientific_name', formScientificName);
+      formData.append('category', formCategory);
+      formData.append('difficulty', formDifficulty);
+      formData.append('description', formDescription);
+      formData.append('ph_min', formPhMin);
+      formData.append('ph_max', formPhMax);
+      formData.append('temp_min', formTempMin);
+      formData.append('temp_max', formTempMax);
+      formData.append('status', formStatus);
+      
+      if (formImage) {
+        formData.append('image', formImage);
+      }
+
+      const response = await fishpediaAPI.addSpecies(formData);
+      
+      if (response.success) {
+        await fetchFishData(); // Refresh list
+        setShowAddModal(false);
+        resetForm();
+      } else {
+        alert(response.message || 'Gagal menambahkan ikan');
+      }
+    } catch (err: any) {
+      console.error('Error adding fish:', err);
+      alert(err.message || 'Gagal menambahkan ikan');
+    }
   };
 
   // Handle Edit Fish
-  const handleEditFish = (e: React.FormEvent) => {
+  const handleEditFish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFish) return;
     
-    setFishEntries(fishEntries.map(fish => 
-      fish.id === selectedFish.id 
-        ? {
-            ...fish,
-            name: formName,
-            scientificName: formScientificName,
-            category: formCategory,
-            difficulty: formDifficulty,
-            description: formDescription,
-            phMin: parseFloat(formPhMin),
-            phMax: parseFloat(formPhMax),
-            tempMin: parseFloat(formTempMin),
-            tempMax: parseFloat(formTempMax),
-            status: formStatus,
-            lastUpdated: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-          }
-        : fish
-    ));
-    setShowEditModal(false);
-    setSelectedFish(null);
-    resetForm();
+    try {
+      const formData = new FormData();
+      formData.append('name', formName);
+      formData.append('scientific_name', formScientificName);
+      formData.append('category', formCategory);
+      formData.append('difficulty', formDifficulty);
+      formData.append('description', formDescription);
+      formData.append('ph_min', formPhMin);
+      formData.append('ph_max', formPhMax);
+      formData.append('temp_min', formTempMin);
+      formData.append('temp_max', formTempMax);
+      formData.append('status', formStatus);
+      
+      if (formImage) {
+        formData.append('image', formImage);
+      }
+
+      const response = await fishpediaAPI.updateSpecies(selectedFish.id, formData);
+      
+      if (response.success) {
+        await fetchFishData(); // Refresh list
+        setShowEditModal(false);
+        setSelectedFish(null);
+        resetForm();
+      } else {
+        alert(response.message || 'Gagal mengupdate ikan');
+      }
+    } catch (err: any) {
+      console.error('Error updating fish:', err);
+      alert(err.message || 'Gagal mengupdate ikan');
+    }
   };
 
   // Handle Delete Fish
-  const handleDeleteFish = () => {
+  const handleDeleteFish = async () => {
     if (!selectedFish) return;
-    setFishEntries(fishEntries.filter(fish => fish.id !== selectedFish.id));
-    setShowDeleteConfirm(false);
-    setSelectedFish(null);
+    
+    try {
+      const response = await fishpediaAPI.deleteSpecies(selectedFish.id);
+      
+      if (response.success) {
+        await fetchFishData(); // Refresh list
+        setShowDeleteConfirm(false);
+        setSelectedFish(null);
+      } else {
+        alert(response.message || 'Gagal menghapus ikan');
+      }
+    } catch (err: any) {
+      console.error('Error deleting fish:', err);
+      alert(err.message || 'Gagal menghapus ikan');
+    }
   };
 
   // Open View Modal
@@ -213,11 +198,13 @@ export default function AdminFishpedia() {
     setFormCategory(fish.category);
     setFormDifficulty(fish.difficulty);
     setFormDescription(fish.description || '');
-    setFormPhMin(fish.phMin?.toString() || '6.5');
-    setFormPhMax(fish.phMax?.toString() || '7.5');
-    setFormTempMin(fish.tempMin?.toString() || '22');
-    setFormTempMax(fish.tempMax?.toString() || '28');
+    setFormPhMin(fish.phMin?.toString() || '');
+    setFormPhMax(fish.phMax?.toString() || '');
+    setFormTempMin(fish.tempMin?.toString() || '');
+    setFormTempMax(fish.tempMax?.toString() || '');
     setFormStatus(fish.status);
+    setFormImage(null);
+    setFormImagePreview(fish.image || '');
     setShowEditModal(true);
   };
 
@@ -227,22 +214,51 @@ export default function AdminFishpedia() {
     setShowDeleteConfirm(true);
   };
 
+  // Handle Image Change
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFormImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Reset Form
   const resetForm = () => {
     setFormName('');
     setFormScientificName('');
-    setFormCategory('Air Tawar');
+    setFormCategory('');
     setFormDifficulty('Mudah');
     setFormDescription('');
-    setFormPhMin('6.5');
-    setFormPhMax('7.5');
-    setFormTempMin('22');
-    setFormTempMax('28');
+    setFormPhMin('');
+    setFormPhMax('');
+    setFormTempMin('');
+    setFormTempMax('');
     setFormStatus('draft');
+    setFormImage(null);
+    setFormImagePreview('');
   };
 
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Memuat data ikan...</p>
+        </div>
+      )}
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6" style={{ backgroundColor: 'white' }}>
@@ -392,7 +408,7 @@ export default function AdminFishpedia() {
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   required
-                  placeholder="Ikan Koi"
+                  placeholder="Masukkan nama ikan"
                 />
               </div>
               <div>
@@ -402,16 +418,16 @@ export default function AdminFishpedia() {
                   value={formScientificName}
                   onChange={(e) => setFormScientificName(e.target.value)}
                   required
-                  placeholder="Cyprinus carpio"
+                  placeholder="Masukkan nama ilmiah"
                 />
               </div>
             </div>
 
             <div>
               <Label htmlFor="add-category">Kategori</Label>
-              <Select value={formCategory} onValueChange={setFormCategory}>
+              <Select value={formCategory} onValueChange={setFormCategory} required>
                 <SelectTrigger id="add-category">
-                  <SelectValue />
+                  <SelectValue placeholder="Pilih kategori" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Air Tawar">Air Tawar</SelectItem>
@@ -423,9 +439,9 @@ export default function AdminFishpedia() {
 
             <div>
               <Label htmlFor="add-difficulty">Kesulitan</Label>
-              <Select value={formDifficulty} onValueChange={setFormDifficulty}>
+              <Select value={formDifficulty} onValueChange={setFormDifficulty} required>
                 <SelectTrigger id="add-difficulty">
-                  <SelectValue />
+                  <SelectValue placeholder="Pilih tingkat kesulitan" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Mudah">Mudah</SelectItem>
@@ -442,7 +458,8 @@ export default function AdminFishpedia() {
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 rows={4}
-                placeholder="Deskripsi lengkap tentang ikan..."
+                placeholder="Masukkan deskripsi lengkap tentang ikan"
+                required
               />
             </div>
 
@@ -509,12 +526,36 @@ export default function AdminFishpedia() {
 
             <div>
               <Label htmlFor="add-image">Gambar Ikan</Label>
-              <div className="mt-2 flex items-center gap-4">
-                <Button type="button" variant="outline" size="sm">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Gambar
-                </Button>
-                <span className="text-sm text-gray-500">Format: JPG, PNG (Max 2MB)</span>
+              <div className="mt-2 space-y-3">
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    id="add-image"
+                    accept="image/jpeg,image/png,image/jpg"
+                    onChange={handleImageChange}
+                    required
+                    className="hidden"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => document.getElementById('add-image')?.click()}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Gambar
+                  </Button>
+                  <span className="text-sm text-gray-500">Format: JPG, PNG (Max 2MB)</span>
+                </div>
+                {formImagePreview && (
+                  <div className="mt-2">
+                    <img 
+                      src={formImagePreview} 
+                      alt="Preview" 
+                      className="w-32 h-32 object-cover rounded border"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -604,6 +645,7 @@ export default function AdminFishpedia() {
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 rows={4}
+                required
               />
             </div>
 
@@ -666,6 +708,40 @@ export default function AdminFishpedia() {
                   <SelectItem value="published">Published</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="edit-image">Update Gambar Ikan</Label>
+              <div className="mt-2 space-y-3">
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    id="edit-image"
+                    accept="image/jpeg,image/png,image/jpg"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => document.getElementById('edit-image')?.click()}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Gambar Baru
+                  </Button>
+                  <span className="text-sm text-gray-500">Format: JPG, PNG (Max 2MB)</span>
+                </div>
+                {formImagePreview && (
+                  <div className="mt-2">
+                    <img 
+                      src={formImagePreview} 
+                      alt="Preview" 
+                      className="w-32 h-32 object-cover rounded border"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <DialogFooter className="gap-2">
