@@ -18,6 +18,7 @@ class User(db.Model):
     address = db.Column(db.Text)
     age = db.Column(db.Integer)  # Usia
     primary_fish_type = db.Column(db.String(100))  # Jenis Ikan Hias Utama
+    is_active = db.Column(db.Boolean, default=True)  # Account status
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -44,6 +45,7 @@ class User(db.Model):
             'address': self.address,
             'age': self.age,
             'primary_fish_type': self.primary_fish_type,
+            'is_active': self.is_active if hasattr(self, 'is_active') else True,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

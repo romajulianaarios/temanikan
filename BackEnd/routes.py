@@ -274,6 +274,335 @@ def register_routes(app):
         
         return jsonify({'message': 'Device deleted successfully'}), 200
     
+    # Helper functions for device formatting
+    def get_device_online_status(last_online):
+        """Determine if device is online based on last_online timestamp"""
+        if not last_online:
+            return 'offline'
+        
+        time_diff = datetime.utcnow() - last_online
+        # If last online within 5 minutes, consider it online
+        if time_diff.total_seconds() < 300:  # 5 minutes = 300 seconds
+            return 'online'
+        return 'offline'
+    
+    def format_last_active(last_online):
+        """Format last_online timestamp to human-readable text"""
+        if not last_online:
+            return 'Belum pernah online'
+        
+        time_diff = datetime.utcnow() - last_online
+        seconds = int(time_diff.total_seconds())
+        
+        if seconds < 300:  # Less than 5 minutes
+            return 'Aktif sekarang'
+        elif seconds < 3600:  # Less than 1 hour
+            minutes = seconds // 60
+            return f'{minutes} menit yang lalu'
+        elif seconds < 86400:  # Less than 1 day (24 hours)
+            hours = seconds // 3600
+            return f'{hours} jam yang lalu'
+        elif seconds < 604800:  # Less than 1 week (7 days)
+            days = seconds // 86400
+            return f'{days} hari yang lalu'
+        else:
+            # Format as date if more than a week
+            return last_online.strftime('%d %b %Y')
+    
+    # Member Device Routes - Formatted for frontend
+    @app.route('/api/member/devices', methods=['GET'])
+    @jwt_required()
+    def get_member_devices():
+        """Get user's devices with formatted data for frontend"""
+        try:
+            user_id = get_jwt_identity()
+            user = User.query.get(user_id)
+            
+            if not user:
+                return jsonify({'error': 'User not found'}), 404
+            
+            # Get all devices for this user
+            devices = Device.query.filter_by(user_id=user_id).all()
+            
+            # Format devices for frontend
+            formatted_devices = []
+            for device in devices:
+                formatted_devices.append({
+                    'id': str(device.id),  # Convert to string for frontend
+                    'namaPerangkat': device.name,
+                    'uniqueID': device.device_code,
+                    'status': get_device_online_status(device.last_online),
+                    'lastActive': format_last_active(device.last_online)
+                })
+            
+            # Calculate stats
+            total_devices = len(formatted_devices)
+            online_devices = sum(1 for d in formatted_devices if d['status'] == 'online')
+            offline_devices = total_devices - online_devices
+            
+            return jsonify({
+                'success': True,
+                'devices': formatted_devices,
+                'stats': {
+                    'total': total_devices,
+                    'online': online_devices,
+                    'offline': offline_devices
+                }
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Error fetching member devices: {e}")
+            return jsonify({
+                'success': False,
+                'error': 'Failed to fetch devices'
+            }), 500
+    
+    # Device Dashboard Data Endpoints - Dummy Data with Realistic Variations
+    @app.route('/api/devices/<int:device_id>/dashboard/water-latest', methods=['GET'])
+    @jwt_required()
+    def get_device_water_latest(device_id):
+        """Get latest water quality readings for device dashboard (dummy data)"""
+        try:
+            user_id = get_jwt_identity()
+            device = Device.query.get(device_id)
+            
+            if not device:
+                return jsonify({'error': 'Device not found'}), 404
+            
+            user = User.query.get(user_id)
+            if device.user_id != user_id and user.role != 'admin':
+                return jsonify({'error': 'Unauthorized access'}), 403
+            
+            # Generate realistic dummy data with slight variations
+            import random
+            
+            # Base values ± small random variation
+            ph_value = round(7.0 + random.uniform(-0.3, 0.3), 1)
+            temp_value = round(26.0 + random.uniform(-2, 2), 1)
+            turbidity_value = round(2.0 + random.uniform(-0.5, 0.5), 1)
+            oxygen_value = round(7.0 + random.uniform(-0.5, 0.5), 1)
+            ammonia_value = round(0.02 + random.uniform(-0.01, 0.01), 2)
+            
+            # Determine status based on values
+            def get_status(value, min_val, max_val):
+                return 'optimal' if min_val <= value <= max_val else 'warning'
+            
+            return jsonify({
+                'success': True,
+                'data': {
+                    'ph': {
+                        'value': ph_value,
+                        'unit': '',
+                        'status': get_status(ph_value, 6.5, 7.5),
+                        'trend': round(random.uniform(-0.3, 0.3), 1)
+                    },
+                    'temperature': {
+                        'value': temp_value,
+                        'unit': '°C',
+                        'status': get_status(temp_value, 24, 28),
+                        'trend': round(random.uniform(-0.5, 0.5), 1)
+                    },
+                    'turbidity': {
+                        'value': turbidity_value,
+                        'unit': 'NTU',
+                        'status': 'good' if turbidity_value < 5 else 'warning',
+                        'trend': round(random.uniform(-0.2, 0.2), 1)
+                    },
+                    'oxygen': {
+                        'value': oxygen_value,
+                        'unit': 'mg/L',
+                        'status': get_status(oxygen_value, 6.0, 8.0)
+                    },
+                    'ammonia': {
+                        'value': ammonia_value,
+                        'unit': 'ppm',
+                        'status': 'good' if ammonia_value < 0.05 else 'warning'
+                    },
+                    'timestamp': datetime.utcnow().isoformat()
+                }
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Error fetching water data: {e}")
+            return jsonify({'success': False, 'error': 'Failed to fetch water data'}), 500
+    
+    @app.route('/api/devices/<int:device_id>/dashboard/robot-status', methods=['GET'])
+    @jwt_required()
+    def get_device_robot_status(device_id):
+        """Get robot status for device dashboard (dummy data)"""
+        try:
+            user_id = get_jwt_identity()
+            device = Device.query.get(device_id)
+            
+            if not device:
+                return jsonify({'error': 'Device not found'}), 404
+            
+            user = User.query.get(user_id)
+            if device.user_id != user_id and user.role != 'admin':
+                return jsonify({'error': 'Unauthorized access'}), 403
+            
+            import random
+            
+            # Random robot status
+            statuses = ['idle', 'idle', 'idle', 'cleaning', 'charging']  # Mostly idle
+            robot_status = random.choice(statuses)
+            
+            # Battery level (higher when charging, lower when cleaning)
+            if robot_status == 'charging':
+                battery = random.randint(85, 100)
+            elif robot_status == 'cleaning':
+                battery = random.randint(60, 85)
+            else:  # idle
+                battery = random.randint(75, 95)
+            
+            # Generate times
+            from datetime import datetime, timedelta
+            last_cleaning_time = datetime.utcnow() - timedelta(hours=random.randint(1, 6))
+            next_cleaning_time = datetime.utcnow() + timedelta(hours=random.randint(1, 12))
+            
+            return jsonify({
+                'success': True,
+                'data': {
+                    'status': robot_status,
+                    'status_text': {
+                        'idle': 'Siap',
+                        'cleaning': 'Sedang Membersihkan',
+                        'charging': 'Mengisi Daya'
+                    }.get(robot_status, 'Siap'),
+                    'battery': battery,
+                    'last_cleaning': last_cleaning_time.isoformat(),
+                    'last_cleaning_text': format_last_active(last_cleaning_time),
+                    'next_cleaning': next_cleaning_time.isoformat(),
+                    'next_cleaning_text': f"Hari ini, {next_cleaning_time.strftime('%H:%M')}"
+                }
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Error fetching robot status: {e}")
+            return jsonify({'success': False, 'error': 'Failed to fetch robot status'}), 500
+    
+    @app.route('/api/devices/<int:device_id>/dashboard/disease-latest', methods=['GET'])
+    @jwt_required()
+    def get_device_disease_latest(device_id):
+        """Get latest disease detection for device dashboard (dummy data)"""
+        try:
+            user_id = get_jwt_identity()
+            device = Device.query.get(device_id)
+            
+            if not device:
+                return jsonify({'error': 'Device not found'}), 404
+            
+            user = User.query.get(user_id)
+            if device.user_id != user_id and user.role != 'admin':
+                return jsonify({'error': 'Unauthorized access'}), 403
+            
+            import random
+            
+            # 70% chance no disease, 30% chance disease detected
+            has_disease = random.random() < 0.3
+            
+            if has_disease:
+                diseases = [
+                    {'name': 'White Spot', 'severity': 'medium', 'fish': 'Ikan Koi'},
+                    {'name': 'Fin Rot', 'severity': 'low', 'fish': 'Ikan Mas'},
+                    {'name': 'Ich', 'severity': 'medium', 'fish': 'Ikan Koi'},
+                    {'name': 'Fungal Infection', 'severity': 'high', 'fish': 'Ikan Nila'}
+                ]
+                disease = random.choice(diseases)
+                
+                detection_time = datetime.utcnow() - timedelta(hours=random.randint(1, 5))
+                
+                return jsonify({
+                    'success': True,
+                    'has_detection': True,
+                    'data': {
+                        'fish_type': disease['fish'],
+                        'disease_name': disease['name'],
+                        'severity': disease['severity'],
+                        'severity_text': {
+                            'low': 'Ringan',
+                            'medium': 'Sedang',
+                            'high': 'Tinggi'
+                        }.get(disease['severity'], 'Sedang'),
+                        'confidence': round(random.uniform(0.75, 0.95), 2),
+                        'detected_at': detection_time.isoformat(),
+                        'detected_at_text': format_last_active(detection_time),
+                        'image_url': 'https://images.unsplash.com/photo-1718632496269-6c0fd71dc29c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80'
+                    }
+                }), 200
+            else:
+                return jsonify({
+                    'success': True,
+                    'has_detection': False,
+                    'data': {
+                        'message': 'Tidak ada penyakit terdeteksi',
+                        'last_check': datetime.utcnow().isoformat()
+                    }
+                }), 200
+                
+        except Exception as e:
+            print(f"❌ Error fetching disease detection: {e}")
+            return jsonify({'success': False, 'error': 'Failed to fetch disease detection'}), 500
+    
+    @app.route('/api/devices/<int:device_id>/dashboard/notifications-recent', methods=['GET'])
+    @jwt_required()
+    def get_device_notifications_recent(device_id):
+        """Get recent notifications for device dashboard (dummy data)"""
+        try:
+            user_id = get_jwt_identity()
+            device = Device.query.get(device_id)
+            
+            if not device:
+                return jsonify({'error': 'Device not found'}), 404
+            
+            user = User.query.get(user_id)
+            if device.user_id != user_id and user.role != 'admin':
+                return jsonify({'error': 'Unauthorized access'}), 403
+            
+            import random
+            
+            # Generate 3-5 recent notifications
+            notification_templates = [
+                {'type': 'info', 'icon': 'clock', 'message': 'Pembersihan otomatis dijadwalkan pada {time}', 'color': '#8280FF'},
+                {'type': 'success', 'icon': 'check', 'message': 'Kualitas air dalam kondisi optimal', 'color': '#4AD991'},
+                {'type': 'warning', 'icon': 'alert', 'message': 'Terdeteksi gejala awal penyakit pada Ikan Koi', 'color': '#CE3939'},
+                {'type': 'info', 'icon': 'droplet', 'message': 'pH air stabil di level optimal', 'color': '#4880FF'},
+                {'type': 'success', 'icon': 'check', 'message': 'Pembersihan selesai dilakukan', 'color': '#4AD991'},
+                {'type': 'info', 'icon': 'battery', 'message': 'Baterai robot terisi penuh', 'color': '#8280FF'},
+            ]
+            
+            num_notifications = random.randint(3, 5)
+            selected = random.sample(notification_templates, num_notifications)
+            
+            notifications = []
+            for i, template in enumerate(selected):
+                hours_ago = i + 1
+                notif_time = datetime.utcnow() - timedelta(hours=hours_ago)
+                
+                message = template['message']
+                if '{time}' in message:
+                    scheduled = datetime.utcnow() + timedelta(hours=random.randint(2, 8))
+                    message = message.format(time=scheduled.strftime('%H:%M'))
+                
+                notifications.append({
+                    'id': i + 1,
+                    'type': template['type'],
+                    'icon': template['icon'],
+                    'message': message,
+                    'time': notif_time.isoformat(),
+                    'time_text': f"{hours_ago} jam yang lalu",
+                    'color': template['color']
+                })
+            
+            return jsonify({
+                'success': True,
+                'data': notifications
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Error fetching notifications: {e}")
+            return jsonify({'success': False, 'error': 'Failed to fetch notifications'}), 500
+    
     # Water Monitoring Routes
     @app.route('/api/devices/<int:device_id>/water-data', methods=['GET'])
     @jwt_required()
@@ -2356,6 +2685,194 @@ def register_routes(app):
             'users': [u.to_dict() for u in users],
             'count': len(users)
         }), 200
+    
+    # Admin: Create new user
+    @app.route('/api/admin/users', methods=['POST'])
+    @jwt_required()
+    def create_user():
+        """Admin: Create new user"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            if current_user.role != 'admin':
+                return jsonify({'success': False, 'message': 'Admin access required'}), 403
+            
+            data = request.get_json()
+            
+            # Validation
+            required_fields = ['name', 'email', 'password']
+            for field in required_fields:
+                if field not in data or not data[field]:
+                    return jsonify({
+                        'success': False,
+                        'message': f'{field} is required'
+                    }), 400
+            
+            # Check if email already exists
+            existing_user = User.query.filter_by(email=data['email']).first()
+            if existing_user:
+                return jsonify({
+                    'success': False,
+                    'message': 'Email already registered'
+                }), 400
+            
+            # Create new user
+            new_user = User(
+                name=data['name'],
+                email=data['email'],
+                role='member',  # Always create as member
+                phone=data.get('phone', ''),
+                is_active=True
+            )
+            new_user.set_password(data['password'])
+            
+            db.session.add(new_user)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'User created successfully',
+                'user': new_user.to_dict()
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error creating user: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+    
+    # Admin: Update user
+    @app.route('/api/admin/users/<int:user_id>', methods=['PUT'])
+    @jwt_required()
+    def update_user(user_id):
+        """Admin: Update user data"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            if current_user.role != 'admin':
+                return jsonify({'success': False, 'message': 'Admin access required'}), 403
+            
+            user_to_update = User.query.get(user_id)
+            if not user_to_update:
+                return jsonify({'success': False, 'message': 'User not found'}), 404
+            
+            data = request.get_json()
+            
+            # Check email uniqueness if email is being changed
+            if 'email' in data and data['email'] != user_to_update.email:
+                existing_user = User.query.filter_by(email=data['email']).first()
+                if existing_user:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Email already in use'
+                    }), 400
+            
+            # Update fields
+            if 'name' in data:
+                user_to_update.name = data['name']
+            if 'email' in data:
+                user_to_update.email = data['email']
+            if 'phone' in data:
+                user_to_update.phone = data['phone']
+            
+            # Don't allow role changes for security
+            
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'User updated successfully',
+                'user': user_to_update.to_dict()
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error updating user: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+    
+    # Admin: Delete user
+    @app.route('/api/admin/users/<int:user_id>', methods=['DELETE'])
+    @jwt_required()
+    def delete_user(user_id):
+        """Admin: Delete user"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            if current_user.role != 'admin':
+                return jsonify({'success': False, 'message': 'Admin access required'}), 403
+            
+            # Prevent self-deletion
+            if int(current_user_id) == user_id:
+                return jsonify({
+                    'success': False,
+                    'message': 'You cannot delete your own account'
+                }), 400
+            
+            user_to_delete = User.query.get(user_id)
+            if not user_to_delete:
+                return jsonify({'success': False, 'message': 'User not found'}), 404
+            
+            # Prevent deleting other admins
+            if user_to_delete.role == 'admin':
+                return jsonify({
+                    'success': False,
+                    'message': 'Cannot delete admin accounts'
+                }), 400
+            
+            db.session.delete(user_to_delete)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'User deleted successfully'
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error deleting user: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+    
+    # Admin: Toggle user status
+    @app.route('/api/admin/users/<int:user_id>/toggle-status', methods=['PUT'])
+    @jwt_required()
+    def toggle_user_status(user_id):
+        """Admin: Toggle user active status"""
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            if current_user.role != 'admin':
+                return jsonify({'success': False, 'message': 'Admin access required'}), 403
+            
+            user_to_toggle = User.query.get(user_id)
+            if not user_to_toggle:
+                return jsonify({'success': False, 'message': 'User not found'}), 404
+            
+            # Prevent deactivating admin accounts
+            if user_to_toggle.role == 'admin':
+                return jsonify({
+                    'success': False,
+                    'message': 'Cannot deactivate admin accounts'
+                }), 400
+            
+            # Toggle status
+            user_to_toggle.is_active = not user_to_toggle.is_active
+            db.session.commit()
+            
+            status_text = 'activated' if user_to_toggle.is_active else 'deactivated'
+            
+            return jsonify({
+                'success': True,
+                'message': f'User {status_text} successfully',
+                'user': user_to_toggle.to_dict()
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error toggling user status: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
     
     @app.route('/api/admin/stats', methods=['GET'])
     @jwt_required()
