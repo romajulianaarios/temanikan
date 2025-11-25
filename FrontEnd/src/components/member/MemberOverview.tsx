@@ -7,6 +7,7 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { deviceAPI } from '../../services/api';
+import DiseaseDetailModal from './DiseaseDetailModal';
 
 export default function MemberOverview() {
   const location = useLocation();
@@ -20,6 +21,21 @@ export default function MemberOverview() {
   const [robotStatus, setRobotStatus] = useState('idle');
   const [robotBattery, setRobotBattery] = useState(87);
   const [deviceName, setDeviceName] = useState('Akuarium Ruang Tamu');
+
+  // Disease detail modal state
+  const [showDiseaseModal, setShowDiseaseModal] = useState(false);
+  const [diseaseData, setDiseaseData] = useState({
+    fishType: 'Ikan Koi',
+    disease: 'White Spot',
+    confidence: 85,
+    date: '4 Nov 2025',
+    time: '14:30',
+    imageUrl: 'https://images.unsplash.com/photo-1718632496269-6c0fd71dc29c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80',
+    symptoms: ['Bintik putih pada tubuh', 'Ikan menggosok-gosokkan tubuh', 'Nafsu makan menurun'],
+    recommendation: 'Segera isolasi ikan yang terinfeksi. Naikkan suhu air secara bertahap hingga 28-30°C. Berikan obat anti-parasit sesuai dosis.',
+    statusColor: '#CE3939',
+    statusBg: 'rgba(206, 57, 57, 0.1)'
+  });
 
   // Fetch initial data from backend
   useEffect(() => {
@@ -373,18 +389,20 @@ export default function MemberOverview() {
             </div>
           </div>
 
-          <Link
-            to="/member/disease"
+          <button
+            onClick={() => setShowDiseaseModal(true)}
             className="mt-4 w-full block text-center px-4 py-2 rounded-lg transition-all hover:shadow-md"
             style={{
               backgroundColor: '#4880FF',
               color: 'white',
               fontWeight: 600,
-              fontSize: '14px'
+              fontSize: '14px',
+              border: 'none',
+              cursor: 'pointer'
             }}
           >
             Lihat Detail & Rekomendasi
-          </Link>
+          </button>
         </Card>
       </div>
 
@@ -446,6 +464,13 @@ export default function MemberOverview() {
           ))}
         </div>
       </Card>
+
+      {/* Disease Detail Modal */}
+      <DiseaseDetailModal
+        isOpen={showDiseaseModal}
+        onClose={() => setShowDiseaseModal(false)}
+        disease={diseaseData}
+      />
     </div>
   );
 }

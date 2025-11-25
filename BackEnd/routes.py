@@ -179,16 +179,29 @@ def register_routes(app):
     @app.route('/api/devices/<int:device_id>', methods=['GET'])
     @jwt_required()
     def get_device(device_id):
-        user_id = get_jwt_identity()
+        user_id_str = get_jwt_identity()
+        user_id = int(user_id_str)  # Convert string to int
         device = Device.query.get(device_id)
         
+        print(f"🔍 GET Device Request:")
+        print(f"   Device ID: {device_id}")
+        print(f"   User ID from JWT (string): {user_id_str}")
+        print(f"   User ID (converted to int): {user_id}")
+        
         if not device:
+            print(f"   ❌ Device not found")
             return jsonify({'error': 'Device not found'}), 404
         
+        print(f"   Device owner user_id: {device.user_id}")
+        
         user = User.query.get(user_id)
+        print(f"   User role: {user.role if user else 'None'}")
+        
         if device.user_id != user_id and user.role != 'admin':
+            print(f"   ❌ Access denied: device.user_id({device.user_id}) != user_id({user_id})")
             return jsonify({'error': 'Unauthorized access'}), 403
         
+        print(f"   ✅ Access granted")
         return jsonify({'device': device.to_dict()}), 200
     
     @app.route('/api/devices', methods=['POST'])
@@ -363,7 +376,8 @@ def register_routes(app):
     def get_device_water_latest(device_id):
         """Get latest water quality readings for device dashboard (dummy data)"""
         try:
-            user_id = get_jwt_identity()
+            user_id_str = get_jwt_identity()
+            user_id = int(user_id_str)  # Convert string to int
             device = Device.query.get(device_id)
             
             if not device:
@@ -431,7 +445,8 @@ def register_routes(app):
     def get_device_robot_status(device_id):
         """Get robot status for device dashboard (dummy data)"""
         try:
-            user_id = get_jwt_identity()
+            user_id_str = get_jwt_identity()
+            user_id = int(user_id_str)  # Convert string to int
             device = Device.query.get(device_id)
             
             if not device:
@@ -486,7 +501,8 @@ def register_routes(app):
     def get_device_disease_latest(device_id):
         """Get latest disease detection for device dashboard (dummy data)"""
         try:
-            user_id = get_jwt_identity()
+            user_id_str = get_jwt_identity()
+            user_id = int(user_id_str)  # Convert string to int
             device = Device.query.get(device_id)
             
             if not device:
@@ -549,7 +565,8 @@ def register_routes(app):
     def get_device_notifications_recent(device_id):
         """Get recent notifications for device dashboard (dummy data)"""
         try:
-            user_id = get_jwt_identity()
+            user_id_str = get_jwt_identity()
+            user_id = int(user_id_str)  # Convert string to int
             device = Device.query.get(device_id)
             
             if not device:
