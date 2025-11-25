@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -8,65 +8,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Search, Plus, Edit, Trash2, Power, Eye } from '../icons';
+import { adminAPI } from '../../services/api';
 
 interface User {
   id: number;
   name: string;
   email: string;
   phone: string;
-  status: 'active' | 'inactive';
-  robots: number;
-  joinDate: string;
+  role: string;
+  created_at: string;
+  devices?: any[];
 }
 
 export default function UserManagement() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      name: 'Ahmad Wijaya',
-      email: 'ahmad@example.com',
-      phone: '+62 812 3456 7890',
-      status: 'active',
-      robots: 2,
-      joinDate: '15 Jan 2024'
-    },
-    {
-      id: 2,
-      name: 'Siti Nurhaliza',
-      email: 'siti@example.com',
-      phone: '+62 813 4567 8901',
-      status: 'active',
-      robots: 1,
-      joinDate: '23 Feb 2024'
-    },
-    {
-      id: 3,
-      name: 'Budi Santoso',
-      email: 'budi@example.com',
-      phone: '+62 814 5678 9012',
-      status: 'active',
-      robots: 3,
-      joinDate: '10 Mar 2024'
-    },
-    {
-      id: 4,
-      name: 'Dewi Lestari',
-      email: 'dewi@example.com',
-      phone: '+62 815 6789 0123',
-      status: 'inactive',
-      robots: 1,
-      joinDate: '5 Apr 2024'
-    },
-    {
-      id: 5,
-      name: 'Eko Prasetyo',
-      email: 'eko@example.com',
-      phone: '+62 816 7890 1234',
-      status: 'active',
-      robots: 2,
-      joinDate: '18 Mei 2024'
-    },
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua Status');
@@ -81,29 +38,45 @@ export default function UserManagement() {
   const [formPhone, setFormPhone] = useState('');
   const [formPassword, setFormPassword] = useState('');
 
+  // Fetch users from database
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await adminAPI.getUsers();
+      console.log('📥 Users response:', response);
+      
+      if (response.users) {
+        setUsers(response.users);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching users:', err);
+      setError(err.message || 'Gagal memuat data pengguna');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Filter users
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchQuery.toLowerCase());
     let matchesStatus = true;
-    if (statusFilter === 'Aktif') matchesStatus = user.status === 'active';
-    else if (statusFilter === 'Tidak Aktif') matchesStatus = user.status === 'inactive';
+    if (statusFilter === 'Member') matchesStatus = user.role === 'member';
+    else if (statusFilter === 'Admin') matchesStatus = user.role === 'admin';
     return matchesSearch && matchesStatus;
   });
 
   // Handle Add User
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
-    const newUser: User = {
-      id: users.length + 1,
-      name: formName,
-      email: formEmail,
-      phone: formPhone,
-      status: 'active',
-      robots: 0,
-      joinDate: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-    };
-    setUsers([...users, newUser]);
+    // TODO: Implement API call to add user
+    alert('Fitur tambah pengguna akan segera tersedia');
     setShowAddModal(false);
     resetForm();
   };
@@ -113,11 +86,8 @@ export default function UserManagement() {
     e.preventDefault();
     if (!selectedUser) return;
     
-    setUsers(users.map(user => 
-      user.id === selectedUser.id 
-        ? { ...user, name: formName, email: formEmail, phone: formPhone }
-        : user
-    ));
+    // TODO: Implement API call to edit user
+    alert('Fitur edit pengguna akan segera tersedia');
     setShowEditModal(false);
     setSelectedUser(null);
     resetForm();
@@ -126,18 +96,16 @@ export default function UserManagement() {
   // Handle Delete User
   const handleDeleteUser = () => {
     if (!selectedUser) return;
-    setUsers(users.filter(user => user.id !== selectedUser.id));
+    // TODO: Implement API call to delete user
+    alert('Fitur hapus pengguna akan segera tersedia');
     setShowDeleteConfirm(false);
     setSelectedUser(null);
   };
 
   // Handle Toggle Status
   const handleToggleStatus = (user: User) => {
-    setUsers(users.map(u => 
-      u.id === user.id 
-        ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' }
-        : u
-    ));
+    // TODO: Implement API call to toggle user status
+    alert('Fitur ubah status pengguna akan segera tersedia');
   };
 
   // Open Edit Modal
@@ -163,8 +131,26 @@ export default function UserManagement() {
     setFormPassword('');
   };
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Memuat data pengguna...</p>
+        </div>
+      )}
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+
       {/* Filters and Actions */}
       <Card className="p-6" style={{ backgroundColor: 'white' }}>
         <div className="flex flex-col md:flex-row gap-4">
@@ -182,9 +168,9 @@ export default function UserManagement() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Semua Status">Semua Status</SelectItem>
-              <SelectItem value="Aktif">Aktif</SelectItem>
-              <SelectItem value="Tidak Aktif">Tidak Aktif</SelectItem>
+              <SelectItem value="Semua Status">Semua Role</SelectItem>
+              <SelectItem value="Member">Member</SelectItem>
+              <SelectItem value="Admin">Admin</SelectItem>
             </SelectContent>
           </Select>
           <Button 
@@ -206,8 +192,8 @@ export default function UserManagement() {
               <TableHead>ID</TableHead>
               <TableHead>Nama</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Robot</TableHead>
+              <TableHead>No HP</TableHead>
+              <TableHead>Role</TableHead>
               <TableHead>Bergabung</TableHead>
               <TableHead>Aksi</TableHead>
             </TableRow>
@@ -218,15 +204,15 @@ export default function UserManagement() {
                 <TableCell>#{user.id}</TableCell>
                 <TableCell style={{ color: '#133E87' }}>{user.name}</TableCell>
                 <TableCell className="text-gray-600">{user.email}</TableCell>
+                <TableCell className="text-gray-600">{user.phone || 'N/A'}</TableCell>
                 <TableCell>
-                  {user.status === 'active' ? (
-                    <Badge className="bg-green-100 text-green-800">Aktif</Badge>
+                  {user.role === 'admin' ? (
+                    <Badge className="bg-purple-100 text-purple-800">Admin</Badge>
                   ) : (
-                    <Badge className="bg-gray-100 text-gray-800">Tidak Aktif</Badge>
+                    <Badge className="bg-blue-100 text-blue-800">Member</Badge>
                   )}
                 </TableCell>
-                <TableCell>{user.robots}</TableCell>
-                <TableCell className="text-gray-600">{user.joinDate}</TableCell>
+                <TableCell className="text-gray-600">{formatDate(user.created_at)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Button 
@@ -243,9 +229,9 @@ export default function UserManagement() {
                       size="sm"
                       onClick={() => handleToggleStatus(user)}
                       className="hover:bg-gray-100"
-                      title={user.status === 'active' ? 'Non-aktifkan' : 'Aktifkan'}
+                      title="Toggle Status"
                     >
-                      <Power className="w-4 h-4" style={{ color: user.status === 'active' ? '#f59e0b' : '#10b981' }} />
+                      <Power className="w-4 h-4" style={{ color: '#f59e0b' }} />
                     </Button>
                     <Button 
                       variant="ghost" 
@@ -263,7 +249,7 @@ export default function UserManagement() {
             {filteredUsers.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                  Tidak ada pengguna ditemukan
+                  {loading ? 'Memuat data...' : 'Tidak ada pengguna ditemukan'}
                 </TableCell>
               </TableRow>
             )}
