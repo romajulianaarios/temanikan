@@ -263,18 +263,30 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
     
     try {
       console.log('Attempting login with:', loginEmail);
-      const success = await login(loginEmail, loginPassword);
-      console.log('Login result:', success);
+      const result = await login(loginEmail, loginPassword);
+      console.log('Login result:', result);
       
-      if (success) {
+      if (result && result.success) {
         // Login successful - prepare for redirect
         console.log('Login successful, setting pending redirect');
         setPendingRedirect(true);
         setIsLoading(false);
+        // Wait a bit for user state to update
+        setTimeout(() => {
+          if (user) {
+            if (user.role === 'admin') {
+              navigate('/admin');
+            } else {
+              navigate('/member');
+            }
+            onOpenChange(false);
+            resetModal();
+          }
+        }, 100);
       } else {
         // Login failed - show error and stay in form
         console.log('Login failed');
-        setLoginError('Email atau password salah. Silakan coba lagi.');
+        setLoginError(result?.message || 'Email atau password salah. Silakan coba lagi.');
         setPendingRedirect(false);
         setIsLoading(false);
       }

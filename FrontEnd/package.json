@@ -6,6 +6,8 @@
             "@radix-ui/react-dialog": "*",
             "@radix-ui/react-label": "*",
             "@radix-ui/react-slot": "*",
+            "@react-three/drei": "^9.122.0",
+            "@react-three/fiber": "^8.18.0",
             "axios": "^1.13.2",
             "class-variance-authority": "*",
             "cmdk": "*",
@@ -16,10 +18,12 @@
             "react": "^18.3.1",
             "react-dom": "^18.3.1",
             "react-hook-form": "^7.55.0",
+            "react-is": "^19.2.0",
             "react-resizable-panels": "*",
             "react-router-dom": "^7.9.6",
             "recharts": "*",
             "sonner": "*",
+            "three": "^0.160.1",
             "vaul": "*"
       },
       "devDependencies": {

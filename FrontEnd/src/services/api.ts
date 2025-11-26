@@ -480,6 +480,33 @@ export const forumAPI = {
   },
 };
 
+// AI Chat API
+export const aiChatAPI = {
+  // Send message to AI
+  sendMessage: async (message: string, image?: string, imageUrl?: string) => {
+    const response = await api.post('/ai/chat', {
+      message,
+      image,
+      image_url: imageUrl
+    });
+    return response.data;
+  },
+
+  // Get chat history
+  getHistory: async (limit: number = 50) => {
+    const response = await api.get('/ai/chat/history', {
+      params: { limit }
+    });
+    return response.data;
+  },
+
+  // Delete chat
+  deleteChat: async (chatId: number) => {
+    const response = await api.delete(`/ai/chat/${chatId}`);
+    return response.data;
+  },
+};
+
 // Order API
 export const orderAPI = {
   // Member: Get my orders with filter

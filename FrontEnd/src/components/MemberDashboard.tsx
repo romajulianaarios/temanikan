@@ -23,10 +23,10 @@ import MemberDeviceDisease from '../pages/MemberDeviceDisease';
 import MemberDeviceNotifications from '../pages/MemberDeviceNotifications';
 import MemberDeviceCleaningHistory from '../pages/MemberDeviceCleaningHistory';
 import MemberDeviceDetectionHistory from '../pages/MemberDeviceDetectionHistory';
-
 export default function MemberDashboard() {
   return (
-    <Routes>
+    <>
+      <Routes>
       {/* Default route now redirects to devices */}
       <Route path="/member" element={<MemberDevices />} />
       
@@ -141,5 +141,6 @@ export default function MemberDashboard() {
         </DashboardLayout>
       } />
     </Routes>
+    </>
   );
 }
