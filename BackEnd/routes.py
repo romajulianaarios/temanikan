@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify, send_file
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from models import db, User, Device, WaterMonitoring, CleaningHistory, DiseaseDetection
-from models import FishSpecies, ForumTopic, ForumReply, Order, Notification
+from models import FishSpecies, ForumTopic, ForumReply, Order, Notification, ChatHistory
 from models import ForumTopicLike, ForumReplyLike, ForumReport
 from datetime import datetime, timedelta
 from functools import wraps  # ✅ TAMBAHKAN BARIS INI
@@ -127,7 +127,11 @@ def register_routes(app):
             user = User.query.filter_by(email=data['email']).first()
             
             if not user or not user.check_password(data['password']):
-                return jsonify({'error': 'Invalid email or password'}), 401
+                return jsonify({
+                    'success': False,
+                    'error': 'Invalid email or password',
+                    'message': 'Invalid email or password'
+                }), 401
             
             # Generate token
             access_token = create_access_token(identity=str(user.id))
@@ -165,6 +169,7 @@ def register_routes(app):
             print("=" * 70)
             
             return jsonify({
+                'success': True,
                 'message': 'Login successful',
                 'access_token': access_token,
                 'user': user.to_dict()
@@ -3087,6 +3092,7 @@ def register_routes(app):
             'total_detections': len(detections),
             'period_days': days
         }), 200
+<<<<<<< HEAD
 
     # ==================== NOTIFICATION ENDPOINTS ====================
 
@@ -3182,3 +3188,215 @@ def register_routes(app):
             'success': True,
             'data': notification.to_dict()
         }), 200
+=======
+    
+    # AI Chat Routes with Gemini (using direct HTTP API)
+    @app.route('/api/ai/chat', methods=['POST'])
+    @jwt_required()
+    def ai_chat():
+        """Chat with AI about fish diseases, care, etc."""
+        try:
+            import requests
+            import json
+            from config import config
+            import base64
+            
+            user_id = get_jwt_identity()
+            user = User.query.get(user_id)
+            
+            if not user:
+                return jsonify({'error': 'User not found'}), 404
+            
+            data = request.get_json()
+            message = data.get('message', '').strip()
+            image_base64 = data.get('image')  # Base64 encoded image (optional)
+            
+            if not message:
+                return jsonify({'error': 'Message is required'}), 400
+            
+            # Get Gemini API key
+            api_key = config['development'].GEMINI_API_KEY or os.getenv('GEMINI_API_KEY')
+            if not api_key:
+                return jsonify({'error': 'Gemini API key not configured'}), 500
+            
+            # Get context from database (fish species info)
+            fish_species = FishSpecies.query.limit(50).all()
+            fish_context = "\n\nInformasi Ikan di Database:\n"
+            for fish in fish_species:
+                fish_context += f"- {fish.name} ({fish.scientific_name}): {fish.description or 'Tidak ada deskripsi'}\n"
+                if fish.water_temp:
+                    fish_context += f"  Suhu air: {fish.water_temp}, pH: {fish.ph_range or 'N/A'}\n"
+            
+            # Build system prompt
+            system_prompt = f"""Anda adalah asisten AI ahli untuk perawatan ikan hias dan diagnosis penyakit ikan. 
+Anda membantu pengguna dengan informasi lengkap tentang:
+- Jenis-jenis ikan hias dan cara perawatannya
+- Penyakit ikan dan cara mengobatinya
+- Kualitas air akuarium
+- Tips dan trik perawatan ikan
+
+{fish_context}
+
+PENTING - Format Jawaban (WAJIB DIIKUTI):
+1. JANGAN gunakan tanda asterisk (*), markdown, atau simbol formatting apapun
+2. JANGAN gunakan simbol bullet point (•, -, *, dll)
+3. Gunakan paragraf yang jelas dan terstruktur dengan spasi antar paragraf
+4. Jika perlu penekanan, gunakan kata-kata yang jelas tanpa formatting khusus
+5. Susun jawaban dalam paragraf yang mudah dibaca, setiap paragraf fokus pada satu topik
+6. Jika perlu list, gunakan nomor (1, 2, 3) atau langsung dalam bentuk paragraf
+7. Gunakan bahasa Indonesia yang ramah, profesional, dan mudah dipahami
+8. Pisahkan setiap topik dengan baris kosong untuk readability
+
+Jika menanyakan tentang penyakit ikan, susun jawaban dalam paragraf yang jelas dengan informasi:
+1. Nama penyakit dan penjelasan singkat (paragraf pertama)
+2. Gejala yang terlihat (paragraf kedua)
+3. Penyebab penyakit (paragraf ketiga)
+4. Cara pengobatan yang detail (paragraf keempat)
+5. Langkah pencegahan (paragraf kelima)
+
+Setiap paragraf harus jelas, informatif, dan mudah dipahami. Jangan gunakan formatting markdown apapun."""
+
+            # Prepare request to Gemini API
+            full_prompt = f"{system_prompt}\n\nPertanyaan pengguna: {message}"
+            
+            # Use Gemini REST API directly
+            # Use gemini-2.5-flash (fast and free tier) or gemini-pro-latest
+            model_name = "gemini-2.5-flash"  # Fast and supports both text and images
+            if image_base64:
+                model_name = "gemini-2.5-flash"  # Flash supports vision
+            
+            # Use v1beta endpoint (standard for Gemini API)
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+            
+            payload = {
+                "contents": [{
+                    "parts": [{
+                        "text": full_prompt
+                    }]
+                }]
+            }
+            
+            # Add image if provided
+            if image_base64:
+                # Remove data URL prefix if present
+                image_data = image_base64.split(',')[1] if ',' in image_base64 else image_base64
+                payload["contents"][0]["parts"].append({
+                    "inline_data": {
+                        "mime_type": "image/jpeg",
+                        "data": image_data
+                    }
+                })
+            
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            
+            try:
+                response = requests.post(url, headers=headers, json=payload, timeout=30)
+                response.raise_for_status()
+                
+                result = response.json()
+                
+                # Extract text from response
+                if 'candidates' in result and len(result['candidates']) > 0:
+                    if 'content' in result['candidates'][0]:
+                        if 'parts' in result['candidates'][0]['content']:
+                            ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
+                        else:
+                            ai_response = result['candidates'][0]['content'].get('text', '')
+                    else:
+                        ai_response = result['candidates'][0].get('text', '')
+                else:
+                    ai_response = str(result)
+                    
+                if not ai_response:
+                    ai_response = "Maaf, saya tidak dapat menghasilkan respons. Silakan coba lagi."
+                    
+            except requests.exceptions.RequestException as req_error:
+                print(f"Error calling Gemini API: {req_error}")
+                error_msg = str(req_error)
+                if hasattr(req_error, 'response') and req_error.response is not None:
+                    error_detail = req_error.response.text
+                    print(f"Response: {error_detail}")
+                    # Try fallback to gemini-pro-latest if flash fails with 404
+                    if '404' in str(req_error):
+                        try:
+                            print("Trying fallback to gemini-pro-latest...")
+                            fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-latest:generateContent?key={api_key}"
+                            fallback_response = requests.post(fallback_url, headers=headers, json=payload, timeout=30)
+                            fallback_response.raise_for_status()
+                            result = fallback_response.json()
+                            if 'candidates' in result and len(result['candidates']) > 0:
+                                if 'content' in result['candidates'][0] and 'parts' in result['candidates'][0]['content']:
+                                    ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
+                                    if not ai_response:
+                                        return jsonify({'error': 'AI service error: Empty response from fallback model'}), 500
+                                else:
+                                    return jsonify({'error': 'AI service error: Invalid response format from fallback'}), 500
+                            else:
+                                return jsonify({'error': 'AI service error: No candidates in fallback response'}), 500
+                        except Exception as fallback_error:
+                            return jsonify({'error': f'AI service error: {error_msg} (fallback also failed: {str(fallback_error)})'}), 500
+                    else:
+                        return jsonify({'error': f'AI service error: {error_msg}'}), 500
+                else:
+                    return jsonify({'error': f'AI service error: {error_msg}'}), 500
+            except Exception as api_error:
+                print(f"Error processing API response: {api_error}")
+                import traceback
+                print(traceback.format_exc())
+                return jsonify({'error': f'AI service error: {str(api_error)}'}), 500
+            
+            # Save to chat history
+            chat = ChatHistory(
+                user_id=user_id,
+                message=message,
+                response=ai_response,
+                has_image=bool(image_base64),
+                image_url=data.get('image_url')
+            )
+            db.session.add(chat)
+            db.session.commit()
+            
+            return jsonify({
+                'response': ai_response,
+                'chat_id': chat.id,
+                'created_at': chat.created_at.isoformat()
+            }), 200
+            
+        except Exception as e:
+            return jsonify({'error': f'AI service error: {str(e)}'}), 500
+    
+    @app.route('/api/ai/chat/history', methods=['GET'])
+    @jwt_required()
+    def get_chat_history():
+        """Get user's chat history"""
+        user_id = get_jwt_identity()
+        
+        # Get limit from query params
+        limit = request.args.get('limit', 50, type=int)
+        
+        chats = ChatHistory.query.filter_by(user_id=user_id)\
+            .order_by(ChatHistory.created_at.desc())\
+            .limit(limit).all()
+        
+        return jsonify({
+            'chats': [chat.to_dict() for chat in chats],
+            'count': len(chats)
+        }), 200
+    
+    @app.route('/api/ai/chat/<int:chat_id>', methods=['DELETE'])
+    @jwt_required()
+    def delete_chat(chat_id):
+        """Delete a chat from history"""
+        user_id = get_jwt_identity()
+        chat = ChatHistory.query.filter_by(id=chat_id, user_id=user_id).first()
+        
+        if not chat:
+            return jsonify({'error': 'Chat not found'}), 404
+        
+        db.session.delete(chat)
+        db.session.commit()
+        
+        return jsonify({'message': 'Chat deleted successfully'}), 200
+>>>>>>> b7c531e5cbced4492f7c79b4709f0d784812a476

@@ -19,11 +19,15 @@ import MemberDeviceDisease from '../pages/MemberDeviceDisease';
 import MemberDeviceNotifications from '../pages/MemberDeviceNotifications';
 import MemberDeviceCleaningHistory from '../pages/MemberDeviceCleaningHistory';
 import MemberDeviceDetectionHistory from '../pages/MemberDeviceDetectionHistory';
+<<<<<<< HEAD
 import NotificationDetail from '../pages/NotificationDetail';
 
+=======
+>>>>>>> b7c531e5cbced4492f7c79b4709f0d784812a476
 export default function MemberDashboard() {
   return (
-    <Routes>
+    <>
+      <Routes>
       {/* Default route now redirects to devices */}
       <Route path="/member" element={<MemberDevices />} />
 
@@ -145,5 +149,6 @@ export default function MemberDashboard() {
         </DashboardLayout>
       } />
     </Routes>
+    </>
   );
 }

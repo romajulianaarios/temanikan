@@ -8,6 +8,7 @@ import AdminDashboard from './components/AdminDashboard';
 import { useState, useEffect } from 'react';
 import AuthModal from './components/AuthModal';
 import ProtectedRoute from './components/ProtectedRoute';
+import AIChatButton from './components/AIChatButton';
 
 function AppContent() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -118,6 +119,9 @@ function AppContent() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {/* AI Chat Button - Global, muncul di semua halaman jika login */}
+      <AIChatButton />
 
       <AuthModal
         open={authModalOpen}
