@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -8,65 +8,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Search, Plus, Edit, Trash2, Power, Eye } from '../icons';
+import { adminAPI } from '../../services/api';
+import NotificationModal from '../ui/NotificationModal';
 
 interface User {
   id: number;
   name: string;
   email: string;
   phone: string;
-  status: 'active' | 'inactive';
-  robots: number;
-  joinDate: string;
+  role: string;
+  created_at: string;
+  devices?: any[];
 }
 
 export default function UserManagement() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      name: 'Ahmad Wijaya',
-      email: 'ahmad@example.com',
-      phone: '+62 812 3456 7890',
-      status: 'active',
-      robots: 2,
-      joinDate: '15 Jan 2024'
-    },
-    {
-      id: 2,
-      name: 'Siti Nurhaliza',
-      email: 'siti@example.com',
-      phone: '+62 813 4567 8901',
-      status: 'active',
-      robots: 1,
-      joinDate: '23 Feb 2024'
-    },
-    {
-      id: 3,
-      name: 'Budi Santoso',
-      email: 'budi@example.com',
-      phone: '+62 814 5678 9012',
-      status: 'active',
-      robots: 3,
-      joinDate: '10 Mar 2024'
-    },
-    {
-      id: 4,
-      name: 'Dewi Lestari',
-      email: 'dewi@example.com',
-      phone: '+62 815 6789 0123',
-      status: 'inactive',
-      robots: 1,
-      joinDate: '5 Apr 2024'
-    },
-    {
-      id: 5,
-      name: 'Eko Prasetyo',
-      email: 'eko@example.com',
-      phone: '+62 816 7890 1234',
-      status: 'active',
-      robots: 2,
-      joinDate: '18 Mei 2024'
-    },
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua Status');
@@ -74,70 +32,195 @@ export default function UserManagement() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  
+
+  // Notification Modal states
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState<'success' | 'error' | 'warning' | 'info'>('success');
+  const [notificationTitle, setNotificationTitle] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState('');
+
   // Form states
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPhone, setFormPhone] = useState('');
   const [formPassword, setFormPassword] = useState('');
 
+  // Fetch users from database
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await adminAPI.getUsers();
+      console.log('📥 Users response:', response);
+
+      if (response.users) {
+        setUsers(response.users);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching users:', err);
+      setError(err.message || 'Gagal memuat data pengguna');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Filter users
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      user.email.toLowerCase().includes(searchQuery.toLowerCase());
     let matchesStatus = true;
-    if (statusFilter === 'Aktif') matchesStatus = user.status === 'active';
-    else if (statusFilter === 'Tidak Aktif') matchesStatus = user.status === 'inactive';
+    if (statusFilter === 'Member') matchesStatus = user.role === 'member';
+    else if (statusFilter === 'Admin') matchesStatus = user.role === 'admin';
     return matchesSearch && matchesStatus;
   });
 
   // Handle Add User
-  const handleAddUser = (e: React.FormEvent) => {
+  const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newUser: User = {
-      id: users.length + 1,
-      name: formName,
-      email: formEmail,
-      phone: formPhone,
-      status: 'active',
-      robots: 0,
-      joinDate: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-    };
-    setUsers([...users, newUser]);
-    setShowAddModal(false);
-    resetForm();
+
+    try {
+      const response = await adminAPI.createUser({
+        name: formName,
+        email: formEmail,
+        phone: formPhone,
+        password: formPassword,
+      });
+
+      if (response.success) {
+        // Refresh user list
+        await fetchUsers();
+        setShowAddModal(false);
+        resetForm();
+        // Show success notification
+        setNotificationType('success');
+        setNotificationTitle('Berhasil!');
+        setNotificationMessage('Pengguna berhasil ditambahkan');
+        setShowNotification(true);
+      } else {
+        // Show error notification
+        setNotificationType('error');
+        setNotificationTitle('Gagal');
+        setNotificationMessage(response.message || 'Gagal menambahkan pengguna');
+        setShowNotification(true);
+      }
+    } catch (err: any) {
+      console.error('Error adding user:', err);
+      // Show error notification
+      setNotificationType('error');
+      setNotificationTitle('Gagal');
+      setNotificationMessage(err.response?.data?.message || 'Gagal menambahkan pengguna');
+      setShowNotification(true);
+    }
   };
 
   // Handle Edit User
-  const handleEditUser = (e: React.FormEvent) => {
+  const handleEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
-    
-    setUsers(users.map(user => 
-      user.id === selectedUser.id 
-        ? { ...user, name: formName, email: formEmail, phone: formPhone }
-        : user
-    ));
-    setShowEditModal(false);
-    setSelectedUser(null);
-    resetForm();
+
+    try {
+      const response = await adminAPI.updateUser(selectedUser.id, {
+        name: formName,
+        email: formEmail,
+        phone: formPhone,
+      });
+
+      if (response.success) {
+        // Refresh user list
+        await fetchUsers();
+        setShowEditModal(false);
+        setSelectedUser(null);
+        resetForm();
+        // Show success notification
+        setNotificationType('success');
+        setNotificationTitle('Berhasil!');
+        setNotificationMessage('Data pengguna berhasil diperbarui');
+        setShowNotification(true);
+      } else {
+        // Show error notification
+        setNotificationType('error');
+        setNotificationTitle('Gagal');
+        setNotificationMessage(response.message || 'Gagal memperbarui data pengguna');
+        setShowNotification(true);
+      }
+    } catch (err: any) {
+      console.error('Error updating user:', err);
+      // Show error notification
+      setNotificationType('error');
+      setNotificationTitle('Gagal');
+      setNotificationMessage(err.response?.data?.message || 'Gagal memperbarui data pengguna');
+      setShowNotification(true);
+    }
   };
 
   // Handle Delete User
-  const handleDeleteUser = () => {
+  const handleDeleteUser = async () => {
     if (!selectedUser) return;
-    setUsers(users.filter(user => user.id !== selectedUser.id));
-    setShowDeleteConfirm(false);
-    setSelectedUser(null);
+
+    try {
+      const response = await adminAPI.deleteUser(selectedUser.id);
+
+      if (response.success) {
+        // Refresh user list
+        await fetchUsers();
+        setShowDeleteConfirm(false);
+        setSelectedUser(null);
+        // Show success notification
+        setNotificationType('success');
+        setNotificationTitle('Berhasil!');
+        setNotificationMessage('Pengguna berhasil dihapus');
+        setShowNotification(true);
+      } else {
+        // Show error notification
+        setNotificationType('error');
+        setNotificationTitle('Gagal');
+        setNotificationMessage(response.message || 'Gagal menghapus pengguna');
+        setShowNotification(true);
+      }
+    } catch (err: any) {
+      console.error('Error deleting user:', err);
+      // Show error notification
+      setNotificationType('error');
+      setNotificationTitle('Gagal');
+      setNotificationMessage(err.response?.data?.message || 'Gagal menghapus pengguna');
+      setShowNotification(true);
+    }
   };
 
   // Handle Toggle Status
-  const handleToggleStatus = (user: User) => {
-    setUsers(users.map(u => 
-      u.id === user.id 
-        ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' }
-        : u
-    ));
+  const handleToggleStatus = async (user: User) => {
+    try {
+      const response = await adminAPI.toggleUserStatus(user.id);
+
+      if (response.success) {
+        // Refresh user list
+        await fetchUsers();
+        const statusText = response.user?.is_active ? 'diaktifkan' : 'dinonaktifkan';
+        // Show success notification
+        setNotificationType('success');
+        setNotificationTitle('Berhasil!');
+        setNotificationMessage(`Akun ${user.name} berhasil ${statusText}`);
+        setShowNotification(true);
+      } else {
+        // Show error notification
+        setNotificationType('error');
+        setNotificationTitle('Gagal');
+        setNotificationMessage(response.message || 'Gagal mengubah status pengguna');
+        setShowNotification(true);
+      }
+    } catch (err: any) {
+      console.error('Error toggling user status:', err);
+      // Show error notification
+      setNotificationType('error');
+      setNotificationTitle('Gagal');
+      setNotificationMessage(err.response?.data?.message || 'Gagal mengubah status pengguna');
+      setShowNotification(true);
+    }
   };
 
   // Open Edit Modal
@@ -163,14 +246,32 @@ export default function UserManagement() {
     setFormPassword('');
   };
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Memuat data pengguna...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+
       {/* Filters and Actions */}
       <Card className="p-6" style={{ backgroundColor: 'white' }}>
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <Input 
+            <Input
               placeholder="Cari pengguna..."
               className="pl-10"
               value={searchQuery}
@@ -182,12 +283,12 @@ export default function UserManagement() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Semua Status">Semua Status</SelectItem>
-              <SelectItem value="Aktif">Aktif</SelectItem>
-              <SelectItem value="Tidak Aktif">Tidak Aktif</SelectItem>
+              <SelectItem value="Semua Status">Semua Role</SelectItem>
+              <SelectItem value="Member">Member</SelectItem>
+              <SelectItem value="Admin">Admin</SelectItem>
             </SelectContent>
           </Select>
-          <Button 
+          <Button
             className="text-white"
             style={{ backgroundColor: '#133E87' }}
             onClick={() => setShowAddModal(true)}
@@ -206,8 +307,8 @@ export default function UserManagement() {
               <TableHead>ID</TableHead>
               <TableHead>Nama</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Robot</TableHead>
+              <TableHead>No HP</TableHead>
+              <TableHead>Role</TableHead>
               <TableHead>Bergabung</TableHead>
               <TableHead>Aksi</TableHead>
             </TableRow>
@@ -218,19 +319,19 @@ export default function UserManagement() {
                 <TableCell>#{user.id}</TableCell>
                 <TableCell style={{ color: '#133E87' }}>{user.name}</TableCell>
                 <TableCell className="text-gray-600">{user.email}</TableCell>
+                <TableCell className="text-gray-600">{user.phone || 'N/A'}</TableCell>
                 <TableCell>
-                  {user.status === 'active' ? (
-                    <Badge className="bg-green-100 text-green-800">Aktif</Badge>
+                  {user.role === 'admin' ? (
+                    <Badge className="bg-purple-100 text-purple-800">Admin</Badge>
                   ) : (
-                    <Badge className="bg-gray-100 text-gray-800">Tidak Aktif</Badge>
+                    <Badge className="bg-blue-100 text-blue-800">Member</Badge>
                   )}
                 </TableCell>
-                <TableCell>{user.robots}</TableCell>
-                <TableCell className="text-gray-600">{user.joinDate}</TableCell>
+                <TableCell className="text-gray-600">{formatDate(user.created_at)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="sm"
                       onClick={() => openEditModal(user)}
                       className="hover:bg-gray-100"
@@ -238,17 +339,17 @@ export default function UserManagement() {
                     >
                       <Edit className="w-4 h-4" style={{ color: '#133E87' }} />
                     </Button>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="sm"
                       onClick={() => handleToggleStatus(user)}
                       className="hover:bg-gray-100"
-                      title={user.status === 'active' ? 'Non-aktifkan' : 'Aktifkan'}
+                      title="Toggle Status"
                     >
-                      <Power className="w-4 h-4" style={{ color: user.status === 'active' ? '#f59e0b' : '#10b981' }} />
+                      <Power className="w-4 h-4" style={{ color: '#f59e0b' }} />
                     </Button>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="sm"
                       onClick={() => openDeleteConfirm(user)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
@@ -263,7 +364,7 @@ export default function UserManagement() {
             {filteredUsers.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                  Tidak ada pengguna ditemukan
+                  {loading ? 'Memuat data...' : 'Tidak ada pengguna ditemukan'}
                 </TableCell>
               </TableRow>
             )}
@@ -280,7 +381,7 @@ export default function UserManagement() {
           <form onSubmit={handleAddUser} className="space-y-4">
             <div>
               <Label htmlFor="add-name">Nama Lengkap</Label>
-              <Input 
+              <Input
                 id="add-name"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
@@ -289,7 +390,7 @@ export default function UserManagement() {
             </div>
             <div>
               <Label htmlFor="add-email">Email</Label>
-              <Input 
+              <Input
                 id="add-email"
                 type="email"
                 value={formEmail}
@@ -299,7 +400,7 @@ export default function UserManagement() {
             </div>
             <div>
               <Label htmlFor="add-phone">No HP</Label>
-              <Input 
+              <Input
                 id="add-phone"
                 type="tel"
                 value={formPhone}
@@ -309,7 +410,7 @@ export default function UserManagement() {
             </div>
             <div>
               <Label htmlFor="add-password">Password</Label>
-              <Input 
+              <Input
                 id="add-password"
                 type="password"
                 value={formPassword}
@@ -319,8 +420,8 @@ export default function UserManagement() {
               />
             </div>
             <DialogFooter className="gap-2">
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 onClick={() => {
                   setShowAddModal(false);
@@ -329,7 +430,7 @@ export default function UserManagement() {
               >
                 Batal
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 className="text-white"
                 style={{ backgroundColor: '#133E87' }}
@@ -350,7 +451,7 @@ export default function UserManagement() {
           <form onSubmit={handleEditUser} className="space-y-4">
             <div>
               <Label htmlFor="edit-name">Nama Lengkap</Label>
-              <Input 
+              <Input
                 id="edit-name"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
@@ -359,7 +460,7 @@ export default function UserManagement() {
             </div>
             <div>
               <Label htmlFor="edit-email">Email</Label>
-              <Input 
+              <Input
                 id="edit-email"
                 type="email"
                 value={formEmail}
@@ -369,7 +470,7 @@ export default function UserManagement() {
             </div>
             <div>
               <Label htmlFor="edit-phone">No HP</Label>
-              <Input 
+              <Input
                 id="edit-phone"
                 type="tel"
                 value={formPhone}
@@ -378,8 +479,8 @@ export default function UserManagement() {
               />
             </div>
             <DialogFooter className="gap-2">
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 onClick={() => {
                   setShowEditModal(false);
@@ -389,7 +490,7 @@ export default function UserManagement() {
               >
                 Batal
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 className="text-white"
                 style={{ backgroundColor: '#133E87' }}
@@ -407,12 +508,12 @@ export default function UserManagement() {
           <DialogHeader>
             <DialogTitle style={{ color: '#133E87' }}>Konfirmasi Hapus</DialogTitle>
             <DialogDescription>
-              Apakah Anda yakin ingin menghapus pengguna <strong>{selectedUser?.name}</strong>? 
+              Apakah Anda yakin ingin menghapus pengguna <strong>{selectedUser?.name}</strong>?
               Tindakan ini tidak dapat dibatalkan.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button 
+            <Button
               variant="outline"
               onClick={() => {
                 setShowDeleteConfirm(false);
@@ -421,7 +522,7 @@ export default function UserManagement() {
             >
               Batal
             </Button>
-            <Button 
+            <Button
               className="bg-red-600 text-white hover:bg-red-700"
               onClick={handleDeleteUser}
             >
@@ -430,6 +531,15 @@ export default function UserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Notification Modal */}
+      <NotificationModal
+        isOpen={showNotification}
+        onClose={() => setShowNotification(false)}
+        type={notificationType}
+        title={notificationTitle}
+        message={notificationMessage}
+      />
     </div>
   );
 }

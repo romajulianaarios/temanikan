@@ -17,8 +17,8 @@ const TokenStorage = {
   getUser: () => {
     const s = sessionStorage.getItem("user");
     const l = localStorage.getItem("user");
-    if(s) return JSON.parse(s);
-    if(l) return JSON.parse(l);
+    if (s) return JSON.parse(s);
+    if (l) return JSON.parse(l);
     return null;
   },
   setUser: (user: object) => {
@@ -59,7 +59,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     if (error.response?.status === 401) {
       // Log untuk debugging
       console.log('🔴 401 Error on URL:', originalRequest?.url);
@@ -77,7 +77,7 @@ api.interceptors.response.use(
       // ✅ HANYA retry SATU KALI
       if (!originalRequest._retry) {
         originalRequest._retry = true;
-        
+
         // Validasi token
         const token = TokenStorage.getToken();
         if (token) {
@@ -132,11 +132,11 @@ api.interceptors.response.use(
 
       // ✅ Jika tidak ada refresh token mechanism, jangan langsung clear
       console.log('⚠️ 401 after retry, but NOT clearing token automatically');
-      
+
       // Biarkan AuthContext yang handle logout melalui UI
       // TIDAK auto-redirect ke login
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -148,7 +148,7 @@ export const authAPI = {
     const response = await api.post('/auth/register', data);
     return response.data;
   },
-  
+
   login: async (email: string, password: string) => {
     const response = await api.post('/auth/login', { email, password });
     if (response.data.success && response.data.access_token) {
@@ -157,7 +157,7 @@ export const authAPI = {
     }
     return response.data;
   },
-  
+
   logout: () => {
     TokenStorage.removeToken();  // ✅ BARU
     TokenStorage.removeUser();   // ✅ BARU
@@ -168,22 +168,22 @@ export const authAPI = {
     return TokenStorage.getUser();  // ✅ BARU
   },
 
-    updateProfile: async (data: { 
-    name?: string; 
-    phone?: string; 
-    address?: string; 
-    age?: number; 
-    primary_fish_type?: string; 
-    password?: string 
+  updateProfile: async (data: {
+    name?: string;
+    phone?: string;
+    address?: string;
+    age?: number;
+    primary_fish_type?: string;
+    password?: string
   }) => {
     const token = TokenStorage.getToken();  // ✅ BARU
-    
+
     if (!token) {
       throw new Error('No token found');
     }
-    
+
     const response = await axios.put(
-      'http://localhost:5000/api/users/profile', 
+      'http://localhost:5000/api/users/profile',
       data,
       {
         headers: {
@@ -196,7 +196,7 @@ export const authAPI = {
     if (response.data.success && response.data.user) {
       TokenStorage.setUser(response.data.user);
     }
-    
+
     return response.data;
   },
 };
@@ -207,24 +207,51 @@ export const deviceAPI = {
     const response = await api.get('/devices');
     return response.data;
   },
-  
+
   getDevice: async (deviceId: number) => {
     const response = await api.get(`/devices/${deviceId}`);
     return response.data;
   },
-  
+
   addDevice: async (data: { name: string; device_code?: string }) => {
     const response = await api.post('/devices', data);
     return response.data;
   },
-  
+
   updateDevice: async (deviceId: number, data: any) => {
     const response = await api.put(`/devices/${deviceId}`, data);
     return response.data;
   },
-  
+
   deleteDevice: async (deviceId: number) => {
     const response = await api.delete(`/devices/${deviceId}`);
+    return response.data;
+  },
+
+  // Get user's devices with formatted data
+  getUserDevices: async () => {
+    const response = await api.get('/member/devices');
+    return response.data;
+  },
+
+  // Device Dashboard Data Methods
+  getDashboardWaterLatest: async (deviceId: number) => {
+    const response = await api.get(`/devices/${deviceId}/dashboard/water-latest`);
+    return response.data;
+  },
+
+  getDashboardRobotStatus: async (deviceId: number) => {
+    const response = await api.get(`/devices/${deviceId}/dashboard/robot-status`);
+    return response.data;
+  },
+
+  getDashboardDiseaseLatest: async (deviceId: number) => {
+    const response = await api.get(`/devices/${deviceId}/dashboard/disease-latest`);
+    return response.data;
+  },
+
+  getDashboardNotificationsRecent: async (deviceId: number) => {
+    const response = await api.get(`/devices/${deviceId}/dashboard/notifications-recent`);
     return response.data;
   },
 };
@@ -237,7 +264,7 @@ export const waterAPI = {
     });
     return response.data;
   },
-  
+
   addWaterData: async (deviceId: number, data: {
     temperature?: number;
     ph_level?: number;
@@ -258,14 +285,14 @@ export const robotAPI = {
     });
     return response.data;
   },
-  
+
   startCleaning: async (deviceId: number, cleaningType: string = 'manual') => {
     const response = await api.post(`/devices/${deviceId}/start-cleaning`, {
       cleaning_type: cleaningType
     });
     return response.data;
   },
-  
+
   stopCleaning: async (deviceId: number, data?: {
     status?: string;
     area_cleaned?: number;
@@ -284,7 +311,7 @@ export const diseaseAPI = {
     });
     return response.data;
   },
-  
+
   addDetection: async (deviceId: number, data: {
     disease_name: string;
     confidence?: number;
@@ -297,7 +324,7 @@ export const diseaseAPI = {
     const response = await api.post(`/devices/${deviceId}/disease-detections`, data);
     return response.data;
   },
-  
+
   updateDetection: async (detectionId: number, data: {
     status?: string;
     notes?: string;
@@ -309,31 +336,83 @@ export const diseaseAPI = {
 
 // Fishpedia API
 export const fishpediaAPI = {
+  // ===== PUBLIC ENDPOINTS (untuk Member & Public) =====
   getSpecies: async (search?: string, category?: string) => {
-    const response = await api.get('/fishpedia', {
-      params: { search, category }
-    });
+    const response = await api.get('/fishpedia', { params: { search, category } });
     return response.data;
   },
-  
+
   getSpeciesDetail: async (speciesId: number) => {
     const response = await api.get(`/fishpedia/${speciesId}`);
     return response.data;
   },
-  
-  addSpecies: async (data: any) => {
-    const response = await api.post('/fishpedia', data);
-    return response.data;
-  },
-  
-  updateSpecies: async (speciesId: number, data: any) => {
-    const response = await api.put(`/fishpedia/${speciesId}`, data);
-    return response.data;
-  },
-  
-  deleteSpecies: async (speciesId: number) => {
-    const response = await api.delete(`/fishpedia/${speciesId}`);
-    return response.data;
+
+  // ===== ADMIN ENDPOINTS (untuk Admin CRUD) =====
+  admin: {
+    // Get all articles (for admin management table)
+    getAllArticles: async (params?: {
+      search?: string;
+      category?: string;
+      page?: number;
+      per_page?: number;
+    }) => {
+      const response = await api.get('/admin/fishpedia', { params });
+      return response.data;
+    },
+
+    // Get article detail for editing
+    getArticleById: async (articleId: number) => {
+      const response = await api.get(`/admin/fishpedia/${articleId}`);
+      return response.data;
+    },
+
+    // Create new article
+    createArticle: async (data: {
+      title: string;
+      name_latin: string;
+      category: string;
+      habitat: string;
+      size?: string;
+      temperament?: string;
+      diet?: string;
+      care_level?: string;
+      ph_range?: string;
+      temperature_range?: string;
+      tank_size?: string;
+      lifespan?: string;
+      breeding?: string;
+      image_url?: string;
+    }) => {
+      const response = await api.post('/admin/fishpedia', data);
+      return response.data;
+    },
+
+    // Update article
+    updateArticle: async (articleId: number, data: {
+      title?: string;
+      name_latin?: string;
+      category?: string;
+      habitat?: string;
+      size?: string;
+      temperament?: string;
+      diet?: string;
+      care_level?: string;
+      ph_range?: string;
+      temperature_range?: string;
+      tank_size?: string;
+      lifespan?: string;
+      breeding?: string;
+      image_url?: string;
+    }) => {
+      const response = await api.put(`/admin/fishpedia/${articleId}`, data);
+      return response.data;
+    },
+
+    // Delete article
+    deleteArticle: async (articleId: number) => {
+      const response = await api.delete(`/admin/fishpedia/${articleId}`);
+      return response.data;
+    },
   },
 };
 
@@ -394,7 +473,7 @@ export const forumAPI = {
   },
 
   // ==================== NEW: LIKE ENDPOINTS ====================
-  
+
   // Toggle like on topic
   toggleTopicLike: async (topicId: number) => {
     const response = await api.post(`/forum/topics/${topicId}/like`);
@@ -408,7 +487,7 @@ export const forumAPI = {
   },
 
   // ==================== NEW: REPORT ENDPOINTS ====================
-  
+
   // Report a topic
   reportTopic: async (topicId: number, data: {
     reason: string;
@@ -419,7 +498,7 @@ export const forumAPI = {
   },
 
   // ==================== NEW: ADMIN ENDPOINTS ====================
-  
+
   // Admin: Get all reports
   getReports: async (status: string = 'pending') => {
     const response = await api.get('/admin/forum/reports', {
@@ -458,24 +537,6 @@ export const forumAPI = {
   // Get replies untuk topik tertentu
   getTopicReplies: async (topicId: number) => {
     const response = await api.get(`/forum/topics/${topicId}/replies`);
-    return response.data;
-  },
-
-  // Delete topic
-  deleteTopic: async (topicId: number) => {
-    const response = await api.delete(`/forum/topics/${topicId}`);
-    return response.data;
-  },
-
-  // Update topic
-  updateTopic: async (topicId: number, data: { title: string; content: string; category: string }) => {
-    const response = await api.put(`/forum/topics/${topicId}`, data);
-    return response.data;
-  },
-
-  // Create topic baru
-  createTopic: async (data: { title: string; content: string; category: string }) => {
-    const response = await api.post('/forum/topics', data);
     return response.data;
   },
 };
@@ -576,13 +637,13 @@ export const orderAPI = {
     const response = await api.get('/admin/orders/analytics');
     return response.data;
   },
-  
+
   // ✅ ADD THIS METHOD:
   uploadPaymentProof: async (orderId: number, file: File) => {
     const token = TokenStorage.getToken();  // ✅ BARU
     const formData = new FormData();
     formData.append('payment_proof', file);
-    
+
     const response = await fetch(`${API_BASE_URL}/orders/${orderId}/upload-payment-proof`, {
       method: 'POST',
       headers: {
@@ -590,18 +651,18 @@ export const orderAPI = {
       },
       body: formData
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to upload payment proof');
     }
-    
+
     return await response.json();
   },
-  
+
   // ✅ ADD THIS METHOD TOO:
   getPaymentProof: async (orderId: number) => {
     const token = TokenStorage.getToken();  // ✅ BARU
-    
+
     const response = await fetch(`${API_BASE_URL}/orders/${orderId}/payment-proof`, {
       method: 'GET',
       headers: {
@@ -609,11 +670,11 @@ export const orderAPI = {
         'Content-Type': 'application/json'
       }
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to get payment proof');
     }
-    
+
     return await response.json();
   }
 };
@@ -626,12 +687,12 @@ export const notificationAPI = {
     });
     return response.data;
   },
-  
+
   markAsRead: async (notificationId: number) => {
     const response = await api.put(`/notifications/${notificationId}/read`);
     return response.data;
   },
-  
+
   markAllAsRead: async () => {
     const response = await api.put('/notifications/read-all');
     return response.data;
@@ -644,7 +705,7 @@ export const userAPI = {
     const response = await api.get('/users/profile');
     return response.data;
   },
-  
+
   updateProfile: async (data: {
     name?: string;
     phone?: string;
@@ -662,12 +723,41 @@ export const adminAPI = {
     const response = await api.get('/admin/users');
     return response.data;
   },
-  
+
+  createUser: async (data: {
+    name: string;
+    email: string;
+    phone?: string;
+    password: string;
+  }) => {
+    const response = await api.post('/admin/users', data);
+    return response.data;
+  },
+
+  updateUser: async (userId: number, data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+  }) => {
+    const response = await api.put(`/admin/users/${userId}`, data);
+    return response.data;
+  },
+
+  deleteUser: async (userId: number) => {
+    const response = await api.delete(`/admin/users/${userId}`);
+    return response.data;
+  },
+
+  toggleUserStatus: async (userId: number) => {
+    const response = await api.put(`/admin/users/${userId}/toggle-status`);
+    return response.data;
+  },
+
   getStats: async () => {
     const response = await api.get('/admin/stats');
     return response.data;
   },
-  
+
   getDiseaseTrends: async (days: number = 30) => {
     const response = await api.get('/admin/disease-trends', {
       params: { days }
@@ -677,3 +767,4 @@ export const adminAPI = {
 };
 
 export default api;
+

@@ -18,6 +18,7 @@ class User(db.Model):
     address = db.Column(db.Text)
     age = db.Column(db.Integer)  # Usia
     primary_fish_type = db.Column(db.String(100))  # Jenis Ikan Hias Utama
+    is_active = db.Column(db.Boolean, default=True)  # Account status
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -44,6 +45,7 @@ class User(db.Model):
             'address': self.address,
             'age': self.age,
             'primary_fish_type': self.primary_fish_type,
+            'is_active': self.is_active if hasattr(self, 'is_active') else True,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
@@ -165,33 +167,75 @@ class FishSpecies(db.Model):
     scientific_name = db.Column(db.String(100))
     category = db.Column(db.String(50))  # freshwater, saltwater, etc
     description = db.Column(db.Text)
-    care_level = db.Column(db.String(20))  # easy, moderate, difficult
+    care_level = db.Column(db.String(20))  # easy, moderate, difficult (Mudah, Menengah, Sulit)
     temperament = db.Column(db.String(50))
+    family = db.Column(db.String(100))  # Famili ikan (contoh: Cyprinidae, Poeciliidae)
+    habitat = db.Column(db.Text)  # Habitat alami ikan
     max_size = db.Column(db.String(50))
     min_tank_size = db.Column(db.String(50))
     water_temp = db.Column(db.String(50))
     ph_range = db.Column(db.String(50))
     diet = db.Column(db.Text)
     image_url = db.Column(db.String(255))
+    status = db.Column(db.String(20), default='published')  # published, draft
+    views = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def to_dict(self):
+        # Parse pH range untuk mendapatkan min dan max
+        ph_min, ph_max = None, None
+        if self.ph_range:
+            ph_parts = self.ph_range.split('-')
+            if len(ph_parts) == 2:
+                try:
+                    ph_min = float(ph_parts[0].strip())
+                    ph_max = float(ph_parts[1].strip())
+                except:
+                    pass
+        
+        # Parse water temp untuk mendapatkan min dan max
+        temp_min, temp_max = None, None
+        if self.water_temp:
+            temp_parts = self.water_temp.replace('°C', '').split('-')
+            if len(temp_parts) == 2:
+                try:
+                    temp_min = float(temp_parts[0].strip())
+                    temp_max = float(temp_parts[1].strip())
+                except:
+                    pass
+        
+        # Format tanggal untuk frontend
+        last_updated = ''
+        if self.updated_at:
+            # Windows compatible date format (remove leading zero from day)
+            last_updated = self.updated_at.strftime('%d %b %Y').lstrip('0')
+        
         return {
             'id': self.id,
             'name': self.name,
-            'scientific_name': self.scientific_name,
+            'scientificName': self.scientific_name,  # camelCase untuk frontend
             'category': self.category,
             'description': self.description,
-            'care_level': self.care_level,
+            'difficulty': self.care_level,  # Map care_level ke difficulty
             'temperament': self.temperament,
-            'max_size': self.max_size,
-            'min_tank_size': self.min_tank_size,
-            'water_temp': self.water_temp,
-            'ph_range': self.ph_range,
+            'family': self.family,  # Famili ikan
+            'habitat': self.habitat,
+            'maxSize': self.max_size,
+            'minTankSize': self.min_tank_size,
+            'waterTemp': self.water_temp,
+            'phRange': self.ph_range,
+            'phMin': ph_min,
+            'phMax': ph_max,
+            'tempMin': temp_min,
+            'tempMax': temp_max,
             'diet': self.diet,
-            'image_url': self.image_url,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'image': self.image_url,  # Map image_url ke image
+            'status': self.status or 'published',
+            'views': self.views or 0,
+            'lastUpdated': last_updated,
+            'createdAt': self.created_at.isoformat() if self.created_at else None,
+            'updatedAt': self.updated_at.isoformat() if self.updated_at else None
         }
 
 class ForumTopic(db.Model):

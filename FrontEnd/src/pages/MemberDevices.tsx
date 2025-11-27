@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 import AddDeviceModal from '../components/AddDeviceModal';
 import { useNavigate } from '../components/Router';
 import { Plus, Bot, Activity, Circle } from '../components/icons';
 import { Button } from '../components/ui/button';
 import { useAuth } from '../components/AuthContext';
+import { deviceAPI } from '../services/api';
+import NotificationModal from '../components/ui/NotificationModal';
 
 interface Device {
   id: string;
@@ -18,40 +20,68 @@ export default function MemberDevices() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [devices, setDevices] = useState<Device[]>([
-    {
-      id: 'dev-001',
-      namaPerangkat: 'Akuarium Ruang Tamu',
-      uniqueID: 'TMNKN-A1B2-C3D4',
-      status: 'online',
-      lastActive: 'Aktif sekarang'
-    },
-    {
-      id: 'dev-002',
-      namaPerangkat: 'Akuarium Karantina',
-      uniqueID: 'TMNKN-X5Y6-Z7W8',
-      status: 'offline',
-      lastActive: '2 jam yang lalu'
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Notification modal state
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState<'success' | 'error' | 'warning' | 'info'>('success');
+  const [notificationTitle, setNotificationTitle] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState('');
+
+  // Fetch devices from database
+  useEffect(() => {
+    fetchDevices();
+  }, []);
+
+  const fetchDevices = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await deviceAPI.getUserDevices();
+
+      if (response.success && response.devices) {
+        setDevices(response.devices);
+      }
+    } catch (err: any) {
+      console.error('Error fetching devices:', err);
+      setError(err.response?.data?.error || 'Gagal memuat data perangkat');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
-  // Untuk testing empty state, uncomment line di bawah:
-  // const [devices, setDevices] = useState<Device[]>([]);
+  const handleAddDevice = async (deviceData: { namaPerangkat: string; uniqueID: string }) => {
+    try {
+      // Call API to add device to database
+      const response = await deviceAPI.addDevice({
+        name: deviceData.namaPerangkat,
+        device_code: deviceData.uniqueID
+      });
 
-  const handleAddDevice = (deviceData: { namaPerangkat: string; uniqueID: string }) => {
-    const newDevice: Device = {
-      id: `dev-${Date.now()}`,
-      namaPerangkat: deviceData.namaPerangkat,
-      uniqueID: deviceData.uniqueID,
-      status: 'offline',
-      lastActive: 'Baru didaftarkan'
-    };
+      if (response.message || response.device) {
+        // Close modal
+        setIsModalOpen(false);
 
-    setDevices([...devices, newDevice]);
-    setIsModalOpen(false);
+        // Refresh device list from server
+        await fetchDevices();
 
-    // Show success notification (you can implement toast here)
-    alert(`Perangkat "${deviceData.namaPerangkat}" berhasil didaftarkan!`);
+        // Show success notification modal
+        setNotificationType('success');
+        setNotificationTitle('Berhasil!');
+        setNotificationMessage(`Perangkat "${deviceData.namaPerangkat}" berhasil didaftarkan!`);
+        setShowNotification(true);
+      }
+    } catch (err: any) {
+      console.error('Error adding device:', err);
+      // Show error notification modal
+      const errorMsg = err.response?.data?.error || 'Gagal mendaftarkan perangkat. Silakan coba lagi.';
+      setNotificationType('error');
+      setNotificationTitle('Gagal');
+      setNotificationMessage(errorMsg);
+      setShowNotification(true);
+    }
   };
 
   const handleSelectDevice = (deviceId: string) => {
@@ -92,11 +122,11 @@ export default function MemberDevices() {
 
         {devices.length === 0 ? (
           // Empty State - Kondisi Awal untuk Member Baru
-          <div 
+          <div
             className="p-16 rounded-xl text-center mt-12"
             style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
           >
-            <div 
+            <div
               className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6"
               style={{ backgroundColor: '#EFF6FF' }}
             >
@@ -126,7 +156,7 @@ export default function MemberDevices() {
           <>
             {/* Stats Cards - Only show if devices exist */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div 
+              <div
                 className="p-4 rounded-lg"
                 style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
               >
@@ -137,7 +167,7 @@ export default function MemberDevices() {
                       {devices.length}
                     </p>
                   </div>
-                  <div 
+                  <div
                     className="w-12 h-12 rounded-lg flex items-center justify-center"
                     style={{ backgroundColor: '#EFF6FF' }}
                   >
@@ -146,7 +176,7 @@ export default function MemberDevices() {
                 </div>
               </div>
 
-              <div 
+              <div
                 className="p-4 rounded-lg"
                 style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
               >
@@ -157,7 +187,7 @@ export default function MemberDevices() {
                       {devices.filter(d => d.status === 'online').length}
                     </p>
                   </div>
-                  <div 
+                  <div
                     className="w-12 h-12 rounded-lg flex items-center justify-center"
                     style={{ backgroundColor: '#D1FAE5' }}
                   >
@@ -166,7 +196,7 @@ export default function MemberDevices() {
                 </div>
               </div>
 
-              <div 
+              <div
                 className="p-4 rounded-lg"
                 style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
               >
@@ -177,7 +207,7 @@ export default function MemberDevices() {
                       {devices.filter(d => d.status === 'offline').length}
                     </p>
                   </div>
-                  <div 
+                  <div
                     className="w-12 h-12 rounded-lg flex items-center justify-center"
                     style={{ backgroundColor: '#FEE2E2' }}
                   >
@@ -192,36 +222,36 @@ export default function MemberDevices() {
               <h2 className="text-lg mb-4" style={{ color: '#1F2937', fontWeight: 700 }}>
                 Daftar Perangkat
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {devices.map((device) => (
                   <div
                     key={device.id}
                     className="p-5 rounded-lg transition-all"
-                    style={{ 
-                      backgroundColor: '#FFFFFF', 
+                    style={{
+                      backgroundColor: '#FFFFFF',
                       boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                       border: '2px solid transparent'
                     }}
                   >
                     {/* Device Icon */}
                     <div className="flex items-start justify-between mb-4">
-                      <div 
+                      <div
                         className="w-14 h-14 rounded-lg flex items-center justify-center"
-                        style={{ 
-                          backgroundColor: device.status === 'online' ? '#D1FAE5' : '#F3F4F6' 
+                        style={{
+                          backgroundColor: device.status === 'online' ? '#D1FAE5' : '#F3F4F6'
                         }}
                       >
-                        <Bot 
-                          className="w-7 h-7" 
-                          style={{ 
-                            color: device.status === 'online' ? '#10B981' : '#9CA3AF' 
-                          }} 
+                        <Bot
+                          className="w-7 h-7"
+                          style={{
+                            color: device.status === 'online' ? '#10B981' : '#9CA3AF'
+                          }}
                         />
                       </div>
-                      
+
                       {/* Status Badge */}
-                      <div 
+                      <div
                         className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"
                         style={{
                           backgroundColor: device.status === 'online' ? '#D1FAE5' : '#FEE2E2',
@@ -229,8 +259,8 @@ export default function MemberDevices() {
                           fontWeight: 600
                         }}
                       >
-                        <Circle 
-                          className="w-2 h-2 fill-current" 
+                        <Circle
+                          className="w-2 h-2 fill-current"
                           style={{
                             color: device.status === 'online' ? '#10B981' : '#EF4444'
                           }}
@@ -245,7 +275,7 @@ export default function MemberDevices() {
                     </h3>
 
                     {/* Unique ID */}
-                    <p 
+                    <p
                       className="text-sm mb-3 font-mono"
                       style={{ color: '#6B7280' }}
                     >
@@ -293,6 +323,15 @@ export default function MemberDevices() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddDevice={handleAddDevice}
+      />
+
+      {/* Notification Modal */}
+      <NotificationModal
+        isOpen={showNotification}
+        onClose={() => setShowNotification(false)}
+        type={notificationType}
+        title={notificationTitle}
+        message={notificationMessage}
       />
     </DashboardLayout>
   );

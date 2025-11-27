@@ -1,18 +1,53 @@
 import { useParams } from '../components/Router';
 import DeviceLayout from '../components/DeviceLayout';
 import WaterMonitoring from '../components/member/WaterMonitoring';
-
-// Mock device data
-const mockDevices: Record<string, { id: string; name: string; uniqueID: string }> = {
-  'dev-001': { id: 'dev-001', name: 'Akuarium Ruang Tamu', uniqueID: 'TMNKN-A1B2-C3D4' },
-  'dev-002': { id: 'dev-002', name: 'Akuarium Karantina', uniqueID: 'TMNKN-X5Y6-Z7W8' }
-};
+import { useState, useEffect } from 'react';
+import { deviceAPI } from '../services/api';
 
 export default function MemberDeviceMonitoring() {
   const { deviceId } = useParams<{ deviceId: string }>();
-  const device = deviceId ? mockDevices[deviceId] : null;
+  const [device, setDevice] = useState<{ id: number; name: string; device_code: string } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!device) {
+  useEffect(() => {
+    const fetchDevice = async () => {
+      if (!deviceId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await deviceAPI.getDevice(parseInt(deviceId));
+        if (response.device) {
+          setDevice(response.device);
+        } else {
+          setError('Device not found');
+        }
+      } catch (err: any) {
+        console.error('Error fetching device:', err);
+        setError('Device not found');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDevice();
+  }, [deviceId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F6FA' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: '#4880FF' }}></div>
+          <p className="mt-4" style={{ color: '#6B7280' }}>Memuat perangkat...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !device) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F6FA' }}>
         <div className="text-center p-12 rounded-xl" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
@@ -28,8 +63,8 @@ export default function MemberDeviceMonitoring() {
   }
 
   return (
-    <DeviceLayout 
-      deviceId={device.id} 
+    <DeviceLayout
+      deviceId={device.id.toString()}
       deviceName={device.name}
       title={`Monitoring Air - ${device.name}`}
     >

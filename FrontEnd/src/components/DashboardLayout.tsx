@@ -132,7 +132,7 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
       backgroundColor: '#F5F6FA'
     }}>
       {/* Top Navigation Bar */}
-      <nav className="sticky top-0 z-50 shadow-sm" style={{ backgroundColor: '#FFFFFF' }}>
+      <nav className="sticky top-0 z-40 shadow-sm" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo & Brand */}

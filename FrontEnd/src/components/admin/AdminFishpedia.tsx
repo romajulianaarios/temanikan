@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -9,6 +9,27 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Search, Plus, Edit, Trash2, Eye, Upload } from '../icons';
+import { fishpediaAPI } from '../../services/api';
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// Create axios instance with auth
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add JWT token to requests
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 interface FishEntry {
   id: number;
@@ -20,6 +41,8 @@ interface FishEntry {
   views: number;
   lastUpdated: string;
   description?: string;
+  family?: string;
+  habitat?: string;
   image?: string;
   phMin?: number;
   phMax?: number;
@@ -28,83 +51,9 @@ interface FishEntry {
 }
 
 export default function AdminFishpedia() {
-  const [fishEntries, setFishEntries] = useState<FishEntry[]>([
-    {
-      id: 1,
-      name: 'Ikan Koi',
-      scientificName: 'Cyprinus carpio',
-      category: 'Air Tawar',
-      difficulty: 'Menengah',
-      status: 'published',
-      views: 1245,
-      lastUpdated: '1 Nov 2025',
-      description: 'Ikan koi adalah ikan hias yang populer dengan berbagai warna indah.',
-      phMin: 7.0,
-      phMax: 8.0,
-      tempMin: 15,
-      tempMax: 25
-    },
-    {
-      id: 2,
-      name: 'Ikan Cupang',
-      scientificName: 'Betta splendens',
-      category: 'Air Tawar',
-      difficulty: 'Mudah',
-      status: 'published',
-      views: 987,
-      lastUpdated: '28 Okt 2025',
-      description: 'Ikan cupang dikenal dengan siripnya yang indah dan sifat agresifnya.',
-      phMin: 6.5,
-      phMax: 7.5,
-      tempMin: 24,
-      tempMax: 28
-    },
-    {
-      id: 3,
-      name: 'Ikan Mas Koki',
-      scientificName: 'Carassius auratus',
-      category: 'Air Tawar',
-      difficulty: 'Mudah',
-      status: 'published',
-      views: 854,
-      lastUpdated: '25 Okt 2025',
-      description: 'Ikan mas koki adalah ikan hias yang mudah dipelihara.',
-      phMin: 6.5,
-      phMax: 7.5,
-      tempMin: 18,
-      tempMax: 24
-    },
-    {
-      id: 4,
-      name: 'Ikan Discus',
-      scientificName: 'Symphysodon spp.',
-      category: 'Air Tawar',
-      difficulty: 'Sulit',
-      status: 'draft',
-      views: 0,
-      lastUpdated: '4 Nov 2025',
-      description: 'Ikan discus adalah ikan air tawar yang cantik namun memerlukan perawatan khusus.',
-      phMin: 6.0,
-      phMax: 7.0,
-      tempMin: 26,
-      tempMax: 30
-    },
-    {
-      id: 5,
-      name: 'Ikan Guppy',
-      scientificName: 'Poecilia reticulata',
-      category: 'Air Tawar',
-      difficulty: 'Mudah',
-      status: 'published',
-      views: 723,
-      lastUpdated: '20 Okt 2025',
-      description: 'Ikan guppy adalah ikan kecil yang mudah berkembang biak.',
-      phMin: 7.0,
-      phMax: 8.0,
-      tempMin: 22,
-      tempMax: 28
-    },
-  ]);
+  const [fishEntries, setFishEntries] = useState<FishEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('Semua');
@@ -117,14 +66,47 @@ export default function AdminFishpedia() {
   // Form states
   const [formName, setFormName] = useState('');
   const [formScientificName, setFormScientificName] = useState('');
-  const [formCategory, setFormCategory] = useState('Air Tawar');
+  const [formCategory, setFormCategory] = useState('');
   const [formDifficulty, setFormDifficulty] = useState<'Mudah' | 'Menengah' | 'Sulit'>('Mudah');
   const [formDescription, setFormDescription] = useState('');
-  const [formPhMin, setFormPhMin] = useState('6.5');
-  const [formPhMax, setFormPhMax] = useState('7.5');
-  const [formTempMin, setFormTempMin] = useState('22');
-  const [formTempMax, setFormTempMax] = useState('28');
+  const [formFamily, setFormFamily] = useState('');
+  const [formHabitat, setFormHabitat] = useState('');
+  const [formPhMin, setFormPhMin] = useState('');
+  const [formPhMax, setFormPhMax] = useState('');
+  const [formTempMin, setFormTempMin] = useState('');
+  const [formTempMax, setFormTempMax] = useState('');
   const [formStatus, setFormStatus] = useState<'published' | 'draft'>('draft');
+  const [formImage, setFormImage] = useState<File | null>(null);
+  const [formImagePreview, setFormImagePreview] = useState<string>('');
+
+  // Fetch fish data from API
+  useEffect(() => {
+    fetchFishData();
+  }, []);
+
+  const fetchFishData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // ✅ Use correct public endpoint that returns all species
+      const response = await fishpediaAPI.getSpecies();
+      
+      console.log('📥 Fishpedia response:', response);
+      
+      if (response.success && response.species) {
+        // Backend sudah return format yang benar (camelCase)
+        setFishEntries(response.species);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching fish data:', err);
+      setError(err.message || 'Gagal memuat data ikan');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   // Filter fish entries
   const filteredEntries = fishEntries.filter(fish => {
@@ -141,62 +123,108 @@ export default function AdminFishpedia() {
   const draftCount = fishEntries.filter(f => f.status === 'draft').length;
 
   // Handle Add Fish
-  const handleAddFish = (e: React.FormEvent) => {
+  const handleAddFish = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newFish: FishEntry = {
-      id: fishEntries.length + 1,
-      name: formName,
-      scientificName: formScientificName,
-      category: formCategory,
-      difficulty: formDifficulty,
-      status: formStatus,
-      views: 0,
-      lastUpdated: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
-      description: formDescription,
-      phMin: parseFloat(formPhMin),
-      phMax: parseFloat(formPhMax),
-      tempMin: parseFloat(formTempMin),
-      tempMax: parseFloat(formTempMax)
-    };
-    setFishEntries([...fishEntries, newFish]);
-    setShowAddModal(false);
-    resetForm();
+    
+    try {
+      const formData = new FormData();
+      formData.append('name', formName);
+      formData.append('scientific_name', formScientificName);
+      formData.append('category', formCategory);
+      formData.append('difficulty', formDifficulty);
+      formData.append('description', formDescription);
+      formData.append('family', formFamily);
+      formData.append('habitat', formHabitat);
+      formData.append('ph_min', formPhMin);
+      formData.append('ph_max', formPhMax);
+      formData.append('temp_min', formTempMin);
+      formData.append('temp_max', formTempMax);
+      formData.append('status', formStatus);
+      
+      if (formImage) {
+        formData.append('image', formImage);
+      }
+
+      const response = await api.post('/fishpedia', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      if (response.data.success) {
+        await fetchFishData();
+        setShowAddModal(false);
+        resetForm();
+        alert('Ikan berhasil ditambahkan!');
+      } else {
+        alert(response.data.message || 'Gagal menambahkan ikan');
+      }
+    } catch (err: any) {
+      console.error('❌ Error adding fish:', err);
+      alert(err.response?.data?.message || err.message || 'Gagal menambahkan ikan');
+    }
   };
 
   // Handle Edit Fish
-  const handleEditFish = (e: React.FormEvent) => {
+  const handleEditFish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFish) return;
     
-    setFishEntries(fishEntries.map(fish => 
-      fish.id === selectedFish.id 
-        ? {
-            ...fish,
-            name: formName,
-            scientificName: formScientificName,
-            category: formCategory,
-            difficulty: formDifficulty,
-            description: formDescription,
-            phMin: parseFloat(formPhMin),
-            phMax: parseFloat(formPhMax),
-            tempMin: parseFloat(formTempMin),
-            tempMax: parseFloat(formTempMax),
-            status: formStatus,
-            lastUpdated: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-          }
-        : fish
-    ));
-    setShowEditModal(false);
-    setSelectedFish(null);
-    resetForm();
+    try {
+      const formData = new FormData();
+      formData.append('name', formName);
+      formData.append('scientific_name', formScientificName);
+      formData.append('category', formCategory);
+      formData.append('difficulty', formDifficulty);
+      formData.append('description', formDescription);
+      formData.append('family', formFamily);
+      formData.append('habitat', formHabitat);
+      formData.append('ph_min', formPhMin);
+      formData.append('ph_max', formPhMax);
+      formData.append('temp_min', formTempMin);
+      formData.append('temp_max', formTempMax);
+      formData.append('status', formStatus);
+      
+      if (formImage) {
+        formData.append('image', formImage);
+      }
+
+      const response = await api.put(`/fishpedia/${selectedFish.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      if (response.data.success) {
+        await fetchFishData();
+        setShowEditModal(false);
+        setSelectedFish(null);
+        resetForm();
+        alert('Ikan berhasil diupdate!');
+      } else {
+        alert(response.data.message || 'Gagal mengupdate ikan');
+      }
+    } catch (err: any) {
+      console.error('❌ Error updating fish:', err);
+      alert(err.response?.data?.message || err.message || 'Gagal mengupdate ikan');
+    }
   };
 
   // Handle Delete Fish
-  const handleDeleteFish = () => {
+  const handleDeleteFish = async () => {
     if (!selectedFish) return;
-    setFishEntries(fishEntries.filter(fish => fish.id !== selectedFish.id));
-    setShowDeleteConfirm(false);
-    setSelectedFish(null);
+    
+    try {
+      const response = await api.delete(`/fishpedia/${selectedFish.id}`);
+      
+      if (response.data.success) {
+        await fetchFishData();
+        setShowDeleteConfirm(false);
+        setSelectedFish(null);
+        alert('Ikan berhasil dihapus!');
+      } else {
+        alert(response.data.message || 'Gagal menghapus ikan');
+      }
+    } catch (err: any) {
+      console.error('❌ Error deleting fish:', err);
+      alert(err.response?.data?.message || err.message || 'Gagal menghapus ikan');
+    }
   };
 
   // Open View Modal
@@ -213,11 +241,15 @@ export default function AdminFishpedia() {
     setFormCategory(fish.category);
     setFormDifficulty(fish.difficulty);
     setFormDescription(fish.description || '');
-    setFormPhMin(fish.phMin?.toString() || '6.5');
-    setFormPhMax(fish.phMax?.toString() || '7.5');
-    setFormTempMin(fish.tempMin?.toString() || '22');
-    setFormTempMax(fish.tempMax?.toString() || '28');
+    setFormFamily(fish.family || '');
+    setFormHabitat(fish.habitat || '');
+    setFormPhMin(fish.phMin?.toString() || '');
+    setFormPhMax(fish.phMax?.toString() || '');
+    setFormTempMin(fish.tempMin?.toString() || '');
+    setFormTempMax(fish.tempMax?.toString() || '');
     setFormStatus(fish.status);
+    setFormImage(null);
+    setFormImagePreview(fish.image || '');
     setShowEditModal(true);
   };
 
@@ -227,22 +259,53 @@ export default function AdminFishpedia() {
     setShowDeleteConfirm(true);
   };
 
+  // Handle Image Change
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFormImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Reset Form
   const resetForm = () => {
     setFormName('');
     setFormScientificName('');
-    setFormCategory('Air Tawar');
+    setFormCategory('');
     setFormDifficulty('Mudah');
     setFormDescription('');
-    setFormPhMin('6.5');
-    setFormPhMax('7.5');
-    setFormTempMin('22');
-    setFormTempMax('28');
+    setFormFamily('');
+    setFormHabitat('');
+    setFormPhMin('');
+    setFormPhMax('');
+    setFormTempMin('');
+    setFormTempMax('');
     setFormStatus('draft');
+    setFormImage(null);
+    setFormImagePreview('');
   };
 
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Memuat data ikan...</p>
+        </div>
+      )}
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6" style={{ backgroundColor: 'white' }}>
@@ -392,7 +455,6 @@ export default function AdminFishpedia() {
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   required
-                  placeholder="Ikan Koi"
                 />
               </div>
               <div>
@@ -402,16 +464,15 @@ export default function AdminFishpedia() {
                   value={formScientificName}
                   onChange={(e) => setFormScientificName(e.target.value)}
                   required
-                  placeholder="Cyprinus carpio"
                 />
               </div>
             </div>
 
             <div>
               <Label htmlFor="add-category">Kategori</Label>
-              <Select value={formCategory} onValueChange={setFormCategory}>
+              <Select value={formCategory} onValueChange={setFormCategory} required>
                 <SelectTrigger id="add-category">
-                  <SelectValue />
+                  <SelectValue placeholder="Pilih kategori" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Air Tawar">Air Tawar</SelectItem>
@@ -423,9 +484,9 @@ export default function AdminFishpedia() {
 
             <div>
               <Label htmlFor="add-difficulty">Kesulitan</Label>
-              <Select value={formDifficulty} onValueChange={setFormDifficulty}>
+              <Select value={formDifficulty} onValueChange={setFormDifficulty} required>
                 <SelectTrigger id="add-difficulty">
-                  <SelectValue />
+                  <SelectValue placeholder="Pilih tingkat kesulitan" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Mudah">Mudah</SelectItem>
@@ -442,7 +503,29 @@ export default function AdminFishpedia() {
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 rows={4}
-                placeholder="Deskripsi lengkap tentang ikan..."
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="add-family">Famili</Label>
+              <Input 
+                id="add-family"
+                value={formFamily}
+                onChange={(e) => setFormFamily(e.target.value)}
+                placeholder="Contoh: Cyprinidae, Poeciliidae"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="add-habitat">Habitat</Label>
+              <Textarea 
+                id="add-habitat"
+                value={formHabitat}
+                onChange={(e) => setFormHabitat(e.target.value)}
+                rows={3}
+                required
               />
             </div>
 
@@ -509,12 +592,36 @@ export default function AdminFishpedia() {
 
             <div>
               <Label htmlFor="add-image">Gambar Ikan</Label>
-              <div className="mt-2 flex items-center gap-4">
-                <Button type="button" variant="outline" size="sm">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Gambar
-                </Button>
-                <span className="text-sm text-gray-500">Format: JPG, PNG (Max 2MB)</span>
+              <div className="mt-2 space-y-3">
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    id="add-image"
+                    accept="image/jpeg,image/png,image/jpg"
+                    onChange={handleImageChange}
+                    required
+                    className="hidden"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => document.getElementById('add-image')?.click()}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Gambar
+                  </Button>
+                  <span className="text-sm text-gray-500">Format: JPG, PNG (Max 2MB)</span>
+                </div>
+                {formImagePreview && (
+                  <div className="mt-2">
+                    <img 
+                      src={formImagePreview} 
+                      alt="Preview" 
+                      className="w-32 h-32 object-cover rounded border"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -604,6 +711,30 @@ export default function AdminFishpedia() {
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 rows={4}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-family">Famili</Label>
+              <Input 
+                id="edit-family"
+                value={formFamily}
+                onChange={(e) => setFormFamily(e.target.value)}
+                placeholder="Contoh: Cyprinidae, Poeciliidae"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-habitat">Habitat</Label>
+              <Textarea 
+                id="edit-habitat"
+                value={formHabitat}
+                onChange={(e) => setFormHabitat(e.target.value)}
+                rows={3}
+                placeholder="Masukkan habitat alami ikan"
+                required
               />
             </div>
 
@@ -668,6 +799,40 @@ export default function AdminFishpedia() {
               </Select>
             </div>
 
+            <div>
+              <Label htmlFor="edit-image">Update Gambar Ikan</Label>
+              <div className="mt-2 space-y-3">
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    id="edit-image"
+                    accept="image/jpeg,image/png,image/jpg"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => document.getElementById('edit-image')?.click()}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Gambar Baru
+                  </Button>
+                  <span className="text-sm text-gray-500">Format: JPG, PNG (Max 2MB)</span>
+                </div>
+                {formImagePreview && (
+                  <div className="mt-2">
+                    <img 
+                      src={formImagePreview} 
+                      alt="Preview" 
+                      className="w-32 h-32 object-cover rounded border"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
             <DialogFooter className="gap-2">
               <Button 
                 type="button" 
@@ -694,82 +859,96 @@ export default function AdminFishpedia() {
 
       {/* View Fish Modal */}
       <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle style={{ color: '#133E87' }}>Detail Ikan</DialogTitle>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#F3F3E0', border: 'none' }}>
+          <DialogHeader className="border-b pb-4" style={{ borderColor: '#CBDCEB' }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-2xl font-bold" style={{ color: '#133E87' }}>Detail Ikan</DialogTitle>
+                {selectedFish && (
+                  <p className="text-sm italic text-gray-600 mt-1">{selectedFish.scientificName}</p>
+                )}
+              </div>
+              {selectedFish && (
+                <div>
+                  {selectedFish.status === 'published' ? (
+                    <Badge className="bg-green-100 text-green-800">Published</Badge>
+                  ) : (
+                    <Badge className="bg-gray-100 text-gray-800">Draft</Badge>
+                  )}
+                </div>
+              )}
+            </div>
           </DialogHeader>
           {selectedFish && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Nama Ikan</p>
-                  <p style={{ color: '#133E87' }}>{selectedFish.name}</p>
+            <div className="space-y-4 pt-4">
+              {/* Basic Info Cards */}
+              <div className="grid md:grid-cols-4 gap-3">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Nama Ikan</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.name}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Nama Ilmiah</p>
-                  <p className="italic text-gray-700">{selectedFish.scientificName}</p>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Famili</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.family || 'N/A'}</p>
                 </div>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Kategori</p>
-                <Badge variant="outline">{selectedFish.category}</Badge>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Kesulitan</p>
-                {selectedFish.difficulty === 'Mudah' ? (
-                  <Badge className="bg-green-100 text-green-800">Mudah</Badge>
-                ) : selectedFish.difficulty === 'Menengah' ? (
-                  <Badge className="bg-yellow-100 text-yellow-800">Menengah</Badge>
-                ) : (
-                  <Badge className="bg-red-100 text-red-800">Sulit</Badge>
-                )}
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Status</p>
-                {selectedFish.status === 'published' ? (
-                  <Badge className="bg-green-100 text-green-800">Published</Badge>
-                ) : (
-                  <Badge className="bg-gray-100 text-gray-800">Draft</Badge>
-                )}
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Deskripsi</p>
-                <p className="text-gray-700">{selectedFish.description || 'Tidak ada deskripsi'}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div 
-                  className="p-4 rounded-lg"
-                  style={{ backgroundColor: '#F3F3E0' }}
-                >
-                  <p className="text-sm text-gray-600 mb-1">Rentang pH</p>
-                  <p style={{ color: '#133E87' }}>
-                    {selectedFish.phMin} - {selectedFish.phMax}
-                  </p>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Kategori</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.category}</p>
                 </div>
-                <div 
-                  className="p-4 rounded-lg"
-                  style={{ backgroundColor: '#F3F3E0' }}
-                >
-                  <p className="text-sm text-gray-600 mb-1">Rentang Suhu</p>
-                  <p style={{ color: '#133E87' }}>
-                    {selectedFish.tempMin}°C - {selectedFish.tempMax}°C
-                  </p>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Kesulitan</span>
+                  <div className="mt-1">
+                    {selectedFish.difficulty === 'Mudah' ? (
+                      <Badge className="bg-green-100 text-green-800">Mudah</Badge>
+                    ) : selectedFish.difficulty === 'Menengah' ? (
+                      <Badge className="bg-yellow-100 text-yellow-800">Menengah</Badge>
+                    ) : (
+                      <Badge className="bg-red-100 text-red-800">Sulit</Badge>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Total Views</p>
-                  <p style={{ color: '#133E87' }}>{selectedFish.views}</p>
+              {/* Description */}
+              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>📝 Deskripsi</h3>
+                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.description || 'Tidak ada deskripsi'}</p>
+              </div>
+
+              {/* Habitat */}
+              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>🌍 Habitat</h3>
+                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.habitat || 'Tidak ada informasi habitat'}</p>
+              </div>
+
+              {/* Parameters */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>💧 Parameter Air</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>pH Range</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.phMin} - {selectedFish.phMax}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Suhu</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.tempMin}°C - {selectedFish.tempMax}°C</span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Terakhir Diupdate</p>
-                  <p style={{ color: '#133E87' }}>{selectedFish.lastUpdated}</p>
+
+                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
+                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>📊 Statistik</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Views</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.views}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Last Updated</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.lastUpdated}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
