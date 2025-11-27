@@ -62,31 +62,47 @@ function Calendar({
 
     if (mode === "single") {
       onSelect?.(clickedDate);
+    } else if (mode === "range") {
+      onSelect?.(clickedDate);
     }
   };
 
   const isSelected = (day: number) => {
     if (!selected) return false;
-    
+
+    const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    // Reset hours to compare dates only
+    date.setHours(0, 0, 0, 0);
+
     if (mode === "single" && selected instanceof Date) {
-      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-      return (
-        date.getDate() === selected.getDate() &&
-        date.getMonth() === selected.getMonth() &&
-        date.getFullYear() === selected.getFullYear()
-      );
+      const selectedDate = new Date(selected);
+      selectedDate.setHours(0, 0, 0, 0);
+      return date.getTime() === selectedDate.getTime();
+    }
+
+    if (mode === "range" && typeof selected === 'object' && 'from' in selected) {
+      const from = selected.from ? new Date(selected.from) : null;
+      const to = selected.to ? new Date(selected.to) : null;
+
+      if (from) from.setHours(0, 0, 0, 0);
+      if (to) to.setHours(0, 0, 0, 0);
+
+      if (from && !to) {
+        return date.getTime() === from.getTime();
+      }
+      if (from && to) {
+        return date.getTime() >= from.getTime() && date.getTime() <= to.getTime();
+      }
     }
     return false;
   };
 
   const isToday = (day: number) => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
-    );
+    date.setHours(0, 0, 0, 0);
+    return date.getTime() === today.getTime();
   };
 
   const days = [];
@@ -97,7 +113,8 @@ function Calendar({
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
     const isDisabled = disabled && disabled(date);
-    
+    const selected = isSelected(day);
+
     days.push(
       <button
         key={day}
@@ -106,9 +123,9 @@ function Calendar({
         className={cn(
           buttonVariants({ variant: "ghost" }),
           "h-8 w-8 p-0 font-normal",
-          isSelected(day) &&
-            "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
-          isToday(day) && !isSelected(day) && "bg-accent text-accent-foreground",
+          selected &&
+          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+          isToday(day) && !selected && "bg-accent text-accent-foreground",
           isDisabled && "text-muted-foreground opacity-50 cursor-not-allowed"
         )}
       >

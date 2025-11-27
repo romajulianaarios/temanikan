@@ -37,6 +37,27 @@ def admin_required(fn):
     return wrapper
 
 
+def notify_admins(title, message, type='info'):
+    """Helper to create notifications for all admins"""
+    try:
+        admins = User.query.filter_by(role='admin').all()
+        for admin in admins:
+            notification = Notification(
+                user_id=admin.id,
+                type=type,
+                title=title,
+                message=message,
+                is_read=False,
+                created_at=datetime.utcnow()
+            )
+            db.session.add(notification)
+        db.session.commit()
+        print(f"✅ Notified {len(admins)} admins: {title}")
+    except Exception as e:
+        print(f"⚠️ Failed to notify admins: {e}")
+
+
+
 def register_routes(app):
     """Register all API routes"""
     
@@ -70,8 +91,6 @@ def register_routes(app):
             name=data['name'],
             email=data['email'],
             role='member',  # Default role
-            phone=data.get('phone'),
-            address=data.get('address'),
             age=data.get('age'),
             primary_fish_type=data.get('primary_fish_type')
         )
@@ -80,7 +99,13 @@ def register_routes(app):
         db.session.add(user)
         db.session.commit()
         
-        # UBAH: Tidak return token, hanya return success message
+        # Notify admins about new user
+        notify_admins(
+            title="Pengguna Baru Terdaftar",
+            message=f"Pengguna baru '{user.name}' ({user.email}) telah mendaftar.",
+            type='info'
+        )
+        
         return jsonify({
             'message': 'Registrasi berhasil. Silahkan masuk dengan akun yang telah dibuat.',
             'user': {
@@ -107,12 +132,12 @@ def register_routes(app):
             # Generate token
             access_token = create_access_token(identity=str(user.id))
             
-            # ✨ TEST: Decode token immediately to verify
+            # TEST: Decode token immediately to verify
             from flask import current_app
             import jwt as pyjwt
             
             print("=" * 70)
-            print("🔍 TOKEN GENERATION TEST:")
+            print("TOKEN GENERATION TEST:")
             print(f"   User ID: {user.id}")
             print(f"   Token (first 50 chars): {access_token[:50]}...")
             
@@ -123,7 +148,7 @@ def register_routes(app):
                     current_app.config['JWT_SECRET_KEY'], 
                     algorithms=['HS256']
                 )
-                print(f"   ✅ Decode successful!")
+                print(f"   Decode successful!")
                 print(f"   Decoded user ID (sub): {decoded.get('sub')}")
                 print(f"   Issued at (iat): {decoded.get('iat')}")
                 print(f"   Expires at (exp): {decoded.get('exp')}")
@@ -135,7 +160,7 @@ def register_routes(app):
                 print(f"   EXP datetime: {exp_time}")
                 
             except Exception as decode_error:
-                print(f"   ❌ Decode failed: {decode_error}")
+                print(f"   Decode failed: {decode_error}")
             
             print("=" * 70)
             
@@ -146,7 +171,7 @@ def register_routes(app):
             }), 200
             
         except Exception as e:
-            print(f"❌ Login error: {str(e)}")
+            print(f"Login error: {str(e)}")
             import traceback
             print(traceback.format_exc())
             return jsonify({'error': 'Internal server error'}), 500
@@ -2033,6 +2058,30 @@ def register_routes(app):
             db.session.commit()
             print(f"✅ Order committed to database! ID: {order.id}")
             
+            # Create notification for new order
+            try:
+                notification = Notification(
+                    user_id=current_user_id,
+                    type='success',
+                    title='Pesanan Berhasil Dibuat',
+                    message=f'Pesanan #{order_number} berhasil dibuat. Silahkan lakukan pembayaran.',
+                    is_read=False,
+                    created_at=datetime.utcnow()
+                )
+                db.session.add(notification)
+                db.session.commit()
+                print(f"✅ Notification created for Order {order.id}")
+            except Exception as notif_error:
+                print(f"⚠️ Failed to create notification: {str(notif_error)}")
+                # Don't fail the request if notification fails, just log it
+            
+            # Notify admins about new order
+            notify_admins(
+                title="Pesanan Baru Masuk",
+                message=f"Pesanan baru #{order_number} dari User ID {current_user_id} telah masuk.",
+                type='info'
+            )
+            
             # Verify in database
             verify = Order.query.get(order.id)
             print(f"🔵 Verification - Order found in DB: {verify is not None}")
@@ -2072,14 +2121,44 @@ def register_routes(app):
         else:
             # Admin can update all fields
             if 'status' in data:
-                order.status = data['status']
+                old_status = order.status
+                new_status = data['status']
+                order.status = new_status
+                
+                # Create notification if status changed
+                if old_status != new_status:
+                    # Map status to readable Indonesian
+                    status_map = {
+                        'pending': 'Menunggu Konfirmasi',
+                        'processing': 'Sedang Diproses',
+                        'shipped': 'Sedang Dikirim',
+                        'delivered': 'Telah Diterima',
+                        'cancelled': 'Dibatalkan'
+                    }
+                    readable_status = status_map.get(new_status, new_status)
+                    
+                    notification = Notification(
+                        user_id=order.user_id,
+                        type='info',
+                        title='Status Pesanan Diperbarui',
+                        message=f'Status pesanan #{order.order_number} Anda telah diperbarui menjadi "{readable_status}".',
+                        is_read=False,
+                        created_at=datetime.utcnow()
+                    )
+                    db.session.add(notification)
+                    
             if 'payment_status' in data:
                 order.payment_status = data['payment_status']
             if 'notes' in data:
                 order.notes = data['notes']
         
         order.updated_at = datetime.utcnow()
-        db.session.commit()
+        
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': f'Database commit failed: {str(e)}'}), 500
         
         return jsonify({
             'message': 'Order updated successfully',
@@ -2198,6 +2277,28 @@ def register_routes(app):
             
             db.session.commit()
             print(f"✅ Order {order_id} updated in database")
+            
+            # Notify Member
+            try:
+                notification = Notification(
+                    user_id=current_user_id,
+                    type='success',
+                    title='Pembayaran Berhasil Diupload',
+                    message=f'Bukti pembayaran untuk pesanan #{order.order_number} berhasil diupload. Mohon tunggu verifikasi Admin.',
+                    is_read=False,
+                    created_at=datetime.utcnow()
+                )
+                db.session.add(notification)
+                db.session.commit()
+            except Exception as e:
+                print(f"⚠️ Failed to notify member: {e}")
+
+            # Notify Admins
+            notify_admins(
+                title="Bukti Pembayaran Diterima",
+                message=f"User ID {current_user_id} telah mengupload bukti pembayaran untuk pesanan #{order.order_number}.",
+                type='info'
+            )
             
             return jsonify({
                 'success': True,
@@ -2369,6 +2470,17 @@ def register_routes(app):
                     )
                 )
             
+            # Filter by date
+            date_str = request.args.get('date', None)
+            if date_str:
+                try:
+                    # Parse date string (YYYY-MM-DD)
+                    filter_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                    # Filter orders created on this date
+                    query = query.filter(db.func.date(Order.created_at) == filter_date)
+                except ValueError:
+                    pass # Ignore invalid date format
+            
             # Get total count
             total = query.count()
             
@@ -2419,8 +2531,36 @@ def register_routes(app):
             if not order:
                 return jsonify({'error': 'Order not found'}), 404
             
+            old_status = order.status
             order.status = new_status
             order.updated_at = datetime.utcnow()
+            
+            # Create notification if status changed
+            if old_status != new_status:
+                # Map status to readable Indonesian
+                status_map = {
+                    'pending': 'Menunggu Konfirmasi',
+                    'confirmed': 'Dikonfirmasi',
+                    'processing': 'Sedang Diproses',
+                    'shipping': 'Sedang Dikirim',
+                    'delivered': 'Telah Diterima',
+                    'cancelled': 'Dibatalkan'
+                }
+                readable_status = status_map.get(new_status, new_status)
+                
+                try:
+                    notification = Notification(
+                        user_id=order.user_id,
+                        type='info',
+                        title='Status Pesanan Diperbarui',
+                        message=f'Status pesanan #{order.order_number} Anda telah diperbarui menjadi "{readable_status}".',
+                        is_read=False,
+                        created_at=datetime.utcnow()
+                    )
+                    db.session.add(notification)
+                except Exception as e:
+                    print(f"⚠️ Failed to create notification: {e}")
+
             db.session.commit()
             
             return jsonify({
@@ -2637,54 +2777,9 @@ def register_routes(app):
             return jsonify({'error': str(e)}), 500
 
     # Notification Routes
-    @app.route('/api/notifications', methods=['GET'])
-    @jwt_required()
-    def get_notifications():
-        user_id = get_jwt_identity()
-        
-        limit = request.args.get('limit', default=50, type=int)
-        unread_only = request.args.get('unread_only', default='false').lower() == 'true'
-        
-        query = Notification.query.filter_by(user_id=user_id)
-        
-        if unread_only:
-            query = query.filter_by(is_read=False)
-        
-        notifications = query.order_by(Notification.created_at.desc()).limit(limit).all()
-        
-        return jsonify({
-            'notifications': [n.to_dict() for n in notifications],
-            'count': len(notifications),
-            'unread_count': Notification.query.filter_by(user_id=user_id, is_read=False).count()
-        }), 200
+
     
-    @app.route('/api/notifications/<int:notification_id>/read', methods=['PUT'])
-    @jwt_required()
-    def mark_notification_read(notification_id):
-        user_id = get_jwt_identity()
-        notification = Notification.query.get(notification_id)
-        
-        if not notification:
-            return jsonify({'error': 'Notification not found'}), 404
-        
-        if notification.user_id != user_id:
-            return jsonify({'error': 'Unauthorized access'}), 403
-        
-        notification.is_read = True
-        db.session.commit()
-        
-        return jsonify({'message': 'Notification marked as read'}), 200
-    
-    @app.route('/api/notifications/read-all', methods=['PUT'])
-    @jwt_required()
-    def mark_all_notifications_read():
-        user_id = get_jwt_identity()
-        
-        Notification.query.filter_by(user_id=user_id, is_read=False)\
-            .update({'is_read': True})
-        db.session.commit()
-        
-        return jsonify({'message': 'All notifications marked as read'}), 200
+
     
     # Admin Routes
     @app.route('/api/admin/users', methods=['GET'])
@@ -2797,6 +2892,22 @@ def register_routes(app):
             
             db.session.commit()
             
+            # Create notification for profile update
+            try:
+                notification = Notification(
+                    user_id=user_to_update.id,
+                    type='info',
+                    title='Profil Diperbarui',
+                    message='Profil akun Anda telah diperbarui oleh Admin.',
+                    is_read=False,
+                    created_at=datetime.utcnow()
+                )
+                db.session.add(notification)
+                db.session.commit()
+            except Exception as e:
+                print(f"⚠️ Failed to create notification: {e}")
+                # Don't fail the request if notification fails
+
             return jsonify({
                 'success': True,
                 'message': 'User updated successfully',
@@ -2874,6 +2985,31 @@ def register_routes(app):
                     'message': 'Cannot deactivate admin accounts'
                 }), 400
             
+            user_to_toggle.is_active = not user_to_toggle.is_active
+            db.session.commit()
+            
+            # Create notification for status change
+            status_msg = "diaktifkan" if user_to_toggle.is_active else "dinonaktifkan"
+            try:
+                notification = Notification(
+                    user_id=user_to_toggle.id,
+                    type='warning' if not user_to_toggle.is_active else 'success',
+                    title='Status Akun Diubah',
+                    message=f'Akun Anda telah {status_msg} oleh Admin.',
+                    is_read=False,
+                    created_at=datetime.utcnow()
+                )
+                db.session.add(notification)
+                db.session.commit()
+            except Exception as e:
+                print(f"⚠️ Failed to create notification: {e}")
+
+            return jsonify({
+                'success': True,
+                'message': f'User {status_msg} successfully',
+                'is_active': user_to_toggle.is_active
+            }), 200
+            
             # Toggle status
             user_to_toggle.is_active = not user_to_toggle.is_active
             db.session.commit()
@@ -2950,4 +3086,99 @@ def register_routes(app):
             'trends': list(trends.values()),
             'total_detections': len(detections),
             'period_days': days
+        }), 200
+
+    # ==================== NOTIFICATION ENDPOINTS ====================
+
+    @app.route('/api/notifications', methods=['GET'])
+    @jwt_required()
+    def get_notifications():
+        """Get notifications for current user"""
+        user_id = get_jwt_identity()
+        
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('limit', 50, type=int)
+        unread_only = request.args.get('unread_only', 'false').lower() == 'true'
+        
+        query = Notification.query.filter_by(user_id=user_id)
+        
+        if unread_only:
+            query = query.filter_by(is_read=False)
+            
+        # Order by newest first
+        query = query.order_by(Notification.created_at.desc())
+        
+        # Execute query with pagination
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        notifications = pagination.items
+        
+        return jsonify({
+            'success': True,
+            'data': [n.to_dict() for n in notifications],
+            'meta': {
+                'page': page,
+                'per_page': per_page,
+                'total': pagination.total,
+                'pages': pagination.pages
+            }
+        }), 200
+
+    @app.route('/api/notifications/<int:notification_id>/read', methods=['PUT'])
+    @jwt_required()
+    def mark_notification_read(notification_id):
+        """Mark a notification as read"""
+        user_id = get_jwt_identity()
+        notification = Notification.query.get(notification_id)
+        
+        if not notification:
+            return jsonify({'success': False, 'message': 'Notification not found'}), 404
+            
+        if notification.user_id != int(user_id):
+            return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+            
+        notification.is_read = True
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Notification marked as read',
+            'data': notification.to_dict()
+        }), 200
+
+    @app.route('/api/notifications/read-all', methods=['PUT'])
+    @jwt_required()
+    def mark_all_notifications_read():
+        """Mark all notifications as read for current user"""
+        user_id = get_jwt_identity()
+        
+        Notification.query.filter_by(user_id=user_id, is_read=False).update({'is_read': True})
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'All notifications marked as read'
+        }), 200
+
+    @app.route('/api/notifications/<int:notification_id>', methods=['GET'])
+    @jwt_required()
+    def get_notification_detail(notification_id):
+        """Get notification detail"""
+        user_id = get_jwt_identity()
+        notification = Notification.query.get(notification_id)
+        
+        if not notification:
+            return jsonify({'success': False, 'message': 'Notification not found'}), 404
+            
+        if notification.user_id != int(user_id):
+            return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+            
+        # Auto mark as read when viewed
+        if not notification.is_read:
+            notification.is_read = True
+            db.session.commit()
+            
+        return jsonify({
+            'success': True,
+            'data': notification.to_dict()
         }), 200

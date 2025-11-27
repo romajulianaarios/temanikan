@@ -670,6 +670,11 @@ export const notificationAPI = {
     const response = await api.put('/notifications/read-all');
     return response.data;
   },
+
+  getNotificationDetail: async (notificationId: number) => {
+    const response = await api.get(`/notifications/${notificationId}`);
+    return response.data;
+  },
 };
 
 // User API
@@ -678,7 +683,6 @@ export const userAPI = {
     const response = await api.get('/users/profile');
     return response.data;
   },
-
   updateProfile: async (data: {
     name?: string;
     phone?: string;
