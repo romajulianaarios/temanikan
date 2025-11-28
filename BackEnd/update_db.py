@@ -1,20 +1,17 @@
-from app import create_app
-from models import db, User, Order, Notification
+import sqlite3
 
-app = create_app()
+db_path = r'c:\WEBSITE TEMANIKAN\BackEnd\instance\temanikan.db'
 
-with app.app_context():
-    # Update Notification
-    notification = Notification.query.get(1)
-    if notification:
-        notification.user_id = 3
-        print(f"Updated Notification 1 user_id to 3")
+try:
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
     
-    # Update Order
-    order = Order.query.get(1)
-    if order:
-        order.user_id = 3
-        print(f"Updated Order 1 user_id to 3")
-        
-    db.session.commit()
+    # Add battery_level column
+    cursor.execute("ALTER TABLE devices ADD COLUMN battery_level INTEGER DEFAULT 100")
+    print("Added battery_level column.")
+    
+    conn.commit()
+    conn.close()
     print("Database updated successfully.")
+except Exception as e:
+    print(f"Error: {e}")

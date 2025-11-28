@@ -1,20 +1,18 @@
-from app import create_app
-from models import db, User, Order, Notification
+import sqlite3
 
-app = create_app()
+db_path = r'c:\WEBSITE TEMANIKAN\BackEnd\instance\temanikan.db'
 
-with app.app_context():
-    print("=== USERS ===")
-    users = User.query.all()
-    for u in users:
-        print(f"ID: {u.id}, Name: {u.name}, Email: {u.email}, Role: {u.role}")
-
-    print("\n=== ORDERS ===")
-    orders = Order.query.all()
-    for o in orders:
-        print(f"ID: {o.id}, UserID: {o.user_id}, Status: {o.status}")
-
-    print("\n=== NOTIFICATIONS ===")
-    notifications = Notification.query.all()
-    for n in notifications:
-        print(f"ID: {n.id}, UserID: {n.user_id}, Title: {n.title}, Message: {n.message}")
+try:
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    cursor.execute("PRAGMA table_info(devices)")
+    columns = cursor.fetchall()
+    
+    print("Columns in 'devices' table:")
+    for col in columns:
+        print(col)
+        
+    conn.close()
+except Exception as e:
+    print(f"Error: {e}")

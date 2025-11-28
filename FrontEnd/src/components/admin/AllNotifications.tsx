@@ -30,9 +30,9 @@ export default function AllNotifications() {
     try {
       setLoading(true);
       const response = await notificationAPI.getNotifications();
-      if (response.success) {
+      if (response && response.notifications) {
         // Transform API data to match component interface
-        const formattedNotifications = response.data.map((n: any) => ({
+        const formattedNotifications = response.notifications.map((n: any) => ({
           id: n.id,
           title: n.title,
           message: n.message,

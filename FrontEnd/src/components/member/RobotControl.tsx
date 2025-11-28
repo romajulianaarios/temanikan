@@ -1,22 +1,67 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams } from '../Router';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Switch } from '../ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Bot, Play, Pause, Square, Battery, Clock, CheckCircle, X, Calendar, MapPin, TrendingUp, RotateCcw, AlertCircle } from '../icons';
+import { Bot, Play, Pause, Battery, Clock, CheckCircle, RotateCcw, AlertCircle } from '../icons';
+import { deviceAPI, robotAPI } from '../../services/api';
 
 export default function RobotControl() {
   const { deviceId } = useParams<{ deviceId?: string }>();
   const [autoCleanEnabled, setAutoCleanEnabled] = useState(true);
-  const [robotStatus, setRobotStatus] = useState<'idle' | 'cleaning' | 'charging'>('idle');
+  const [device, setDevice] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [cleaningHistory, setCleaningHistory] = useState<any[]>([]);
 
-  const handleManualClean = () => {
-    setRobotStatus('cleaning');
-    setTimeout(() => {
-      setRobotStatus('idle');
-    }, 5000);
+  const fetchDeviceData = async () => {
+    if (!deviceId) return;
+    try {
+      const deviceData = await deviceAPI.getDevice(parseInt(deviceId));
+      setDevice(deviceData.device);
+
+      const historyData = await robotAPI.getCleaningHistory(parseInt(deviceId), 5);
+      setCleaningHistory(historyData.history || []);
+    } catch (error) {
+      console.error('Error fetching device data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchDeviceData();
+    // Poll for status updates every 5 seconds
+    const interval = setInterval(fetchDeviceData, 5000);
+    return () => clearInterval(interval);
+  }, [deviceId]);
+
+  const handleManualClean = async () => {
+    if (!deviceId) return;
+    try {
+      await robotAPI.startCleaning(parseInt(deviceId));
+      fetchDeviceData(); // Refresh immediately
+    } catch (error) {
+      console.error('Error starting cleaning:', error);
+    }
+  };
+
+  const handleStopClean = async () => {
+    if (!deviceId) return;
+    try {
+      await robotAPI.stopCleaning(parseInt(deviceId));
+      fetchDeviceData(); // Refresh immediately
+    } catch (error) {
+      console.error('Error stopping cleaning:', error);
+    }
+  };
+
+  if (loading && !device) {
+    return <div className="p-8 text-center">Memuat data robot...</div>;
+  }
+
+  const robotStatus = device?.robot_status || 'idle';
+  const batteryLevel = device?.battery_level || 0;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -33,7 +78,7 @@ export default function RobotControl() {
       {/* Robot Status */}
       <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
         <div className="flex items-center gap-3 mb-6">
-          <div 
+          <div
             className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{ backgroundColor: 'rgba(35, 154, 246, 0.1)' }}
           >
@@ -41,13 +86,13 @@ export default function RobotControl() {
           </div>
           <div>
             <h3 className="text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>Status Robot Terkini</h3>
-            <p className="text-sm" style={{ color: '#6B7280' }}>Kolam Utama</p>
+            <p className="text-sm" style={{ color: '#6B7280' }}>{device?.name || 'Device'}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="p-3 rounded-full"
               style={{ backgroundColor: robotStatus === 'idle' ? 'rgba(74, 217, 145, 0.1)' : robotStatus === 'cleaning' ? 'rgba(72, 128, 255, 0.1)' : 'rgba(254, 197, 61, 0.1)' }}
             >
@@ -66,7 +111,7 @@ export default function RobotControl() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="p-3 rounded-full"
               style={{ backgroundColor: 'rgba(130, 128, 255, 0.1)' }}
             >
@@ -74,12 +119,12 @@ export default function RobotControl() {
             </div>
             <div>
               <p className="text-sm" style={{ color: '#6B7280' }}>Baterai</p>
-              <p style={{ color: '#1F2937', fontWeight: 600 }}>87%</p>
+              <p style={{ color: '#1F2937', fontWeight: 600 }}>{batteryLevel}%</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="p-3 rounded-full"
               style={{ backgroundColor: 'rgba(254, 197, 61, 0.1)' }}
             >
@@ -87,7 +132,11 @@ export default function RobotControl() {
             </div>
             <div>
               <p className="text-sm" style={{ color: '#6B7280' }}>Pembersihan Terakhir</p>
-              <p style={{ color: '#1F2937', fontWeight: 600 }}>2 jam yang lalu</p>
+              <p style={{ color: '#1F2937', fontWeight: 600 }}>
+                {cleaningHistory.length > 0
+                  ? new Date(cleaningHistory[0].finished_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                  : '-'}
+              </p>
             </div>
           </div>
         </div>
@@ -101,7 +150,7 @@ export default function RobotControl() {
             <span className="text-sm" style={{ color: '#6B7280', fontWeight: 600 }}>
               {autoCleanEnabled ? 'Aktif' : 'Nonaktif'}
             </span>
-            <Switch 
+            <Switch
               checked={autoCleanEnabled}
               onCheckedChange={setAutoCleanEnabled}
             />
@@ -151,7 +200,7 @@ export default function RobotControl() {
               </p>
             </div>
 
-            <Button 
+            <Button
               className="text-white hover:shadow-lg transition-all"
               style={{ backgroundColor: '#4880FF' }}
             >
@@ -166,7 +215,7 @@ export default function RobotControl() {
         <h3 className="mb-6 text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>Operasi Manual</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button 
+          <Button
             className="text-white py-6 hover:shadow-lg transition-all"
             style={{ backgroundColor: '#4AD991' }}
             onClick={handleManualClean}
@@ -176,24 +225,25 @@ export default function RobotControl() {
             Mulai Pembersihan
           </Button>
 
-          <Button 
+          <Button
             className="py-6 hover:bg-gray-50 transition-all"
-            style={{ 
-              backgroundColor: 'white', 
+            style={{
+              backgroundColor: 'white',
               color: '#CE3939',
               border: '2px solid #CE3939',
               fontWeight: 600
             }}
+            onClick={handleStopClean}
             disabled={robotStatus !== 'cleaning'}
           >
             <Pause className="w-5 h-5 mr-2" />
             Hentikan
           </Button>
 
-          <Button 
+          <Button
             className="py-6 hover:bg-gray-50 transition-all"
-            style={{ 
-              backgroundColor: 'white', 
+            style={{
+              backgroundColor: 'white',
               color: '#4880FF',
               border: '2px solid #4880FF',
               fontWeight: 600
@@ -218,41 +268,44 @@ export default function RobotControl() {
       <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>Riwayat Pembersihan</h3>
-          <Link 
+          <Link
             to={deviceId ? `/member/device/${deviceId}/cleaning-history` : `/member/cleaning-history`}
-            className="text-sm hover:underline" 
+            className="text-sm hover:underline"
             style={{ color: '#4880FF', fontWeight: 600 }}
           >
             Lihat Semua
           </Link>
         </div>
         <div className="space-y-3">
-          {[
-            { date: '4 Nov 2025', time: '20:00', duration: '45 menit', status: 'Selesai' },
-            { date: '3 Nov 2025', time: '20:00', duration: '42 menit', status: 'Selesai' },
-            { date: '2 Nov 2025', time: '20:00', duration: '48 menit', status: 'Selesai' },
-            { date: '1 Nov 2025', time: '20:00', duration: '44 menit', status: 'Selesai' },
-          ].map((item, index) => (
-            <div 
-              key={index}
-              className="flex items-center justify-between p-3 rounded-lg hover:shadow-md transition-all"
-              style={{ backgroundColor: 'rgba(74, 217, 145, 0.05)', border: '1px solid rgba(74, 217, 145, 0.1)' }}
-            >
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: 'rgba(74, 217, 145, 0.1)' }}
-                >
-                  <CheckCircle className="w-5 h-5" style={{ color: '#4AD991' }} />
+          {cleaningHistory.length > 0 ? (
+            cleaningHistory.map((item, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 rounded-lg hover:shadow-md transition-all"
+                style={{ backgroundColor: 'rgba(74, 217, 145, 0.05)', border: '1px solid rgba(74, 217, 145, 0.1)' }}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: 'rgba(74, 217, 145, 0.1)' }}
+                  >
+                    <CheckCircle className="w-5 h-5" style={{ color: '#4AD991' }} />
+                  </div>
+                  <div>
+                    <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>
+                      {new Date(item.started_at).toLocaleDateString()} - {new Date(item.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    <p className="text-xs" style={{ color: '#6B7280' }}>Durasi: {item.duration} menit</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>{item.date} - {item.time}</p>
-                  <p className="text-xs" style={{ color: '#6B7280' }}>Durasi: {item.duration}</p>
-                </div>
+                <span className="text-sm px-3 py-1 rounded-full" style={{ color: '#4AD991', backgroundColor: 'rgba(74, 217, 145, 0.1)', fontWeight: 600 }}>
+                  {item.status === 'completed' ? 'Selesai' : item.status}
+                </span>
               </div>
-              <span className="text-sm px-3 py-1 rounded-full" style={{ color: '#4AD991', backgroundColor: 'rgba(74, 217, 145, 0.1)', fontWeight: 600 }}>{item.status}</span>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-center text-gray-500 py-4">Belum ada riwayat pembersihan.</p>
+          )}
         </div>
       </Card>
     </div>

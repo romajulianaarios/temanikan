@@ -58,6 +58,7 @@ class Device(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     status = db.Column(db.String(20), default='active')  # active, inactive, maintenance
     robot_status = db.Column(db.String(20), default='idle')  # idle, cleaning, charging, error
+    battery_level = db.Column(db.Integer, default=100)  # 0-100
     last_online = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -75,6 +76,7 @@ class Device(db.Model):
             'user_id': self.user_id,
             'status': self.status,
             'robot_status': self.robot_status,
+            'battery_level': self.battery_level,
             'last_online': self.last_online.isoformat() if self.last_online else None,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }

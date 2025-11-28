@@ -36,7 +36,7 @@ const AllNotifications = ({ deviceId }: AllNotificationsProps) => {
                 } else {
                     const response = await notificationAPI.getNotifications();
                     console.log('Global notifications response:', response);
-                    data = response.data;
+                    data = response.notifications;
                 }
 
                 if (!Array.isArray(data)) {

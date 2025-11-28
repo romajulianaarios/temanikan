@@ -11,29 +11,34 @@ export default function MemberDeviceDisease() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchDevice = async () => {
-      if (!deviceId) {
-        setLoading(false);
-        return;
-      }
-
+    const fetchDevices = async () => {
       try {
         setLoading(true);
-        const response = await deviceAPI.getDevice(parseInt(deviceId));
-        if (response.device) {
-          setDevice(response.device);
+        const response = await deviceAPI.getDevices();
+        
+        if (response && response.devices && response.devices.length > 0) {
+          if (deviceId) {
+            const targetDevice = response.devices.find((d: any) => d.id === parseInt(deviceId));
+            if (targetDevice) {
+              setDevice(targetDevice);
+            } else {
+              setError('Device tidak ditemukan atau bukan milik Anda');
+            }
+          } else {
+            setDevice(response.devices[0]);
+          }
         } else {
-          setError('Device not found');
+          setError('Anda belum memiliki perangkat terdaftar');
         }
       } catch (err: any) {
-        console.error('Error fetching device:', err);
-        setError('Device not found');
+        console.error('Error fetching devices:', err);
+        setError('Gagal memuat data perangkat');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDevice();
+    fetchDevices();
   }, [deviceId]);
 
   if (loading) {

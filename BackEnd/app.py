@@ -37,6 +37,9 @@ def create_app(config_name='development'):
     def missing_token_callback(error):
         return jsonify({'success': False, 'message': 'Authorization token missing'}), 401
     
+    from routes_ml import ml_bp
+    app.register_blueprint(ml_bp, url_prefix='/api')
+    
     register_routes(app)
     
     with app.app_context():

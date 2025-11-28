@@ -5,3 +5,7 @@ Flask-JWT-Extended==4.6.0
 Flask-Bcrypt==1.0.1
 python-dotenv==1.0.0
 Werkzeug==3.0.1
+
+ultralytics==8.0.0
+opencv-python-headless==4.8.0.74
+Pillow==10.0.0

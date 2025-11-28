@@ -50,9 +50,9 @@ export default function AdminOverview() {
   ];
 
   const diseaseDistribution = [
-    { name: 'White Spot', value: 145, color: '#608BC1' },
-    { name: 'Fin Rot', value: 98, color: '#133E87' },
-    { name: 'Ich', value: 56, color: '#CBDCEB' },
+    { name: 'Parasitic Diseases', value: 145, color: '#608BC1' },
+    { name: 'Bacterial Diseases', value: 98, color: '#133E87' },
+    { name: 'White Tail Diseases', value: 56, color: '#CBDCEB' },
     { name: 'Lainnya', value: 43, color: '#F3F3E0' },
   ];
 
@@ -87,7 +87,7 @@ export default function AdminOverview() {
         {stats.map((stat, index) => (
           <Card key={index} className="p-6" style={{ backgroundColor: 'white' }}>
             <div className="flex items-start justify-between mb-4">
-              <div 
+              <div
                 className="p-3 rounded-lg"
                 style={{ backgroundColor: '#CBDCEB' }}
               >
@@ -115,21 +115,21 @@ export default function AdminOverview() {
         <Card className="p-6" style={{ backgroundColor: 'white' }}>
           <h3 className="mb-4" style={{ color: '#133E87' }}>Pertumbuhan Pengguna</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart 
+            <BarChart
               data={userGrowthData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#CBDCEB" />
-              <XAxis 
-                dataKey="month" 
+              <XAxis
+                dataKey="month"
                 stroke="#666"
                 style={{ fontSize: '12px' }}
               />
-              <YAxis 
+              <YAxis
                 stroke="#666"
                 style={{ fontSize: '12px' }}
               />
-              <Tooltip 
+              <Tooltip
                 cursor={{ fill: 'rgba(96, 139, 193, 0.1)' }}
                 contentStyle={{
                   backgroundColor: 'white',
@@ -137,12 +137,12 @@ export default function AdminOverview() {
                   borderRadius: '8px'
                 }}
               />
-              <Legend 
+              <Legend
                 wrapperStyle={{ paddingTop: '10px' }}
               />
-              <Bar 
-                dataKey="users" 
-                fill="#608BC1" 
+              <Bar
+                dataKey="users"
+                fill="#608BC1"
                 name="Pengguna"
                 radius={[8, 8, 0, 0]}
                 animationDuration={800}
@@ -172,15 +172,15 @@ export default function AdminOverview() {
                 paddingAngle={2}
               >
                 {diseaseDistribution.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
+                  <Cell
+                    key={`cell-${index}`}
                     fill={entry.color}
                     stroke="white"
                     strokeWidth={3}
                   />
                 ))}
               </Pie>
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
                   backgroundColor: 'white',
                   border: '1px solid #CBDCEB',
@@ -192,8 +192,8 @@ export default function AdminOverview() {
           <div className="grid grid-cols-2 gap-2 mt-4">
             {diseaseDistribution.map((item, index) => (
               <div key={index} className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
+                <div
+                  className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: item.color }}
                 />
                 <span className="text-sm text-gray-700">{item.name}: {item.value}</span>
@@ -211,7 +211,7 @@ export default function AdminOverview() {
         </div>
         <div className="space-y-3">
           {recentAlerts.map((alert) => (
-            <div 
+            <div
               key={alert.id}
               className="flex items-start gap-3 p-4 rounded-lg"
               style={{ backgroundColor: '#F3F3E0' }}

@@ -11,29 +11,49 @@ export default function MemberDeviceDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchDevice = async () => {
-      if (!deviceId) {
-        setLoading(false);
-        return;
-      }
-
+    const fetchDevices = async () => {
       try {
         setLoading(true);
-        const response = await deviceAPI.getDevice(parseInt(deviceId));
-        if (response.device) {
-          setDevice(response.device);
+        console.log('🔍 Fetching devices for current user...');
+        
+        // Ambil semua devices milik user
+        const response = await deviceAPI.getDevices();
+        console.log('📦 Devices response:', response);
+        
+        // Backend mengembalikan {success: true, devices: [...], count: n}
+        if (response && response.devices && response.devices.length > 0) {
+          console.log(`✅ Found ${response.devices.length} device(s)`);
+          
+          // Jika ada deviceId di URL, cari device dengan ID tersebut
+          if (deviceId) {
+            console.log(`🔎 Looking for device ID: ${deviceId}`);
+            const targetDevice = response.devices.find((d: any) => d.id === parseInt(deviceId));
+            
+            if (targetDevice) {
+              console.log('✅ Device found:', targetDevice);
+              setDevice(targetDevice);
+            } else {
+              console.log('❌ Device not found in user devices');
+              setError('Device tidak ditemukan atau bukan milik Anda');
+            }
+          } else {
+            // Jika tidak ada deviceId, ambil device pertama
+            console.log('📌 No deviceId in URL, using first device');
+            setDevice(response.devices[0]);
+          }
         } else {
-          setError('Device not found');
+          console.log('❌ No devices found for user');
+          setError('Anda belum memiliki perangkat terdaftar');
         }
       } catch (err: any) {
-        console.error('Error fetching device:', err);
-        setError('Device not found');
+        console.error('❌ Error fetching devices:', err);
+        setError('Gagal memuat data perangkat');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDevice();
+    fetchDevices();
   }, [deviceId]);
 
   if (loading) {
