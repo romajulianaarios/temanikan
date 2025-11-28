@@ -74,10 +74,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('  - Token:', token ? 'Ada' : 'TIDAK ADA');
       console.log('  - User:', savedUser ? 'Ada' : 'TIDAK ADA');
       
+      // ✅ STRICT CHECK: Pastikan BOTH token DAN user ada
       if (token && savedUser) {
         try {
-          // ✅ FIX: Check if token expired dengan safety check
-          const payload = JSON.parse(atob(token.split('.')[1]));
+          // Validasi format token (harus JWT dengan 3 parts)
+          const tokenParts = token.split('.');
+          if (tokenParts.length !== 3) {
+            console.log('❌ Invalid token format, clearing...');
+            TokenStorage.removeToken();
+            TokenStorage.removeUser();
+            setUser(null);
+            setLoading(false);
+            return;
+          }
+
+          // ✅ Check if token expired
+          const payload = JSON.parse(atob(tokenParts[1]));
+          
+          // Validasi user object
+          if (!savedUser.id || !savedUser.email) {
+            console.log('❌ Invalid user object (missing id or email), clearing...');
+            TokenStorage.removeToken();
+            TokenStorage.removeUser();
+            setUser(null);
+            setLoading(false);
+            return;
+          }
           
           // Cek apakah token punya expiry
           if (payload.exp) {
@@ -93,18 +115,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(savedUser);
             }
           } else {
-            // Token tidak punya exp claim, anggap valid (untuk development)
-            console.log('⚠️ Token without expiry, restoring user anyway');
-            setUser(savedUser);
+            // Token tidak punya exp claim, validasi user dulu
+            if (savedUser.id && savedUser.email) {
+              console.log('⚠️ Token without expiry, but user valid - restoring user');
+              setUser(savedUser);
+            } else {
+              console.log('❌ User invalid, clearing...');
+              TokenStorage.removeToken();
+              TokenStorage.removeUser();
+              setUser(null);
+            }
           }
         } catch (error) {
-          // ✅ JANGAN langsung clear! Log dulu, baru clear jika benar-benar invalid
-          console.error('⚠️ Error parsing token:', error);
-          
-          // Coba restore user meskipun token parsing error
-          // Biarkan backend yang validasi token saat API call
-          console.log('⚠️ Restoring user despite token parsing error');
-          setUser(savedUser);
+          // ✅ ERROR: Jika token tidak bisa di-parse, CLEAR semua data
+          console.error('❌ Error parsing token, clearing all auth data:', error);
+          TokenStorage.removeToken();
+          TokenStorage.removeUser();
+          setUser(null);
+        }
+      } else {
+        // ✅ PENTING: Jika tidak ada token ATAU user, pastikan user = null
+        console.log('❌ No token or user found, setting user to null');
+        setUser(null);
+        // Clear storage untuk memastikan tidak ada data lama
+        if (!token) {
+          TokenStorage.removeToken();
+        }
+        if (!savedUser) {
+          TokenStorage.removeUser();
         }
       }
       
@@ -118,33 +156,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
+      
+      // Login melalui backend untuk mendapatkan JWT token yang valid
       const response = await authAPI.login(email, password);
       
       console.log('✅ Login response:', response); // Debug
       
       // ✨ PENTING: Simpan token dan user
-      if (response.access_token) {
-        TokenStorage.setToken(response.access_token);                 // ✅ GANTI LINE 7
+      if (response.success && response.access_token) {
+        TokenStorage.setToken(response.access_token);
         console.log('✅ Token saved:', response.access_token.substring(0, 20) + '...');
+        
+        if (response.user) {
+          TokenStorage.setUser(response.user);
+          setUser(response.user);
+          console.log('✅ User saved:', response.user);
+        }
+        
+        return {
+          success: true,
+          message: response.message || 'Login berhasil'
+        };
       } else {
         console.error('❌ No access_token in response!');
+        return {
+          success: false,
+          message: response.message || 'Login gagal. Token tidak diterima dari server.'
+        };
       }
-      
-      if (response.user) {
-        TokenStorage.setUser(response.user);                          // ✅ GANTI LINE 8
-        setUser(response.user);
-        console.log('✅ User saved:', response.user);
-      }
-      
-      return {
-        success: true,
-        message: 'Login berhasil'
-      };
     } catch (error: any) {
       console.error('Login error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || 'Login gagal'
+        message: error.response?.data?.message || error.response?.data?.error || 'Login gagal. Pastikan backend berjalan di http://localhost:5000'
       };
     } finally {
       setLoading(false);

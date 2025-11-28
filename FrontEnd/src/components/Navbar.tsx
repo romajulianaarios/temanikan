@@ -109,32 +109,47 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
 
   const getNavItemClass = (itemName: string) => {
     const isActive = activeSection === itemName;
-    return `px-3 py-2 rounded-lg transition-all hover:bg-[#F3F4F6] ${
-      isActive ? 'bg-[#F3F4F6]' : ''
+    return `px-4 py-2 rounded-full transition-all ${
+      isActive ? 'bg-white/25' : 'hover:bg-white/20'
     }`;
   };
 
   const getNavItemStyle = (itemName: string) => {
-    // Style is now handled by CSS with !important, but keeping as fallback
     return {
       fontSize: '13px',
       fontWeight: 500,
-      textDecoration: 'none' as const
+      textDecoration: 'none' as const,
+      color: '#FFFFFF'
     };
   };
 
   return (
-    <header className="sticky top-0 z-50 shadow-sm bg-white">
+    <header className="relative z-50" style={{ background: 'transparent' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div 
+          className="flex items-center justify-between sticky top-3"
+          style={{
+            minHeight: '60px',
+            background: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '30px',
+            padding: '10px 20px',
+            margin: '8px auto',
+            boxShadow: 'rgba(72, 128, 255, 0.15) 0px 4px 20px, rgba(255, 255, 255, 0.2) 0px 0px 0px 1px inset',
+            maxWidth: '95%'
+          }}
+        >
           {/* Logo */}
           <button 
             onClick={(e) => handleSmartNavigate(e, 'beranda', true)}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-            style={{ marginLeft: '-3cm' }}
+            className="flex items-center gap-2 rounded-full px-4 py-2 transition-all hover:bg-white/20"
+            style={{ 
+              color: '#FFFFFF',
+              backdropFilter: 'blur(5px)'
+            }}
           >
-            <Fish className="w-7 h-7" style={{ color: '#4880FF' }} />
-            <span className="text-lg" style={{ color: '#1F2937', fontWeight: 700 }}>temanikan</span>
+            <Fish className="w-7 h-7" style={{ color: '#FFFFFF' }} />
+            <span className="text-lg font-bold" style={{ color: '#FFFFFF' }}>temanikan</span>
           </button>
 
           {/* Desktop Navigation */}
@@ -159,7 +174,15 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
               {openDropdown === 'beranda' && (
-                <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[180px] z-50">
+                <div 
+                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(15px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                  }}
+                >
                   <a
                     href="#beranda"
                     onClick={(e) => {
@@ -167,7 +190,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, 'beranda', true);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Beranda Utama
                   </a>
@@ -178,7 +202,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, 'tentang', true);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Tentang Kami
                   </a>
@@ -206,7 +231,15 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
               {openDropdown === 'tentang' && (
-                <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[180px] z-50">
+                <div 
+                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(15px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                  }}
+                >
                   <a
                     href="#tentang"
                     onClick={(e) => {
@@ -214,7 +247,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, 'tentang', true);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Tentang Kami
                   </a>
@@ -225,7 +259,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, 'fitur', true);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Fitur Kami
                   </a>
@@ -253,7 +288,15 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
               {openDropdown === 'fishpedia' && (
-                <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[180px] z-50">
+                <div 
+                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(15px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                  }}
+                >
                   <a
                     href="/fishpedia"
                     onClick={(e) => {
@@ -261,7 +304,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, '/fishpedia', false);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Semua Ikan
                   </a>
@@ -272,7 +316,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, '/fishpedia', false);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Kategori Ikan
                   </a>
@@ -300,7 +345,15 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
               {openDropdown === 'fitur' && (
-                <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[180px] z-50">
+                <div 
+                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(15px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                  }}
+                >
                   <a
                     href="#fitur"
                     onClick={(e) => {
@@ -308,7 +361,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, 'fitur', true);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Semua Fitur
                   </a>
@@ -319,7 +373,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, 'fitur', true);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Monitoring
                   </a>
@@ -347,7 +402,15 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
               {openDropdown === 'produk' && (
-                <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[180px] z-50">
+                <div 
+                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(15px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                  }}
+                >
                   <a
                     href="/produk"
                     onClick={(e) => {
@@ -355,7 +418,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, '/produk', false);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Semua Produk
                   </a>
@@ -366,7 +430,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, '/produk', false);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Kategori Produk
                   </a>
@@ -394,7 +459,15 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
               {openDropdown === 'forum' && (
-                <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[180px] z-50">
+                <div 
+                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(15px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                  }}
+                >
                   <a
                     href="#forum"
                     onClick={(e) => {
@@ -402,7 +475,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, 'forum', true);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Forum Diskusi
                   </a>
@@ -413,7 +487,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                       handleSmartNavigate(e, 'forum', true);
                       setOpenDropdown(null);
                     }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
+                    style={{ color: '#FFFFFF' }}
                   >
                     Topik Populer
                   </a>
@@ -423,31 +498,34 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
           </nav>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3" style={{ marginRight: '-3cm' }}>
+          <div className="hidden md:flex items-center gap-2">
             <button 
               onClick={() => handleAuthClick('login')}
-              className="px-4 py-2 rounded-lg transition-colors navbar-login-btn"
+              className="px-3 py-1 rounded-full transition-all hover:bg-white/25"
               style={{ 
                 fontSize: '13px', 
-                color: 'rgb(72, 128, 255)', 
+                color: '#FFFFFF', 
                 fontWeight: 500,
                 backgroundColor: 'transparent',
-                border: 'none',
-                cursor: 'pointer'
+                backdropFilter: 'blur(5px)',
+                cursor: 'pointer',
+                lineHeight: '1.5'
               }}
             >
               Masuk
             </button>
             <button 
               onClick={() => handleAuthClick('register')}
-              className="px-4 py-2 rounded-lg transition-colors navbar-register-btn"
+              className="px-3 py-1 rounded-full transition-all hover:bg-white/30"
               style={{ 
                 fontSize: '13px', 
-                backgroundColor: '#78B0E8', 
-                color: '#000000', 
+                backgroundColor: 'rgba(255, 255, 255, 0.25)', 
+                color: '#FFFFFF', 
                 fontWeight: 500,
-                border: 'none',
-                cursor: 'pointer'
+                backdropFilter: 'blur(5px)',
+                cursor: 'pointer',
+                boxShadow: 'rgba(255, 255, 255, 0.2) 0px 2px 8px',
+                lineHeight: '1.5'
               }}
             >
               Daftar
@@ -457,8 +535,8 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
           {/* Mobile Menu Button */}
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2"
-            style={{ color: '#4880FF' }}
+            className="md:hidden p-2 rounded-full hover:bg-white/20 transition-all"
+            style={{ color: '#FFFFFF' }}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -467,46 +545,54 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t bg-white" style={{ borderColor: '#E5E7EB' }}>
+        <div 
+          className="md:hidden rounded-3xl mt-2 mx-4"
+          style={{ 
+            background: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(15px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+          }}
+        >
           <nav className="flex flex-col px-4 py-4 gap-2">
             {/* Anchor Links - Landing Page Sections */}
             <a
               href="#beranda"
               onClick={(e) => handleSmartNavigate(e, 'beranda', true)}
-              className="py-2 px-3 rounded-lg hover:bg-[#F3F4F6] text-left"
-              style={{ fontSize: '13px', color: activeSection === 'beranda' ? '#4880FF' : '#6B7280' }}
+              className="py-2 px-4 rounded-full hover:bg-white/30 text-left transition-all"
+              style={{ fontSize: '13px', color: '#FFFFFF' }}
             >
               Beranda
             </a>
             <a
               href="#tentang"
               onClick={(e) => handleSmartNavigate(e, 'tentang', true)}
-              className="py-2 px-3 rounded-lg hover:bg-[#F3F4F6] text-left"
-              style={{ fontSize: '13px', color: activeSection === 'tentang' ? '#4880FF' : '#6B7280' }}
+              className="py-2 px-4 rounded-full hover:bg-white/30 text-left transition-all"
+              style={{ fontSize: '13px', color: '#FFFFFF' }}
             >
               Tentang
             </a>
             <a
               href="#fitur"
               onClick={(e) => handleSmartNavigate(e, 'fitur', true)}
-              className="py-2 px-3 rounded-lg hover:bg-[#F3F4F6] text-left"
-              style={{ fontSize: '13px', color: activeSection === 'fitur' ? '#4880FF' : '#6B7280' }}
+              className="py-2 px-4 rounded-full hover:bg-white/30 text-left transition-all"
+              style={{ fontSize: '13px', color: '#FFFFFF' }}
             >
               Fitur
             </a>
             <a
               href="#forum"
               onClick={(e) => handleSmartNavigate(e, 'forum', true)}
-              className="py-2 px-3 rounded-lg hover:bg-[#F3F4F6] text-left"
-              style={{ fontSize: '13px', color: activeSection === 'forum' ? '#4880FF' : '#6B7280' }}
+              className="py-2 px-4 rounded-full hover:bg-white/30 text-left transition-all"
+              style={{ fontSize: '13px', color: '#FFFFFF' }}
             >
               Forum
             </a>
             <a
               href="#testimoni"
               onClick={(e) => handleSmartNavigate(e, 'testimoni', true)}
-              className="py-2 px-3 rounded-lg hover:bg-[#F3F4F6] text-left"
-              style={{ fontSize: '13px', color: activeSection === 'testimoni' ? '#4880FF' : '#6B7280' }}
+              className="py-2 px-4 rounded-full hover:bg-white/30 text-left transition-all"
+              style={{ fontSize: '13px', color: '#FFFFFF' }}
             >
               Testimoni
             </a>
@@ -515,32 +601,32 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
             <a
               href="/fishpedia"
               onClick={(e) => handleSmartNavigate(e, '/fishpedia', false)}
-              className="py-2 px-3 rounded-lg hover:bg-[#F3F4F6] text-left"
-              style={{ fontSize: '13px', color: activeSection === 'fishpedia' ? '#4880FF' : '#6B7280' }}
+              className="py-2 px-4 rounded-full hover:bg-white/30 text-left transition-all"
+              style={{ fontSize: '13px', color: '#FFFFFF' }}
             >
               Fishpedia
             </a>
             <a
               href="/produk"
               onClick={(e) => handleSmartNavigate(e, '/produk', false)}
-              className="py-2 px-3 rounded-lg hover:bg-[#F3F4F6] text-left"
-              style={{ fontSize: '13px', color: activeSection === 'produk' ? '#4880FF' : '#6B7280' }}
+              className="py-2 px-4 rounded-full hover:bg-white/30 text-left transition-all"
+              style={{ fontSize: '13px', color: '#FFFFFF' }}
             >
               Produk
             </a>
 
-            <div className="flex flex-col gap-2 mt-4 pt-4" style={{ borderTop: '1px solid #E5E7EB' }}>
+            <div className="flex flex-col gap-2 mt-4 pt-4" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.3)' }}>
               <button 
                 onClick={() => handleAuthClick('login')}
-                className="w-full py-2 px-4 rounded-lg border"
-                style={{ fontSize: '13px', color: '#4880FF', borderColor: '#4880FF' }}
+                className="w-full py-2 px-4 rounded-full border transition-all hover:bg-white/20"
+                style={{ fontSize: '13px', color: '#FFFFFF', borderColor: 'rgba(255, 255, 255, 0.5)' }}
               >
                 Masuk
               </button>
               <button 
                 onClick={() => handleAuthClick('register')}
-                className="w-full py-2 px-4 rounded-lg"
-                style={{ fontSize: '13px', backgroundColor: '#4880FF', color: '#FFFFFF' }}
+                className="w-full py-2 px-4 rounded-full transition-all hover:bg-white/30"
+                style={{ fontSize: '13px', backgroundColor: 'rgba(255, 255, 255, 0.25)', color: '#FFFFFF' }}
               >
                 Daftar
               </button>
