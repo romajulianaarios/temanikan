@@ -22,16 +22,25 @@ interface DiseaseDetailModalProps {
 export default function DiseaseDetailModal({ isOpen, onClose, disease }: DiseaseDetailModalProps) {
     if (!disease) return null;
 
+    const modalOverlayStyle = {
+        backdropFilter: 'none',
+        background: 'rgba(15, 23, 42, 0.55)'
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-md" style={{ backgroundColor: 'white' }}>
+            <DialogContent
+                className="w-[92vw] sm:max-w-lg text-[12px] md:text-[13px] max-h-[85vh] overflow-y-auto"
+                style={{ backgroundColor: 'white', fontFamily: '"Nunito Sans", sans-serif', borderRadius: '12px' }}
+                overlayStyle={modalOverlayStyle}
+            >
                 <DialogHeader>
-                    <DialogTitle className="text-xl" style={{ color: '#1F2937', fontWeight: 700 }}>
+                    <DialogTitle className="text-base font-semibold" style={{ color: '#1F2937', fontFamily: 'inherit' }}>
                         Detail Deteksi Penyakit
                     </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                    <div className="w-full h-64 rounded-lg overflow-hidden">
+                    <div className="w-full h-48 rounded-lg overflow-hidden">
                         <ImageWithFallback
                             src={disease.imageUrl}
                             alt={disease.fishType}
@@ -39,23 +48,23 @@ export default function DiseaseDetailModal({ isOpen, onClose, disease }: Disease
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
                             <p className="text-xs mb-1" style={{ color: '#6B7280' }}>Jenis Ikan</p>
                             <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>{disease.fishType}</p>
                         </div>
-                        <div className="p-4 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
+                        <div className="p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
                             <p className="text-xs mb-1" style={{ color: '#6B7280' }}>Tingkat Kepercayaan</p>
                             <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>{disease.confidence}%</p>
                         </div>
-                        <div className="col-span-2 p-4 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
+                        <div className="col-span-2 p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
                             <p className="text-xs mb-1" style={{ color: '#6B7280' }}>Tanggal & Waktu</p>
                             <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>{disease.date} - {disease.time}</p>
                         </div>
                     </div>
 
                     <div
-                        className="p-4 rounded-lg border-l-4"
+                        className="p-3 rounded-lg border-l-4"
                         style={{
                             backgroundColor: disease.statusBg,
                             borderColor: disease.statusColor
@@ -72,7 +81,7 @@ export default function DiseaseDetailModal({ isOpen, onClose, disease }: Disease
                                 {disease.symptoms.map((symptom, index) => (
                                     <div
                                         key={index}
-                                        className="flex items-start gap-2 p-3 rounded-lg"
+                                        className="flex items-start gap-2 p-2.5 rounded-lg"
                                         style={{ backgroundColor: '#F9FAFB' }}
                                     >
                                         <div
@@ -87,7 +96,7 @@ export default function DiseaseDetailModal({ isOpen, onClose, disease }: Disease
                     )}
 
                     <div
-                        className="p-4 rounded-lg border"
+                        className="p-3 rounded-lg border"
                         style={{
                             backgroundColor: 'rgba(72, 128, 255, 0.05)',
                             borderColor: '#4880FF33'

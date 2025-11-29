@@ -4097,3 +4097,8 @@ header.sticky button.navbar-register-btn {
     transform: scale(1);
   }
 }
+
+body.dialog-open .admin-top-header {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}

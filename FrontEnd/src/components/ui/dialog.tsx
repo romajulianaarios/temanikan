@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import { XIcon } from "../icons";
 import { cn } from "./utils";
 
+let openDialogCount = 0;
+
 interface DialogContextValue {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -128,11 +130,17 @@ const DialogClose = React.forwardRef<
 });
 DialogClose.displayName = "DialogClose";
 
+interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  overlayClassName?: string;
+  overlayStyle?: React.CSSProperties;
+}
+
 const DialogContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => {
+  DialogContentProps
+>(({ className, children, overlayClassName, overlayStyle, ...props }, ref) => {
   const context = React.useContext(DialogContext);
+  const isOpen = context?.open;
 
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -141,20 +149,32 @@ const DialogContent = React.forwardRef<
       }
     };
 
-    if (context?.open) {
+    if (isOpen) {
       document.addEventListener('keydown', handleEscape);
+      openDialogCount += 1;
+      document.body.classList.add('dialog-open');
       document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      if (isOpen) {
+        openDialogCount = Math.max(openDialogCount - 1, 0);
+        if (openDialogCount === 0) {
+          document.body.classList.remove('dialog-open');
+          document.body.style.overflow = 'unset';
+        }
+      }
     };
-  }, [context?.open, context]);
+  }, [isOpen, context]);
 
   return (
     <DialogPortal>
-      <DialogOverlay onClick={() => context?.onOpenChange(false)} />
+      <DialogOverlay
+        className={overlayClassName}
+        style={overlayStyle}
+        onClick={() => context?.onOpenChange(false)}
+      />
       <div
         ref={ref}
         className={cn(

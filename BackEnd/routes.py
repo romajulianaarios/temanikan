@@ -455,54 +455,24 @@ def register_routes(app):
     @app.route('/api/devices/<int:device_id>/dashboard/disease-latest', methods=['GET'])
     @jwt_required()
     def get_device_disease_latest(device_id):
-        """Get latest disease detection for device dashboard (dummy data)"""
+        """Return most recent disease detection stored for the device."""
         try:
             user_id_str = get_jwt_identity()
-            user_id = int(user_id_str)  # Convert string to int
+            user_id = int(user_id_str)
             device = Device.query.get(device_id)
-            
+
             if not device:
                 return jsonify({'error': 'Device not found'}), 404
-            
+
             user = User.query.get(user_id)
             if device.user_id != user_id and user.role != 'admin':
                 return jsonify({'error': 'Unauthorized access'}), 403
-            
-            import random
-            
-            # 70% chance no disease, 30% chance disease detected
-            has_disease = random.random() < 0.3
-            
-            if has_disease:
-                diseases = [
-                    {'name': 'White Spot', 'severity': 'medium', 'fish': 'Ikan Koi'},
-                    {'name': 'Fin Rot', 'severity': 'low', 'fish': 'Ikan Mas'},
-                    {'name': 'Ich', 'severity': 'medium', 'fish': 'Ikan Koi'},
-                    {'name': 'Fungal Infection', 'severity': 'high', 'fish': 'Ikan Nila'}
-                ]
-                disease = random.choice(diseases)
-                
-                detection_time = datetime.utcnow() - timedelta(hours=random.randint(1, 5))
-                
-                return jsonify({
-                    'success': True,
-                    'has_detection': True,
-                    'data': {
-                        'fish_type': disease['fish'],
-                        'disease_name': disease['name'],
-                        'severity': disease['severity'],
-                        'severity_text': {
-                            'low': 'Ringan',
-                            'medium': 'Sedang',
-                            'high': 'Tinggi'
-                        }.get(disease['severity'], 'Sedang'),
-                        'confidence': round(random.uniform(0.75, 0.95), 2),
-                        'detected_at': detection_time.isoformat(),
-                        'detected_at_text': format_last_active(detection_time),
-                        'image_url': 'https://images.unsplash.com/photo-1718632496269-6c0fd71dc29c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80'
-                    }
-                }), 200
-            else:
+
+            detection = DiseaseDetection.query.filter_by(device_id=device_id) \
+                .order_by(DiseaseDetection.detected_at.desc()) \
+                .first()
+
+            if not detection:
                 return jsonify({
                     'success': True,
                     'has_detection': False,
@@ -511,7 +481,48 @@ def register_routes(app):
                         'last_check': datetime.utcnow().isoformat()
                     }
                 }), 200
-                
+
+            detection_dict = detection.to_dict()
+            severity = (detection_dict.get('severity') or 'medium').lower()
+            severity_text = {
+                'low': 'Ringan',
+                'medium': 'Sedang',
+                'high': 'Tinggi',
+                'critical': 'Darurat'
+            }.get(severity, 'Sedang')
+
+            confidence_value = detection_dict.get('confidence_percent') or detection_dict.get('confidence') or 0
+            image_url = detection_dict.get('image_url') or 'https://images.unsplash.com/photo-1718632496269-6c0fd71dc29c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80'
+            symptoms = detection_dict.get('symptoms_list') or []
+            if isinstance(symptoms, str):
+                symptoms = [symptoms]
+
+            response_data = {
+                'id': detection_dict.get('id'),
+                'fish_type': detection_dict.get('fish_type') or 'Ikan Hias',
+                'disease_name': detection_dict.get('disease_name') or 'Tidak diketahui',
+                'severity': severity,
+                'severity_text': severity_text,
+                'confidence': confidence_value,
+                'detected_at': detection_dict.get('detected_at'),
+                'detected_at_text': format_last_active(detection.detected_at),
+                'image_url': image_url,
+                'symptoms': symptoms,
+                'recommendation': detection_dict.get('recommended_treatment') or detection_dict.get('notes'),
+                'status_label': detection_dict.get('status_label'),
+                'status_color': detection_dict.get('status_color'),
+                'status_bg': detection_dict.get('status_bg'),
+                'status': detection_dict.get('status'),
+                'location': detection_dict.get('location'),
+                'confidence_raw': detection_dict.get('confidence')
+            }
+
+            return jsonify({
+                'success': True,
+                'has_detection': True,
+                'data': response_data
+            }), 200
+
         except Exception as e:
             print(f"❌ Error fetching disease detection: {e}")
             return jsonify({'success': False, 'error': 'Failed to fetch disease detection'}), 500

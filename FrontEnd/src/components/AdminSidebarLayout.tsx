@@ -234,7 +234,7 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
           }`}
       >
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b shadow-sm" style={{ borderColor: '#F3F4F6' }}>
+        <header className="admin-top-header sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b shadow-sm" style={{ borderColor: '#F3F4F6' }}>
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-20">
               {/* Mobile Menu Button */}

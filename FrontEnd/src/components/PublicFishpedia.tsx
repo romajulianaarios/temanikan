@@ -278,6 +278,11 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
     }
   };
 
+  const modalOverlayStyle = {
+    backdropFilter: 'none',
+    background: 'rgba(19, 62, 135, 0.4)'
+  };
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F5F6FA' }}>
       {/* Global Navbar */}
@@ -479,7 +484,11 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
 
       {/* Fish Detail Dialog */}
       <Dialog open={selectedFish !== null} onOpenChange={() => setSelectedFish(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#F3F3E0', border: 'none' }}>
+        <DialogContent
+          className="max-w-4xl max-h-[90vh] overflow-y-auto"
+          style={{ backgroundColor: '#F3F3E0', border: 'none' }}
+          overlayStyle={modalOverlayStyle}
+        >
           <DialogHeader className="border-b pb-4" style={{ borderColor: '#CBDCEB' }}>
             <DialogTitle className="text-2xl font-bold" style={{ color: '#133E87' }}>{selectedFish?.name}</DialogTitle>
             <p className="text-sm italic text-gray-600 mt-1">{selectedFish?.scientificName}</p>
