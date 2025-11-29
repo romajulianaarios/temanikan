@@ -85,258 +85,202 @@ export default function AdminOverview() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <Card 
-            key={index} 
-            className="bubble-card p-6 transition-all duration-300" 
-            style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '20px',
-              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+          <Card
+            key={index}
+            className="p-6 rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+            style={{
+              backgroundColor: '#FFFFFF',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+              border: '1px solid #F3F4F6'
             }}
           >
             <div className="flex items-start justify-between mb-4">
-              <div 
-                className="p-3 rounded-full"
-                style={{ 
-                  backgroundColor: 'rgba(72, 128, 255, 0.2)',
-                  backdropFilter: 'blur(10px)'
+              <div
+                className="p-3 rounded-xl"
+                style={{
+                  backgroundColor: `${stat.color}15`, // 15 is approx 8% opacity hex
                 }}
               >
                 <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
               </div>
               {stat.trend === 'up' ? (
-                <TrendingUp className="w-5 h-5 text-green-600" />
+                <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-lg text-xs font-medium">
+                  <TrendingUp className="w-3 h-3" />
+                  <span>{stat.change}</span>
+                </div>
               ) : (
-                <TrendingDown className="w-5 h-5 text-red-600" />
+                <div className="flex items-center gap-1 text-red-600 bg-red-50 px-2 py-1 rounded-lg text-xs font-medium">
+                  <TrendingDown className="w-3 h-3" />
+                  <span>{stat.change}</span>
+                </div>
               )}
             </div>
-            <p className="text-sm mb-1" style={{ color: '#666' }}>{stat.label}</p>
-            <div className="flex items-end gap-2">
-              <p className="text-3xl font-bold" style={{ color: '#133E87' }}>{stat.value}</p>
-              <span className={`text-sm font-semibold ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                {stat.change}
-              </span>
-            </div>
+            <p className="text-sm font-medium mb-1" style={{ color: '#6B7280' }}>{stat.label}</p>
+            <p className="text-3xl font-bold tracking-tight" style={{ color: '#111827' }}>{stat.value}</p>
           </Card>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* User Growth Chart */}
-        <Card 
-          className="p-6 transition-all duration-300" 
-          style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '20px',
-            boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+        <Card
+          className="p-6 rounded-2xl transition-all duration-300 hover:shadow-md"
+          style={{
+            backgroundColor: '#FFFFFF',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+            border: '1px solid #F3F4F6'
           }}
         >
-          <h3 className="mb-4 font-bold" style={{ color: '#133E87' }}>Pertumbuhan Pengguna</h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-bold text-lg" style={{ color: '#111827' }}>Pertumbuhan Pengguna</h3>
+            <select className="text-xs border rounded-lg px-2 py-1 bg-gray-50 text-gray-600 outline-none">
+              <option>6 Bulan Terakhir</option>
+              <option>Tahun Ini</option>
+            </select>
+          </div>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart 
+            <BarChart
               data={userGrowthData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#CBDCEB" />
-              <XAxis 
-                dataKey="month" 
-                stroke="#666"
+              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+              <XAxis
+                dataKey="month"
+                stroke="#9CA3AF"
                 style={{ fontSize: '12px' }}
+                tickLine={false}
+                axisLine={false}
+                dy={10}
               />
-              <YAxis 
-                stroke="#666"
+              <YAxis
+                stroke="#9CA3AF"
                 style={{ fontSize: '12px' }}
+                tickLine={false}
+                axisLine={false}
               />
-              <Tooltip 
-                cursor={{ fill: 'rgba(96, 139, 193, 0.1)' }}
+              <Tooltip
+                cursor={{ fill: '#F9FAFB' }}
                 contentStyle={{
                   backgroundColor: 'white',
-                  border: '1px solid #CBDCEB',
-                  borderRadius: '8px'
+                  border: 'none',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                 }}
               />
-              <Legend 
-                wrapperStyle={{ paddingTop: '10px' }}
-              />
-              <Bar 
-                dataKey="users" 
-                fill="#608BC1" 
+              <Bar
+                dataKey="users"
+                fill="#4880FF"
                 name="Pengguna"
-                radius={[8, 8, 0, 0]}
-                animationDuration={800}
-                animationEasing="ease-in-out"
+                radius={[6, 6, 0, 0]}
+                barSize={32}
               />
             </BarChart>
           </ResponsiveContainer>
         </Card>
 
         {/* Disease Distribution */}
-        <Card 
-          className="p-6 transition-all duration-300" 
-          style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '20px',
-            boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+        <Card
+          className="p-6 rounded-2xl transition-all duration-300 hover:shadow-md"
+          style={{
+            backgroundColor: '#FFFFFF',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+            border: '1px solid #F3F4F6'
           }}
         >
-          <h3 className="mb-4 font-bold" style={{ color: '#133E87' }}>Distribusi Jenis Penyakit</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={diseaseDistribution}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={80}
-                innerRadius={0}
-                fill="#8884d8"
-                dataKey="value"
-                animationDuration={800}
-                animationEasing="ease-in-out"
-                paddingAngle={2}
-              >
-                {diseaseDistribution.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.color}
-                    stroke="white"
-                    strokeWidth={3}
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-bold text-lg" style={{ color: '#111827' }}>Distribusi Jenis Penyakit</h3>
+            <button className="text-xs text-blue-600 font-medium hover:underline">Lihat Detail</button>
+          </div>
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1 w-full h-[250px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={diseaseDistribution}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {diseaseDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
                   />
-                ))}
-              </Pie>
-              <Tooltip 
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #CBDCEB',
-                  borderRadius: '8px'
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            {diseaseDistribution.map((item, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="text-sm text-gray-700">{item.name}: {item.value}</span>
-              </div>
-            ))}
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="w-full md:w-48 space-y-3">
+              {diseaseDistribution.map((item, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-sm text-gray-600">{item.name}</span>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">{item.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </Card>
       </div>
 
       {/* System Alerts */}
-      <Card 
-        className="p-6 transition-all duration-300" 
-        style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          borderRadius: '20px',
-          boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-4px)';
-          e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+      <Card
+        className="p-6 rounded-2xl transition-all duration-300 hover:shadow-md"
+        style={{
+          backgroundColor: '#FFFFFF',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+          border: '1px solid #F3F4F6'
         }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold" style={{ color: '#133E87' }}>Peringatan Sistem Terbaru</h3>
-          <Link 
-            to="/admin/notifications" 
-            className="text-sm font-semibold hover:underline transition-all" 
-            style={{ color: '#608BC1' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#4880FF';
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#608BC1';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-bold text-lg" style={{ color: '#111827' }}>Peringatan Sistem Terbaru</h3>
+          <Link
+            to="/admin/notifications"
+            className="text-sm font-semibold hover:underline transition-all"
+            style={{ color: '#4880FF' }}
           >
             Lihat Semua
           </Link>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {recentAlerts.map((alert) => (
-            <div 
+            <div
               key={alert.id}
-              className="flex items-start gap-3 p-4 rounded-xl transition-all duration-300"
-              style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                e.currentTarget.style.transform = 'translateX(4px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(72, 128, 255, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
-                e.currentTarget.style.transform = 'translateX(0)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1)';
-              }}
+              className="flex items-start gap-4 p-4 rounded-xl transition-all duration-200 hover:bg-gray-50 border border-transparent hover:border-gray-100"
             >
-              {alert.type === 'critical' && (
-                <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              )}
-              {alert.type === 'warning' && (
-                <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-              )}
-              {alert.type === 'info' && (
-                <Activity className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#608BC1' }} />
-              )}
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm" style={{ color: '#133E87' }}>{alert.message}</p>
-                  {alert.type === 'critical' && (
-                    <Badge className="bg-red-100 text-red-800">Kritis</Badge>
-                  )}
+              <div className={`p-2 rounded-lg flex-shrink-0 ${alert.type === 'critical' ? 'bg-red-50 text-red-600' :
+                  alert.type === 'warning' ? 'bg-yellow-50 text-yellow-600' :
+                    'bg-blue-50 text-blue-600'
+                }`}>
+                {alert.type === 'critical' && <AlertTriangle className="w-5 h-5" />}
+                {alert.type === 'warning' && <AlertTriangle className="w-5 h-5" />}
+                {alert.type === 'info' && <Activity className="w-5 h-5" />}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{alert.message}</p>
+                  <span className="text-xs text-gray-400 whitespace-nowrap ml-2">{alert.time}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-600">
+                <div className="flex items-center gap-2 text-xs text-gray-500">
                   <span>{alert.user}</span>
-                  <span>•</span>
-                  <span>{alert.time}</span>
+                  {alert.type === 'critical' && (
+                    <span className="px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-medium text-[10px]">Kritis</span>
+                  )}
                 </div>
               </div>
             </div>

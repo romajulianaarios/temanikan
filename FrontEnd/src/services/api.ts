@@ -697,6 +697,11 @@ export const notificationAPI = {
     const response = await api.put('/notifications/read-all');
     return response.data;
   },
+
+  getNotificationDetail: async (notificationId: number) => {
+    const response = await api.get(`/notifications/${notificationId}`);
+    return response.data;
+  },
 };
 
 // User API

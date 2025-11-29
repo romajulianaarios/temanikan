@@ -37,6 +37,65 @@ def admin_required(fn):
     return wrapper
 
 
+def get_device_online_status(last_online):
+    """
+    Check if device is online based on last_online timestamp.
+    Returns 'online' if active within last 5 minutes, else 'offline'.
+    """
+    if not last_online:
+        return 'offline'
+    
+    try:
+        # If last_online is string, try to parse it
+        if isinstance(last_online, str):
+            last_online = datetime.fromisoformat(last_online)
+            
+        # Compare with current UTC time
+        now = datetime.utcnow()
+        time_diff = now - last_online
+        
+        # Consider online if active in last 5 minutes (300 seconds)
+        if time_diff.total_seconds() <= 300:
+            return 'online'
+        return 'offline'
+    except Exception as e:
+        print(f"Error calculating online status: {e}")
+        return 'offline'
+
+
+def format_last_active(last_online):
+    """
+    Format last_online timestamp to human readable string.
+    Example: '2 menit yang lalu', '1 jam yang lalu', etc.
+    """
+    if not last_online:
+        return 'Belum pernah aktif'
+    
+    try:
+        # If last_online is string, try to parse it
+        if isinstance(last_online, str):
+            last_online = datetime.fromisoformat(last_online)
+            
+        now = datetime.utcnow()
+        time_diff = now - last_online
+        seconds = time_diff.total_seconds()
+        
+        if seconds < 60:
+            return 'Baru saja'
+        elif seconds < 3600:
+            minutes = int(seconds / 60)
+            return f'{minutes} menit yang lalu'
+        elif seconds < 86400:
+            hours = int(seconds / 3600)
+            return f'{hours} jam yang lalu'
+        else:
+            days = int(seconds / 86400)
+            return f'{days} hari yang lalu'
+    except Exception as e:
+        print(f"Error formatting last active: {e}")
+        return '-'
+
+
 def register_routes(app):
     """Register all API routes"""
     
@@ -1914,6 +1973,29 @@ def register_routes(app):
             'notifications': [n.to_dict() for n in notifications],
             'count': len(notifications),
             'unread_count': Notification.query.filter_by(user_id=user_id, is_read=False).count()
+        }), 200
+    
+    @app.route('/api/notifications/<int:notification_id>', methods=['GET'])
+    @jwt_required()
+    def get_notification_detail(notification_id):
+        user_id = get_jwt_identity()
+        notification = Notification.query.get(notification_id)
+        
+        if not notification:
+            return jsonify({'success': False, 'message': 'Notification not found'}), 404
+        
+        # Ensure comparison works for both string/int
+        if int(notification.user_id) != int(user_id):
+            return jsonify({'success': False, 'message': 'Unauthorized access'}), 403
+        
+        # Mark as read when viewed
+        if not notification.is_read:
+            notification.is_read = True
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'data': notification.to_dict()
         }), 200
     
     @app.route('/api/notifications/<int:notification_id>/read', methods=['PUT'])

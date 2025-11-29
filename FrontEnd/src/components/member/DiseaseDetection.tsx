@@ -487,7 +487,7 @@ export default function DiseaseDetection() {
                 </div>
               </Card>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl" style={{ backgroundColor: 'white' }}>
+            <DialogContent className="max-w-2xl bg-white">
               <DialogHeader>
                 <DialogTitle className="text-xl" style={{ color: '#1F2937', fontWeight: 700 }}>
                   Detail Deteksi Penyakit
@@ -596,7 +596,7 @@ export default function DiseaseDetection() {
 
       {/* Upload Result Modal */}
       <Dialog open={showUploadResult} onOpenChange={setShowUploadResult}>
-        <DialogContent className="max-w-2xl" style={{ backgroundColor: 'white' }}>
+        <DialogContent className="max-w-2xl bg-white">
           <DialogHeader>
             <DialogTitle className="text-xl" style={{ color: '#1F2937', fontWeight: 700 }}>
               Hasil Deteksi Manual
@@ -707,7 +707,7 @@ export default function DiseaseDetection() {
 
       {/* Live Stream Modal */}
       <Dialog open={showLiveStream} onOpenChange={setShowLiveStream}>
-        <DialogContent className="max-w-4xl" style={{ backgroundColor: 'white' }}>
+        <DialogContent className="max-w-4xl bg-white">
           <DialogHeader>
             <DialogTitle className="text-xl" style={{ color: '#1F2937', fontWeight: 700 }}>
               Live Stream - Akuarium Utama

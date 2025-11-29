@@ -123,16 +123,16 @@ export default function MemberDevices() {
         {devices.length === 0 ? (
           // Empty State - Kondisi Awal untuk Member Baru
           <div
-            className="p-16 rounded-xl text-center mt-12"
-            style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+            className="p-16 rounded-2xl text-center mt-12 border border-dashed"
+            style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }}
           >
             <div
-              className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6"
+              className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm"
               style={{ backgroundColor: '#EFF6FF' }}
             >
               <Bot className="w-12 h-12" style={{ color: '#4880FF' }} />
             </div>
-            <h2 className="text-2xl mb-3" style={{ color: '#1F2937', fontWeight: 700 }}>
+            <h2 className="text-2xl mb-3" style={{ color: '#111827', fontWeight: 700 }}>
               Anda Belum Memiliki Perangkat
             </h2>
             <p className="text-sm mb-8 max-w-md mx-auto" style={{ color: '#6B7280', lineHeight: '1.6' }}>
@@ -140,7 +140,7 @@ export default function MemberDevices() {
             </p>
             <Button
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
               style={{
                 backgroundColor: '#4880FF',
                 color: '#FFFFFF',
@@ -155,20 +155,20 @@ export default function MemberDevices() {
         ) : (
           <>
             {/* Stats Cards - Only show if devices exist */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div
-                className="p-4 rounded-lg"
-                style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+                className="p-6 rounded-2xl border transition-all hover:shadow-md"
+                style={{ backgroundColor: '#FFFFFF', borderColor: '#F3F4F6', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm" style={{ color: '#6B7280' }}>Total Perangkat</p>
-                    <p className="text-2xl mt-1" style={{ color: '#1F2937', fontWeight: 700 }}>
+                    <p className="text-sm font-medium" style={{ color: '#6B7280' }}>Total Perangkat</p>
+                    <p className="text-3xl mt-2 tracking-tight" style={{ color: '#111827', fontWeight: 800 }}>
                       {devices.length}
                     </p>
                   </div>
                   <div
-                    className="w-12 h-12 rounded-lg flex items-center justify-center"
+                    className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm"
                     style={{ backgroundColor: '#EFF6FF' }}
                   >
                     <Bot className="w-6 h-6" style={{ color: '#4880FF' }} />
@@ -177,19 +177,19 @@ export default function MemberDevices() {
               </div>
 
               <div
-                className="p-4 rounded-lg"
-                style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+                className="p-6 rounded-2xl border transition-all hover:shadow-md"
+                style={{ backgroundColor: '#FFFFFF', borderColor: '#F3F4F6', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm" style={{ color: '#6B7280' }}>Perangkat Online</p>
-                    <p className="text-2xl mt-1" style={{ color: '#10B981', fontWeight: 700 }}>
+                    <p className="text-sm font-medium" style={{ color: '#6B7280' }}>Perangkat Online</p>
+                    <p className="text-3xl mt-2 tracking-tight" style={{ color: '#10B981', fontWeight: 800 }}>
                       {devices.filter(d => d.status === 'online').length}
                     </p>
                   </div>
                   <div
-                    className="w-12 h-12 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: '#D1FAE5' }}
+                    className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm"
+                    style={{ backgroundColor: '#ECFDF5' }}
                   >
                     <Activity className="w-6 h-6" style={{ color: '#10B981' }} />
                   </div>
@@ -197,19 +197,19 @@ export default function MemberDevices() {
               </div>
 
               <div
-                className="p-4 rounded-lg"
-                style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+                className="p-6 rounded-2xl border transition-all hover:shadow-md"
+                style={{ backgroundColor: '#FFFFFF', borderColor: '#F3F4F6', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm" style={{ color: '#6B7280' }}>Perangkat Offline</p>
-                    <p className="text-2xl mt-1" style={{ color: '#EF4444', fontWeight: 700 }}>
+                    <p className="text-sm font-medium" style={{ color: '#6B7280' }}>Perangkat Offline</p>
+                    <p className="text-3xl mt-2 tracking-tight" style={{ color: '#EF4444', fontWeight: 800 }}>
                       {devices.filter(d => d.status === 'offline').length}
                     </p>
                   </div>
                   <div
-                    className="w-12 h-12 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: '#FEE2E2' }}
+                    className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm"
+                    style={{ backgroundColor: '#FEF2F2' }}
                   >
                     <Circle className="w-6 h-6" style={{ color: '#EF4444' }} />
                   </div>
@@ -219,27 +219,27 @@ export default function MemberDevices() {
 
             {/* Devices Grid */}
             <div>
-              <h2 className="text-lg mb-4" style={{ color: '#1F2937', fontWeight: 700 }}>
+              <h2 className="text-xl mb-6" style={{ color: '#111827', fontWeight: 700 }}>
                 Daftar Perangkat
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {devices.map((device) => (
                   <div
                     key={device.id}
-                    className="p-5 rounded-lg transition-all"
+                    className="p-6 rounded-2xl transition-all group hover:-translate-y-1"
                     style={{
                       backgroundColor: '#FFFFFF',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                      border: '2px solid transparent'
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                      border: '1px solid #F3F4F6'
                     }}
                   >
                     {/* Device Icon */}
-                    <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-start justify-between mb-6">
                       <div
-                        className="w-14 h-14 rounded-lg flex items-center justify-center"
+                        className="w-14 h-14 rounded-xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110"
                         style={{
-                          backgroundColor: device.status === 'online' ? '#D1FAE5' : '#F3F4F6'
+                          backgroundColor: device.status === 'online' ? '#ECFDF5' : '#F3F4F6'
                         }}
                       >
                         <Bot
@@ -252,51 +252,45 @@ export default function MemberDevices() {
 
                       {/* Status Badge */}
                       <div
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"
+                        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border"
                         style={{
-                          backgroundColor: device.status === 'online' ? '#D1FAE5' : '#FEE2E2',
-                          color: device.status === 'online' ? '#065F46' : '#991B1B',
+                          backgroundColor: device.status === 'online' ? '#ECFDF5' : '#FEF2F2',
+                          color: device.status === 'online' ? '#059669' : '#DC2626',
+                          borderColor: device.status === 'online' ? '#D1FAE5' : '#FECACA',
                           fontWeight: 600
                         }}
                       >
-                        <Circle
-                          className="w-2 h-2 fill-current"
-                          style={{
-                            color: device.status === 'online' ? '#10B981' : '#EF4444'
-                          }}
-                        />
+                        <span className={`w-2 h-2 rounded-full ${device.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                         {device.status === 'online' ? 'Online' : 'Offline'}
                       </div>
                     </div>
 
                     {/* Device Name */}
-                    <h3 className="text-lg mb-1" style={{ color: '#1F2937', fontWeight: 700 }}>
+                    <h3 className="text-lg mb-1" style={{ color: '#111827', fontWeight: 700 }}>
                       {device.namaPerangkat}
                     </h3>
 
                     {/* Unique ID */}
                     <p
-                      className="text-sm mb-3 font-mono"
-                      style={{ color: '#6B7280' }}
+                      className="text-sm mb-4 font-mono bg-gray-50 inline-block px-2 py-0.5 rounded text-gray-500"
                     >
                       {device.uniqueID}
                     </p>
 
                     {/* Last Active */}
-                    <div className="flex items-center gap-2 text-xs" style={{ color: '#9CA3AF' }}>
+                    <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#9CA3AF' }}>
                       <Activity className="w-3.5 h-3.5" />
-                      <span>{device.lastActive}</span>
+                      <span>Terakhir aktif: {device.lastActive}</span>
                     </div>
 
                     {/* Action Button - Only this is clickable */}
-                    <div className="mt-4 pt-4 border-t" style={{ borderColor: '#E5E7EB' }}>
+                    <div className="pt-4 border-t" style={{ borderColor: '#F3F4F6' }}>
                       <button
                         onClick={() => handleSelectDevice(device.id)}
-                        className="w-full py-2 rounded-lg text-sm transition-all text-center"
+                        className="w-full py-2.5 rounded-xl text-sm transition-all text-center font-semibold hover:shadow-md active:scale-95"
                         style={{
                           backgroundColor: '#EFF6FF',
                           color: '#4880FF',
-                          fontWeight: 600
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.backgroundColor = '#4880FF';
