@@ -40,3 +40,6 @@ Double-click file `STOP.bat` untuk menghentikan semua server.
 **Catatan:** Script ini akan bekerja di server manapun selama Python dan Node.js sudah terinstall!
 
 
+
+
+

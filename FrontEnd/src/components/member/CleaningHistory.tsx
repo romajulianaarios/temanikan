@@ -190,7 +190,21 @@ export default function CleaningHistory() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
+        <Card className="p-6" style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '20px',
+              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+            }}>
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-green-100">
               <CheckCircle className="w-6 h-6 text-green-600" />
@@ -202,7 +216,21 @@ export default function CleaningHistory() {
           </div>
         </Card>
 
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
+        <Card className="p-6" style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '20px',
+              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+            }}>
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-red-100">
               <XCircle className="w-6 h-6 text-red-600" />
@@ -214,7 +242,21 @@ export default function CleaningHistory() {
           </div>
         </Card>
 
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
+        <Card className="p-6" style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '20px',
+              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+            }}>
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg" style={{ backgroundColor: '#CBDCEB' }}>
               <Calendar className="w-6 h-6" style={{ color: '#608BC1' }} />
@@ -228,7 +270,21 @@ export default function CleaningHistory() {
       </div>
 
       {/* Tabs and Table */}
-      <Card style={{ backgroundColor: 'white' }}>
+      <Card style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '20px',
+              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+            }}>
         <Tabs defaultValue="semua" onValueChange={setActiveTab}>
           <div className="border-b px-6 pt-6" style={{ borderColor: '#CBDCEB' }}>
             <TabsList className="w-full justify-start" style={{ backgroundColor: '#F3F3E0' }}>

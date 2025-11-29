@@ -99,7 +99,21 @@ export default function NewTopic() {
       </div>
 
       {/* Form */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
+      <Card className="p-6" style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '20px',
+              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+            }}>
         <h2 className="mb-6" style={{ color: '#133E87' }}>Buat Topik Baru</h2>
         
         {/* Error Message */}

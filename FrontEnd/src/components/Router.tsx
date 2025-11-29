@@ -47,19 +47,65 @@ export const BrowserRouter = ({ children }: { children: React.ReactNode }) => {
 
 export const Router = BrowserRouter;
 
-export const Routes = ({ children }: { children: React.ReactNode }) => {
+export const Routes = ({ children, basePath = '' }: { children: React.ReactNode; basePath?: string }) => {
   const context = useContext(RouterContext);
   if (!context) throw new Error('Routes must be used within a Router');
 
   const childrenArray = React.Children.toArray(children);
+  
+  // Get current path relative to basePath
+  let currentPath = context.currentPath;
+  let isInBasePath = true;
+  
+  if (basePath) {
+    // Normalize paths
+    const normalizedBase = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+    const normalizedCurrent = currentPath.endsWith('/') && currentPath.length > 1 ? currentPath.slice(0, -1) : currentPath;
+    
+    if (normalizedCurrent === normalizedBase) {
+      currentPath = '/';
+    } else if (normalizedCurrent.startsWith(normalizedBase + '/')) {
+      currentPath = normalizedCurrent.slice(normalizedBase.length);
+    } else {
+      // Not in this basePath, return null
+      isInBasePath = false;
+    }
+  }
+  
+  if (!isInBasePath) {
+    return null;
+  }
   
   // First try to find exact matches or parameterized matches
   for (const child of childrenArray) {
     if (React.isValidElement(child) && child.type === Route) {
       const { path, element } = child.props;
       
-      if (path !== '*' && matchPath(path, context.currentPath)) {
-        const params = extractParams(path, context.currentPath);
+      // Handle relative paths (empty string means root of current base)
+      const routePath = path === '' ? '/' : (path.startsWith('/') ? path : '/' + path);
+      const fullPath = basePath ? (basePath + routePath).replace('//', '/') : routePath;
+      
+      // Normalize for comparison
+      const normalizedFullPath = fullPath.endsWith('/') && fullPath.length > 1 ? fullPath.slice(0, -1) : fullPath;
+      const normalizedCurrentPath = context.currentPath.endsWith('/') && context.currentPath.length > 1 ? context.currentPath.slice(0, -1) : context.currentPath;
+      
+      // Check if current path matches
+      let matches = false;
+      
+      if (path === '*') {
+        matches = false; // Wildcard handled separately
+      } else if (path === '') {
+        // Empty path means root of basePath
+        matches = normalizedCurrentPath === normalizedBase || normalizedCurrentPath === normalizedBase + '/';
+      } else {
+        // Regular path matching
+        matches = normalizedFullPath === normalizedCurrentPath ||
+                  matchPath(fullPath, context.currentPath) || 
+                  matchPath(routePath, currentPath);
+      }
+      
+      if (matches) {
+        const params = extractParams(fullPath, context.currentPath);
         return <ParamsProvider params={params}>{element}</ParamsProvider>;
       }
     }
@@ -169,8 +215,9 @@ function extractParams(pattern: string, path: string): Record<string, string> {
   return params;
 }
 
-export const Route = ({ element }: { path: string; element: React.ReactNode }) => {
-  return <>{element}</>;
+export const Route = ({ path, element }: { path: string; element: React.ReactNode }) => {
+  // Route component is just a marker, actual routing is handled by Routes
+  return null;
 };
 
 export const Navigate = ({ to, replace }: { to: string; replace?: boolean }) => {

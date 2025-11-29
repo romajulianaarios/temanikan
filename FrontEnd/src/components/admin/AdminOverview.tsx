@@ -50,9 +50,9 @@ export default function AdminOverview() {
   ];
 
   const diseaseDistribution = [
-    { name: 'Parasitic Diseases', value: 145, color: '#608BC1' },
-    { name: 'Bacterial Diseases', value: 98, color: '#133E87' },
-    { name: 'White Tail Diseases', value: 56, color: '#CBDCEB' },
+    { name: 'White Spot', value: 145, color: '#608BC1' },
+    { name: 'Fin Rot', value: 98, color: '#133E87' },
+    { name: 'Ich', value: 56, color: '#CBDCEB' },
     { name: 'Lainnya', value: 43, color: '#F3F3E0' },
   ];
 
@@ -85,11 +85,32 @@ export default function AdminOverview() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} className="p-6" style={{ backgroundColor: 'white' }}>
+          <Card 
+            key={index} 
+            className="bubble-card p-6 transition-all duration-300" 
+            style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '20px',
+              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+            }}
+          >
             <div className="flex items-start justify-between mb-4">
-              <div
-                className="p-3 rounded-lg"
-                style={{ backgroundColor: '#CBDCEB' }}
+              <div 
+                className="p-3 rounded-full"
+                style={{ 
+                  backgroundColor: 'rgba(72, 128, 255, 0.2)',
+                  backdropFilter: 'blur(10px)'
+                }}
               >
                 <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
               </div>
@@ -99,10 +120,10 @@ export default function AdminOverview() {
                 <TrendingDown className="w-5 h-5 text-red-600" />
               )}
             </div>
-            <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
+            <p className="text-sm mb-1" style={{ color: '#666' }}>{stat.label}</p>
             <div className="flex items-end gap-2">
-              <p className="text-3xl" style={{ color: '#133E87' }}>{stat.value}</p>
-              <span className={`text-sm ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+              <p className="text-3xl font-bold" style={{ color: '#133E87' }}>{stat.value}</p>
+              <span className={`text-sm font-semibold ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
                 {stat.change}
               </span>
             </div>
@@ -112,24 +133,41 @@ export default function AdminOverview() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* User Growth Chart */}
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
-          <h3 className="mb-4" style={{ color: '#133E87' }}>Pertumbuhan Pengguna</h3>
+        <Card 
+          className="p-6 transition-all duration-300" 
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '20px',
+            boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+          }}
+        >
+          <h3 className="mb-4 font-bold" style={{ color: '#133E87' }}>Pertumbuhan Pengguna</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart
+            <BarChart 
               data={userGrowthData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#CBDCEB" />
-              <XAxis
-                dataKey="month"
+              <XAxis 
+                dataKey="month" 
                 stroke="#666"
                 style={{ fontSize: '12px' }}
               />
-              <YAxis
+              <YAxis 
                 stroke="#666"
                 style={{ fontSize: '12px' }}
               />
-              <Tooltip
+              <Tooltip 
                 cursor={{ fill: 'rgba(96, 139, 193, 0.1)' }}
                 contentStyle={{
                   backgroundColor: 'white',
@@ -137,12 +175,12 @@ export default function AdminOverview() {
                   borderRadius: '8px'
                 }}
               />
-              <Legend
+              <Legend 
                 wrapperStyle={{ paddingTop: '10px' }}
               />
-              <Bar
-                dataKey="users"
-                fill="#608BC1"
+              <Bar 
+                dataKey="users" 
+                fill="#608BC1" 
                 name="Pengguna"
                 radius={[8, 8, 0, 0]}
                 animationDuration={800}
@@ -153,8 +191,25 @@ export default function AdminOverview() {
         </Card>
 
         {/* Disease Distribution */}
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
-          <h3 className="mb-4" style={{ color: '#133E87' }}>Distribusi Jenis Penyakit</h3>
+        <Card 
+          className="p-6 transition-all duration-300" 
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '20px',
+            boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+          }}
+        >
+          <h3 className="mb-4 font-bold" style={{ color: '#133E87' }}>Distribusi Jenis Penyakit</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -172,15 +227,15 @@ export default function AdminOverview() {
                 paddingAngle={2}
               >
                 {diseaseDistribution.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
+                  <Cell 
+                    key={`cell-${index}`} 
                     fill={entry.color}
                     stroke="white"
                     strokeWidth={3}
                   />
                 ))}
               </Pie>
-              <Tooltip
+              <Tooltip 
                 contentStyle={{
                   backgroundColor: 'white',
                   border: '1px solid #CBDCEB',
@@ -192,8 +247,8 @@ export default function AdminOverview() {
           <div className="grid grid-cols-2 gap-2 mt-4">
             {diseaseDistribution.map((item, index) => (
               <div key={index} className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-full"
+                <div 
+                  className="w-3 h-3 rounded-full" 
                   style={{ backgroundColor: item.color }}
                 />
                 <span className="text-sm text-gray-700">{item.name}: {item.value}</span>
@@ -204,17 +259,63 @@ export default function AdminOverview() {
       </div>
 
       {/* System Alerts */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
+      <Card 
+        className="p-6 transition-all duration-300" 
+        style={{ 
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          borderRadius: '20px',
+          boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+        }}
+      >
         <div className="flex items-center justify-between mb-4">
-          <h3 style={{ color: '#133E87' }}>Peringatan Sistem Terbaru</h3>
-          <Link to="/admin/notifications" className="text-sm hover:underline" style={{ color: '#608BC1' }}>Lihat Semua</Link>
+          <h3 className="font-bold" style={{ color: '#133E87' }}>Peringatan Sistem Terbaru</h3>
+          <Link 
+            to="/admin/notifications" 
+            className="text-sm font-semibold hover:underline transition-all" 
+            style={{ color: '#608BC1' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#4880FF';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#608BC1';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            Lihat Semua
+          </Link>
         </div>
         <div className="space-y-3">
           {recentAlerts.map((alert) => (
-            <div
+            <div 
               key={alert.id}
-              className="flex items-start gap-3 p-4 rounded-lg"
-              style={{ backgroundColor: '#F3F3E0' }}
+              className="flex items-start gap-3 p-4 rounded-xl transition-all duration-300"
+              style={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                e.currentTarget.style.transform = 'translateX(4px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(72, 128, 255, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+                e.currentTarget.style.transform = 'translateX(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1)';
+              }}
             >
               {alert.type === 'critical' && (
                 <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />

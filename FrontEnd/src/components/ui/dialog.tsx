@@ -89,9 +89,17 @@ const DialogOverlay = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "fixed inset-0 z-[9998] bg-black/80 animate-in fade-in-0",
+      "fixed inset-0 animate-in fade-in-0",
       className
     )}
+    style={{ 
+      pointerEvents: 'auto',
+      zIndex: 999998,
+      isolation: 'isolate',
+      background: 'rgba(0, 0, 0, 0.5)',
+      backdropFilter: 'blur(8px)',
+      ...props.style 
+    }}
     {...props}
   />
 ));
@@ -151,9 +159,21 @@ const DialogContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] z-[9999] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg animate-in fade-in-0 zoom-in-95 sm:rounded-lg",
+          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 p-6 animate-in fade-in-0 zoom-in-95",
           className
         )}
+        style={{ 
+          pointerEvents: 'auto', 
+          position: 'fixed',
+          zIndex: 999999,
+          isolation: 'isolate',
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          border: '2px solid rgba(255, 255, 255, 0.5)',
+          boxShadow: '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
+          ...props.style 
+        }}
         {...props}
       >
         {children}
