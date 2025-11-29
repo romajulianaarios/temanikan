@@ -37,7 +37,7 @@ export default function DetectionHistory() {
       date: '4 Nov 2025',
       time: '14:30',
       status: 'warning',
-      disease: 'White Spot Disease',
+      disease: 'Parasitic Diseases',
       confidence: 85,
       imageUrl: 'https://images.unsplash.com/photo-1669241942890-2e066facbd9c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxrb2klMjBmaXNoJTIwY2xvc2UlMjB1cHxlbnwxfHx8fDE3NjIyNjUwNTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
       recommendation: 'Segera isolasi ikan yang terinfeksi. Naikkan suhu air secara bertahap hingga 28-30°C. Berikan obat anti-parasit sesuai dosis.',
@@ -50,7 +50,7 @@ export default function DetectionHistory() {
       date: '3 Nov 2025',
       time: '16:45',
       status: 'healthy',
-      disease: 'Tidak Terdeteksi',
+      disease: 'Healthy Fish',
       confidence: 95,
       imageUrl: 'https://images.unsplash.com/photo-1720001586147-0bfee9e5dba2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb2xkZmlzaCUyMGNsb3NlJTIwdW5kZXJ3YXRlcnxlbnwxfHx8fDE3NjIyNjUwNTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
       recommendation: 'Ikan dalam kondisi sehat. Lanjutkan perawatan rutin.',
@@ -63,7 +63,7 @@ export default function DetectionHistory() {
       date: '3 Nov 2025',
       time: '09:15',
       status: 'warning',
-      disease: 'Fin Rot',
+      disease: 'Bacterial Diseases',
       confidence: 72,
       imageUrl: 'https://images.unsplash.com/photo-1573472420143-0c68f179bdc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZXR0YSUyMGZpc2glMjBibHVlfGVufDF8fHx8MTc2MjI2NTA2MHww&ixlib=rb-4.1.0&q=80&w=1080',
       recommendation: 'Periksa kualitas air. Ganti 25% air secara berkala. Berikan garam ikan dan antibiotik jika diperlukan.',
@@ -76,7 +76,7 @@ export default function DetectionHistory() {
       date: '2 Nov 2025',
       time: '11:20',
       status: 'healthy',
-      disease: 'Tidak Terdeteksi',
+      disease: 'Healthy Fish',
       confidence: 92,
       imageUrl: 'https://images.unsplash.com/photo-1669241942890-2e066facbd9c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxrb2klMjBmaXNoJTIwY2xvc2UlMjB1cHxlbnwxfHx8fDE3NjIyNjUwNTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
       recommendation: 'Ikan dalam kondisi sehat. Lanjutkan perawatan rutin.',
@@ -89,7 +89,7 @@ export default function DetectionHistory() {
       date: '1 Nov 2025',
       time: '15:30',
       status: 'critical',
-      disease: 'Dropsy',
+      disease: 'Bacterial Diseases',
       confidence: 88,
       imageUrl: 'https://images.unsplash.com/photo-1573472420143-0c68f179bdc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZXR0YSUyMGZpc2glMjBibHVlfGVufDF8fHx8MTc2MjI2NTA2MHww&ixlib=rb-4.1.0&q=80&w=1080',
       recommendation: 'Kondisi kritis. Isolasi segera. Konsultasi dengan ahli ikan. Berikan antibiotik spektrum luas.',
@@ -102,7 +102,7 @@ export default function DetectionHistory() {
       date: '31 Okt 2025',
       time: '10:00',
       status: 'healthy',
-      disease: 'Tidak Terdeteksi',
+      disease: 'Healthy Fish',
       confidence: 96,
       imageUrl: 'https://images.unsplash.com/photo-1720001586147-0bfee9e5dba2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb2xkZmlzaCUyMGNsb3NlJTIwdW5kZXJ3YXRlcnxlbnwxfHx8fDE3NjIyNjUwNTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
       recommendation: 'Ikan dalam kondisi sehat. Lanjutkan perawatan rutin.',
@@ -115,7 +115,7 @@ export default function DetectionHistory() {
       date: '30 Okt 2025',
       time: '14:15',
       status: 'warning',
-      disease: 'Fungal Infection',
+      disease: 'Fungal Diseases',
       confidence: 78,
       imageUrl: 'https://images.unsplash.com/photo-1669241942890-2e066facbd9c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxrb2klMjBmaXNoJTIwY2xvc2UlMjB1cHxlbnwxfHx8fDE3NjIyNjUwNTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
       recommendation: 'Gunakan obat anti-jamur. Perbaiki kualitas air. Isolasi jika memburuk.',
@@ -128,7 +128,7 @@ export default function DetectionHistory() {
       date: '29 Okt 2025',
       time: '09:45',
       status: 'healthy',
-      disease: 'Tidak Terdeteksi',
+      disease: 'Healthy Fish',
       confidence: 93,
       imageUrl: 'https://images.unsplash.com/photo-1573472420143-0c68f179bdc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZXR0YSUyMGZpc2glMjBibHVlfGVufDF8fHx8MTc2MjI2NTA2MHww&ixlib=rb-4.1.0&q=80&w=1080',
       recommendation: 'Ikan dalam kondisi sehat. Lanjutkan perawatan rutin.',
@@ -181,7 +181,7 @@ export default function DetectionHistory() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div 
+          <div
             className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{ backgroundColor: 'rgba(206, 57, 57, 0.1)' }}
           >
@@ -207,7 +207,7 @@ export default function DetectionHistory() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="p-3 rounded-full"
               style={{ backgroundColor: 'rgba(74, 217, 145, 0.1)' }}
             >
@@ -222,7 +222,7 @@ export default function DetectionHistory() {
 
         <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="p-3 rounded-full"
               style={{ backgroundColor: 'rgba(254, 197, 61, 0.1)' }}
             >
@@ -237,7 +237,7 @@ export default function DetectionHistory() {
 
         <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="p-3 rounded-full"
               style={{ backgroundColor: 'rgba(130, 128, 255, 0.1)' }}
             >
@@ -265,22 +265,22 @@ export default function DetectionHistory() {
         <Tabs defaultValue="semua" onValueChange={setActiveTab}>
           <div className="border-b px-6 pt-6" style={{ borderColor: '#E5E7EB' }}>
             <TabsList className="w-full justify-start" style={{ backgroundColor: 'rgba(72, 128, 255, 0.05)' }}>
-              <TabsTrigger 
-                value="semua" 
+              <TabsTrigger
+                value="semua"
                 className="data-[state=active]:bg-white"
                 style={{ fontWeight: 600 }}
               >
                 Semua ({detectionRecords.length})
               </TabsTrigger>
-              <TabsTrigger 
-                value="sehat" 
+              <TabsTrigger
+                value="sehat"
                 className="data-[state=active]:bg-white"
                 style={{ fontWeight: 600 }}
               >
                 Sehat ({healthyCount})
               </TabsTrigger>
-              <TabsTrigger 
-                value="perhatian" 
+              <TabsTrigger
+                value="perhatian"
                 className="data-[state=active]:bg-white"
                 style={{ fontWeight: 600 }}
               >
@@ -328,12 +328,12 @@ export default function DetectionHistory() {
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
                     <TableCell style={{ color: '#1F2937', fontWeight: 600 }}>{record.disease}</TableCell>
                     <TableCell>
-                      <span 
+                      <span
                         className="px-2 py-1 rounded text-sm"
-                        style={{ 
-                          backgroundColor: 'rgba(72, 128, 255, 0.1)', 
-                          color: '#4880FF', 
-                          fontWeight: 600 
+                        style={{
+                          backgroundColor: 'rgba(72, 128, 255, 0.1)',
+                          color: '#4880FF',
+                          fontWeight: 600
                         }}
                       >
                         {record.confidence}%
@@ -400,9 +400,9 @@ export default function DetectionHistory() {
                   </div>
                 </div>
 
-                <div 
+                <div
                   className="p-4 rounded-lg border-l-4"
-                  style={{ 
+                  style={{
                     backgroundColor: selectedRecord.status === 'healthy' ? 'rgba(74, 217, 145, 0.05)' : 'rgba(254, 197, 61, 0.05)',
                     borderColor: selectedRecord.status === 'healthy' ? '#4AD991' : '#FEC53D'
                   }}
@@ -416,12 +416,12 @@ export default function DetectionHistory() {
                     <h4 className="mb-3 text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>Gejala yang Terdeteksi</h4>
                     <div className="space-y-2">
                       {selectedRecord.symptoms.map((symptom, index) => (
-                        <div 
+                        <div
                           key={index}
                           className="flex items-start gap-2 p-3 rounded-lg"
                           style={{ backgroundColor: '#F9FAFB' }}
                         >
-                          <div 
+                          <div
                             className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
                             style={{ backgroundColor: '#FEC53D' }}
                           />
@@ -432,9 +432,9 @@ export default function DetectionHistory() {
                   </div>
                 )}
 
-                <div 
+                <div
                   className="p-4 rounded-lg border"
-                  style={{ 
+                  style={{
                     backgroundColor: 'rgba(72, 128, 255, 0.05)',
                     borderColor: '#4880FF33'
                   }}

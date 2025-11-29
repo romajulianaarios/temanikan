@@ -12,34 +12,34 @@ export default function DiseaseTrends() {
   // Full dataset for all periods
   const allMonthlyData = {
     '1 Bulan Terakhir': [
-      { month: 'Nov', whiteSpot: 145, finRot: 98, ich: 56, other: 43 },
+      { month: 'Nov', parasitic: 145, bacterial: 98, whiteTail: 56, other: 43 },
     ],
     '3 Bulan Terakhir': [
-      { month: 'Sep', whiteSpot: 128, finRot: 89, ich: 48, other: 32 },
-      { month: 'Okt', whiteSpot: 142, finRot: 95, ich: 54, other: 38 },
-      { month: 'Nov', whiteSpot: 145, finRot: 98, ich: 56, other: 43 },
+      { month: 'Sep', parasitic: 128, bacterial: 89, whiteTail: 48, other: 32 },
+      { month: 'Okt', parasitic: 142, bacterial: 95, whiteTail: 54, other: 38 },
+      { month: 'Nov', parasitic: 145, bacterial: 98, whiteTail: 56, other: 43 },
     ],
     '6 Bulan Terakhir': [
-      { month: 'Jun', whiteSpot: 120, finRot: 85, ich: 45, other: 30 },
-      { month: 'Jul', whiteSpot: 135, finRot: 92, ich: 52, other: 35 },
-      { month: 'Aug', whiteSpot: 145, finRot: 98, ich: 58, other: 40 },
-      { month: 'Sep', whiteSpot: 128, finRot: 89, ich: 48, other: 32 },
-      { month: 'Okt', whiteSpot: 142, finRot: 95, ich: 54, other: 38 },
-      { month: 'Nov', whiteSpot: 145, finRot: 98, ich: 56, other: 43 },
+      { month: 'Jun', parasitic: 120, bacterial: 85, whiteTail: 45, other: 30 },
+      { month: 'Jul', parasitic: 135, bacterial: 92, whiteTail: 52, other: 35 },
+      { month: 'Aug', parasitic: 145, bacterial: 98, whiteTail: 58, other: 40 },
+      { month: 'Sep', parasitic: 128, bacterial: 89, whiteTail: 48, other: 32 },
+      { month: 'Okt', parasitic: 142, bacterial: 95, whiteTail: 54, other: 38 },
+      { month: 'Nov', parasitic: 145, bacterial: 98, whiteTail: 56, other: 43 },
     ],
     '1 Tahun Terakhir': [
-      { month: 'Des', whiteSpot: 110, finRot: 78, ich: 42, other: 28 },
-      { month: 'Jan', whiteSpot: 115, finRot: 82, ich: 44, other: 29 },
-      { month: 'Feb', whiteSpot: 118, finRot: 84, ich: 46, other: 30 },
-      { month: 'Mar', whiteSpot: 122, finRot: 86, ich: 47, other: 31 },
-      { month: 'Apr', whiteSpot: 125, finRot: 88, ich: 49, other: 32 },
-      { month: 'Mei', whiteSpot: 130, finRot: 90, ich: 50, other: 33 },
-      { month: 'Jun', whiteSpot: 120, finRot: 85, ich: 45, other: 30 },
-      { month: 'Jul', whiteSpot: 135, finRot: 92, ich: 52, other: 35 },
-      { month: 'Aug', whiteSpot: 145, finRot: 98, ich: 58, other: 40 },
-      { month: 'Sep', whiteSpot: 128, finRot: 89, ich: 48, other: 32 },
-      { month: 'Okt', whiteSpot: 142, finRot: 95, ich: 54, other: 38 },
-      { month: 'Nov', whiteSpot: 145, finRot: 98, ich: 56, other: 43 },
+      { month: 'Des', parasitic: 110, bacterial: 78, whiteTail: 42, other: 28 },
+      { month: 'Jan', parasitic: 115, bacterial: 82, whiteTail: 44, other: 29 },
+      { month: 'Feb', parasitic: 118, bacterial: 84, whiteTail: 46, other: 30 },
+      { month: 'Mar', parasitic: 122, bacterial: 86, whiteTail: 47, other: 31 },
+      { month: 'Apr', parasitic: 125, bacterial: 88, whiteTail: 49, other: 32 },
+      { month: 'Mei', parasitic: 130, bacterial: 90, whiteTail: 50, other: 33 },
+      { month: 'Jun', parasitic: 120, bacterial: 85, whiteTail: 45, other: 30 },
+      { month: 'Jul', parasitic: 135, bacterial: 92, whiteTail: 52, other: 35 },
+      { month: 'Aug', parasitic: 145, bacterial: 98, whiteTail: 58, other: 40 },
+      { month: 'Sep', parasitic: 128, bacterial: 89, whiteTail: 48, other: 32 },
+      { month: 'Okt', parasitic: 142, bacterial: 95, whiteTail: 54, other: 38 },
+      { month: 'Nov', parasitic: 145, bacterial: 98, whiteTail: 56, other: 43 },
     ]
   };
 
@@ -76,7 +76,7 @@ export default function DiseaseTrends() {
   // Get filtered data based on selected filters
   const monthlyTrends = useMemo(() => {
     const data = allMonthlyData[periodFilter as keyof typeof allMonthlyData] || allMonthlyData['6 Bulan Terakhir'];
-    
+
     // Filter by disease type if not "Semua Penyakit"
     if (diseaseFilter === 'Semua Penyakit') {
       return data;
@@ -84,9 +84,9 @@ export default function DiseaseTrends() {
       // Return data with only selected disease visible
       return data.map(item => ({
         month: item.month,
-        whiteSpot: diseaseFilter === 'White Spot' ? item.whiteSpot : 0,
-        finRot: diseaseFilter === 'Fin Rot' ? item.finRot : 0,
-        ich: diseaseFilter === 'Ich' ? item.ich : 0,
+        parasitic: diseaseFilter === 'Parasitic Diseases' ? item.parasitic : 0,
+        bacterial: diseaseFilter === 'Bacterial Diseases' ? item.bacterial : 0,
+        whiteTail: diseaseFilter === 'White Tail Diseases' ? item.whiteTail : 0,
         other: diseaseFilter === 'Lainnya' ? item.other : 0,
       }));
     }
@@ -100,33 +100,33 @@ export default function DiseaseTrends() {
   const diseaseStats = useMemo(() => {
     const latestData = monthlyTrends[monthlyTrends.length - 1];
     const prevData = monthlyTrends[monthlyTrends.length - 2] || latestData;
-    
+
     return [
       {
-        name: 'White Spot Disease',
-        total: latestData.whiteSpot,
-        change: prevData.whiteSpot > 0 
-          ? `${(((latestData.whiteSpot - prevData.whiteSpot) / prevData.whiteSpot) * 100).toFixed(1)}%`
+        name: 'Parasitic Diseases',
+        total: latestData.parasitic,
+        change: prevData.parasitic > 0
+          ? `${(((latestData.parasitic - prevData.parasitic) / prevData.parasitic) * 100).toFixed(1)}%`
           : '+0%',
-        trend: latestData.whiteSpot >= prevData.whiteSpot ? 'up' : 'down',
+        trend: latestData.parasitic >= prevData.parasitic ? 'up' : 'down',
         severity: 'high'
       },
       {
-        name: 'Fin Rot',
-        total: latestData.finRot,
-        change: prevData.finRot > 0
-          ? `${(((latestData.finRot - prevData.finRot) / prevData.finRot) * 100).toFixed(1)}%`
+        name: 'Bacterial Diseases',
+        total: latestData.bacterial,
+        change: prevData.bacterial > 0
+          ? `${(((latestData.bacterial - prevData.bacterial) / prevData.bacterial) * 100).toFixed(1)}%`
           : '+0%',
-        trend: latestData.finRot >= prevData.finRot ? 'up' : 'down',
+        trend: latestData.bacterial >= prevData.bacterial ? 'up' : 'down',
         severity: 'medium'
       },
       {
-        name: 'Ich',
-        total: latestData.ich,
-        change: prevData.ich > 0
-          ? `${(((latestData.ich - prevData.ich) / prevData.ich) * 100).toFixed(1)}%`
+        name: 'White Tail Diseases',
+        total: latestData.whiteTail,
+        change: prevData.whiteTail > 0
+          ? `${(((latestData.whiteTail - prevData.whiteTail) / prevData.whiteTail) * 100).toFixed(1)}%`
           : '+0%',
-        trend: latestData.ich >= prevData.ich ? 'up' : 'down',
+        trend: latestData.whiteTail >= prevData.whiteTail ? 'up' : 'down',
         severity: 'medium'
       },
       {
@@ -213,9 +213,9 @@ export default function DiseaseTrends() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Semua Penyakit">Semua Penyakit</SelectItem>
-                <SelectItem value="White Spot">White Spot</SelectItem>
-                <SelectItem value="Fin Rot">Fin Rot</SelectItem>
-                <SelectItem value="Ich">Ich</SelectItem>
+                <SelectItem value="Parasitic Diseases">Parasitic Diseases</SelectItem>
+                <SelectItem value="Bacterial Diseases">Bacterial Diseases</SelectItem>
+                <SelectItem value="White Tail Diseases">White Tail Diseases</SelectItem>
                 <SelectItem value="Lainnya">Lainnya</SelectItem>
               </SelectContent>
             </Select>
@@ -246,21 +246,21 @@ export default function DiseaseTrends() {
       <Card className="p-6" style={{ backgroundColor: 'white' }}>
         <h3 className="mb-4" style={{ color: '#133E87' }}>Tren Deteksi Bulanan</h3>
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart 
+          <LineChart
             data={monthlyTrends}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#CBDCEB" />
-            <XAxis 
-              dataKey="month" 
+            <XAxis
+              dataKey="month"
               stroke="#666"
               style={{ fontSize: '12px' }}
             />
-            <YAxis 
+            <YAxis
               stroke="#666"
               style={{ fontSize: '12px' }}
             />
-            <Tooltip 
+            <Tooltip
               cursor={{ stroke: '#608BC1', strokeWidth: 1, strokeDasharray: '5 5' }}
               contentStyle={{
                 backgroundColor: 'white',
@@ -268,42 +268,42 @@ export default function DiseaseTrends() {
                 borderRadius: '8px'
               }}
             />
-            <Legend 
+            <Legend
               wrapperStyle={{ paddingTop: '10px' }}
             />
-            {(diseaseFilter === 'Semua Penyakit' || diseaseFilter === 'White Spot') && (
-              <Line 
-                type="monotone" 
-                dataKey="whiteSpot" 
-                stroke="#608BC1" 
+            {(diseaseFilter === 'Semua Penyakit' || diseaseFilter === 'Parasitic Diseases') && (
+              <Line
+                type="monotone"
+                dataKey="parasitic"
+                stroke="#608BC1"
                 strokeWidth={3}
-                name="White Spot"
+                name="Parasitic Diseases"
                 dot={{ fill: '#608BC1', strokeWidth: 2, r: 5, stroke: 'white' }}
                 activeDot={{ r: 8, fill: '#608BC1', stroke: '#133E87', strokeWidth: 2 }}
                 animationDuration={800}
                 animationEasing="ease-in-out"
               />
             )}
-            {(diseaseFilter === 'Semua Penyakit' || diseaseFilter === 'Fin Rot') && (
-              <Line 
-                type="monotone" 
-                dataKey="finRot" 
-                stroke="#133E87" 
+            {(diseaseFilter === 'Semua Penyakit' || diseaseFilter === 'Bacterial Diseases') && (
+              <Line
+                type="monotone"
+                dataKey="bacterial"
+                stroke="#133E87"
                 strokeWidth={3}
-                name="Fin Rot"
+                name="Bacterial Diseases"
                 dot={{ fill: '#133E87', strokeWidth: 2, r: 5, stroke: 'white' }}
                 activeDot={{ r: 8, fill: '#133E87', stroke: '#608BC1', strokeWidth: 2 }}
                 animationDuration={800}
                 animationEasing="ease-in-out"
               />
             )}
-            {(diseaseFilter === 'Semua Penyakit' || diseaseFilter === 'Ich') && (
-              <Line 
-                type="monotone" 
-                dataKey="ich" 
-                stroke="#ff9800" 
+            {(diseaseFilter === 'Semua Penyakit' || diseaseFilter === 'White Tail Diseases') && (
+              <Line
+                type="monotone"
+                dataKey="whiteTail"
+                stroke="#ff9800"
                 strokeWidth={3}
-                name="Ich"
+                name="White Tail Diseases"
                 dot={{ fill: '#ff9800', strokeWidth: 2, r: 5, stroke: 'white' }}
                 activeDot={{ r: 8, fill: '#ff9800', stroke: '#133E87', strokeWidth: 2 }}
                 animationDuration={800}
@@ -311,10 +311,10 @@ export default function DiseaseTrends() {
               />
             )}
             {(diseaseFilter === 'Semua Penyakit' || diseaseFilter === 'Lainnya') && (
-              <Line 
-                type="monotone" 
-                dataKey="other" 
-                stroke="#999" 
+              <Line
+                type="monotone"
+                dataKey="other"
+                stroke="#999"
                 strokeWidth={3}
                 name="Lainnya"
                 dot={{ fill: '#999', strokeWidth: 2, r: 5, stroke: 'white' }}
@@ -331,21 +331,21 @@ export default function DiseaseTrends() {
       <Card className="p-6" style={{ backgroundColor: 'white' }}>
         <h3 className="mb-4" style={{ color: '#133E87' }}>Distribusi Regional</h3>
         <ResponsiveContainer width="100%" height={400}>
-          <BarChart 
+          <BarChart
             data={regionalData}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#CBDCEB" />
-            <XAxis 
-              dataKey="region" 
+            <XAxis
+              dataKey="region"
               stroke="#666"
               style={{ fontSize: '12px' }}
             />
-            <YAxis 
+            <YAxis
               stroke="#666"
               style={{ fontSize: '12px' }}
             />
-            <Tooltip 
+            <Tooltip
               cursor={{ fill: 'rgba(96, 139, 193, 0.1)' }}
               contentStyle={{
                 backgroundColor: 'white',
@@ -353,12 +353,12 @@ export default function DiseaseTrends() {
                 borderRadius: '8px'
               }}
             />
-            <Legend 
+            <Legend
               wrapperStyle={{ paddingTop: '10px' }}
             />
-            <Bar 
-              dataKey="cases" 
-              fill="#608BC1" 
+            <Bar
+              dataKey="cases"
+              fill="#608BC1"
               name="Kasus Deteksi"
               radius={[8, 8, 0, 0]}
               animationDuration={800}
@@ -372,14 +372,14 @@ export default function DiseaseTrends() {
       <Card className="p-6" style={{ backgroundColor: 'white' }}>
         <h3 className="mb-4" style={{ color: '#133E87' }}>Insight & Rekomendasi</h3>
         <div className="space-y-3">
-          <div 
+          <div
             className="p-4 rounded-lg flex items-start gap-3"
             style={{ backgroundColor: '#fee2e2' }}
           >
             <TrendingUp className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
               <p style={{ color: '#991b1b' }}>
-                Peningkatan signifikan White Spot Disease di Jakarta (+25%)
+                Peningkatan signifikan Parasitic Diseases di Jakarta (+25%)
               </p>
               <p className="text-sm text-red-800 mt-1">
                 Rekomendasi: Kirim notifikasi preventif ke pengguna di area Jakarta
@@ -387,14 +387,14 @@ export default function DiseaseTrends() {
             </div>
           </div>
 
-          <div 
+          <div
             className="p-4 rounded-lg flex items-start gap-3"
             style={{ backgroundColor: '#fef3c7' }}
           >
             <Activity className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
             <div>
               <p style={{ color: '#92400e' }}>
-                Tren seasonal terdeteksi untuk Fin Rot (meningkat saat musim hujan)
+                Tren seasonal terdeteksi untuk Bacterial Diseases (meningkat saat musim hujan)
               </p>
               <p className="text-sm text-yellow-800 mt-1">
                 Rekomendasi: Persiapkan artikel edukasi preventif untuk bulan depan
@@ -402,14 +402,14 @@ export default function DiseaseTrends() {
             </div>
           </div>
 
-          <div 
+          <div
             className="p-4 rounded-lg flex items-start gap-3"
             style={{ backgroundColor: '#dcfce7' }}
           >
             <TrendingDown className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
             <div>
               <p style={{ color: '#166534' }}>
-                Penurunan kasus Ich sebesar 5.3% bulan ini
+                Penurunan kasus White Tail Diseases sebesar 5.3% bulan ini
               </p>
               <p className="text-sm text-green-800 mt-1">
                 Kemungkinan efek dari artikel edukasi yang dibagikan bulan lalu

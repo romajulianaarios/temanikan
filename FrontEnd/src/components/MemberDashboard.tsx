@@ -1,9 +1,5 @@
 import { Routes, Route } from './Router';
 import DashboardLayout from './DashboardLayout';
-import MemberOverview from './member/MemberOverview';
-import WaterMonitoring from './member/WaterMonitoring';
-import RobotControl from './member/RobotControl';
-import DiseaseDetection from './member/DiseaseDetection';
 import MemberFishpedia from './member/MemberFishpedia';
 import MemberForum from './member/MemberForum';
 import MemberSettings from './member/MemberSettings';
@@ -23,16 +19,21 @@ import MemberDeviceDisease from '../pages/MemberDeviceDisease';
 import MemberDeviceNotifications from '../pages/MemberDeviceNotifications';
 import MemberDeviceCleaningHistory from '../pages/MemberDeviceCleaningHistory';
 import MemberDeviceDetectionHistory from '../pages/MemberDeviceDetectionHistory';
+<<<<<<< HEAD
+import NotificationDetail from '../pages/NotificationDetail';
+
+=======
+>>>>>>> b7c531e5cbced4492f7c79b4709f0d784812a476
 export default function MemberDashboard() {
   return (
     <>
       <Routes>
       {/* Default route now redirects to devices */}
       <Route path="/member" element={<MemberDevices />} />
-      
+
       {/* Devices page (Garasi Robot) */}
       <Route path="/member/devices" element={<MemberDevices />} />
-      
+
       {/* Device-specific routes */}
       <Route path="/member/device/:deviceId/dashboard" element={<MemberDeviceDashboard />} />
       <Route path="/member/device/:deviceId/monitoring" element={<MemberDeviceMonitoring />} />
@@ -41,7 +42,7 @@ export default function MemberDashboard() {
       <Route path="/member/device/:deviceId/notifications" element={<MemberDeviceNotifications />} />
       <Route path="/member/device/:deviceId/cleaning-history" element={<MemberDeviceCleaningHistory />} />
       <Route path="/member/device/:deviceId/detection-history" element={<MemberDeviceDetectionHistory />} />
-      
+
       {/* Global routes (tidak spesifik perangkat) */}
       <Route path="/member/fishpedia" element={
         <DashboardLayout title="Fishpedia" userType="member">
@@ -68,9 +69,12 @@ export default function MemberDashboard() {
           <MyOrders />
         </DashboardLayout>
       } />
+
+      {/* Notification Routes */}
+      <Route path="/member/notifications/:id" element={<NotificationDetail />} />
       <Route path="/member/notifications" element={
-        <DashboardLayout 
-          title="Semua Notifikasi" 
+        <DashboardLayout
+          title="Semua Notifikasi"
           userType="member"
           breadcrumbs={[
             { label: 'Notifikasi', path: '/member' },
@@ -80,9 +84,11 @@ export default function MemberDashboard() {
           <AllNotifications />
         </DashboardLayout>
       } />
+
+      {/* History Routes */}
       <Route path="/member/cleaning-history" element={
-        <DashboardLayout 
-          title="Riwayat Pembersihan Lengkap" 
+        <DashboardLayout
+          title="Riwayat Pembersihan Lengkap"
           userType="member"
           breadcrumbs={[
             { label: 'Kontrol Robot', path: '/member/robot' },
@@ -93,8 +99,8 @@ export default function MemberDashboard() {
         </DashboardLayout>
       } />
       <Route path="/member/detection-history" element={
-        <DashboardLayout 
-          title="Riwayat Deteksi Penyakit" 
+        <DashboardLayout
+          title="Riwayat Deteksi Penyakit"
           userType="member"
           breadcrumbs={[
             { label: 'Deteksi Penyakit', path: '/member/disease' },
@@ -104,9 +110,11 @@ export default function MemberDashboard() {
           <DetectionHistory />
         </DashboardLayout>
       } />
+
+      {/* Forum Sub-routes */}
       <Route path="/member/forum/new" element={
-        <DashboardLayout 
-          title="Buat Topik Baru" 
+        <DashboardLayout
+          title="Buat Topik Baru"
           userType="member"
           breadcrumbs={[
             { label: 'Forum Komunitas', path: '/member/forum' },
@@ -117,8 +125,8 @@ export default function MemberDashboard() {
         </DashboardLayout>
       } />
       <Route path="/member/forum/topic/:topicId" element={
-        <DashboardLayout 
-          title="Detail Topik" 
+        <DashboardLayout
+          title="Detail Topik"
           userType="member"
           breadcrumbs={[
             { label: 'Forum Komunitas', path: '/member/forum' },
@@ -129,8 +137,8 @@ export default function MemberDashboard() {
         </DashboardLayout>
       } />
       <Route path="/member/forum/my-topics" element={
-        <DashboardLayout 
-          title="Topik Saya" 
+        <DashboardLayout
+          title="Topik Saya"
           userType="member"
           breadcrumbs={[
             { label: 'Forum Komunitas', path: '/member/forum' },

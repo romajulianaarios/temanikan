@@ -22,7 +22,7 @@ interface Order {
   payment_method?: string;
   notes?: string;
   created_at: string;
-  payment_proof?: string;  // ← ADD THIS LINE
+  payment_proof?: string;
   user?: {
     id: number;
     name: string;
@@ -33,62 +33,46 @@ interface Order {
 interface OrderStats {
   total_orders: number;
   total_revenue: number;
-  recent_orders: number;
-  status_breakdown: { [key: string]: number };
+  pending_orders: number;
+  completed_orders: number;
+  cancelled_orders: number;
 }
 
 export default function AdminOrders() {
-  // State management
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [newStatus, setNewStatus] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [paymentProofImage, setPaymentProofImage] = useState<string | null>(null);
-  const [showPaymentProofModal, setShowPaymentProofModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  
-  // Data from backend
   const [orders, setOrders] = useState<Order[]>([]);
-  const [stats, setStats] = useState<OrderStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Analytics data from backend
-  const [weeklyTrend, setWeeklyTrend] = useState<Array<{ day: string; orders: number }>>([]);
-  const [weeklyRevenue, setWeeklyRevenue] = useState<Array<{ day: string; revenue: number }>>([]);
+  const [stats, setStats] = useState<OrderStats | null>(null);
+  const [weeklyTrend, setWeeklyTrend] = useState<any[]>([]);
+  const [weeklyRevenue, setWeeklyRevenue] = useState<any[]>([]);
   const [statusDistribution, setStatusDistribution] = useState<any>(null);
-
-  // Fetch data on mount
-  useEffect(() => {
-    fetchOrders();
-    fetchStats();
-    fetchAnalytics();
-  }, [selectedStatus, searchQuery]);
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [newStatus, setNewStatus] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [paymentProofImage, setPaymentProofImage] = useState<string | null>(null);
+  const [showPaymentProofModal, setShowPaymentProofModal] = useState(false);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      setError(null);
-      console.log('📡 Admin fetching orders...');
-      
-      const filters: any = {};
-      if (selectedStatus !== 'all') {
-        filters.status = selectedStatus;
+      const response = await orderAPI.getAllOrders({
+        status: selectedStatus === 'all' ? undefined : selectedStatus,
+        search: searchQuery,
+        date: selectedDate,
+        per_page: rowsPerPage
+      });
+      if (response.success) {
+        setOrders(response.data);
       }
-      if (searchQuery) {
-        filters.search = searchQuery;
-      }
-      
-      const response = await orderAPI.getAllOrders(filters);
-      
-      console.log('✅ Admin orders received:', response);
-      setOrders(response.data || []);
-    } catch (error: any) {
-      console.error('❌ Error fetching orders:', error);
-      setError(error.response?.data?.error || 'Gagal memuat pesanan');
+    } catch (err: any) {
+      setError(err.message || 'Gagal memuat data pesanan');
     } finally {
       setLoading(false);
     }
@@ -96,25 +80,21 @@ export default function AdminOrders() {
 
   const fetchStats = async () => {
     try {
-      console.log('📡 Fetching stats...');
-      
       const response = await orderAPI.getOrderStats();
-      
-      console.log('✅ Stats received:', response);
-      setStats(response.data);
-    } catch (error: any) {
-      console.error('❌ Error fetching stats:', error);
+      if (response.success) {
+        setStats(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
     }
   };
 
   const fetchAnalytics = async () => {
     try {
       console.log('📊 Fetching analytics...');
-      
       const response = await orderAPI.getOrderAnalytics();
-      
       console.log('✅ Analytics received:', response);
-      
+
       if (response.success && response.data) {
         setWeeklyTrend(response.data.weekly_trend || []);
         setWeeklyRevenue(response.data.weekly_revenue || []);
@@ -124,6 +104,12 @@ export default function AdminOrders() {
       console.error('❌ Error fetching analytics:', error);
     }
   };
+
+  useEffect(() => {
+    fetchOrders();
+    fetchStats();
+    fetchAnalytics();
+  }, [selectedStatus, searchQuery, selectedDate, rowsPerPage]);
 
   const handleUpdateStatus = async (order: Order) => {
     setSelectedOrder(order);
@@ -135,9 +121,9 @@ export default function AdminOrders() {
     if (selectedOrder && newStatus) {
       try {
         console.log('📤 Updating order status:', { orderId: selectedOrder.id, newStatus });
-        
+
         await orderAPI.updateOrderStatus(selectedOrder.id, newStatus);
-        
+
         setSuccessMessage(`Status pesanan ${selectedOrder.order_number} berhasil diupdate ke "${getStatusConfig(newStatus).label}"`);
         setShowUpdateModal(false);
         setShowSuccessModal(true);
@@ -153,7 +139,7 @@ export default function AdminOrders() {
 
   const handleCloseSuccessModal = async () => {
     setShowSuccessModal(false);
-    
+
     // Refresh data pesanan yang dipilih dengan data terbaru
     if (selectedOrder) {
       try {
@@ -166,7 +152,7 @@ export default function AdminOrders() {
         console.error('Error refreshing order:', error);
       }
     }
-    
+
     setShowDetailModal(true);
   };
 
@@ -188,38 +174,38 @@ export default function AdminOrders() {
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, any> = {
-      pending: { 
-        label: 'Menunggu Pembayaran', 
+      pending: {
+        label: 'Menunggu Pembayaran',
         bgColor: '#FEF3C7',
         textColor: '#92400E'
       },
-      confirmed: { 
-        label: 'Diproses', 
+      confirmed: {
+        label: 'Diproses',
         bgColor: '#DBEAFE',
         textColor: '#1E40AF'
       },
-      processing: { 
-        label: 'Diproses', 
+      processing: {
+        label: 'Diproses',
         bgColor: '#DBEAFE',
         textColor: '#1E40AF'
       },
-      shipping: { 
-        label: 'Dikirim', 
+      shipping: {
+        label: 'Dikirim',
         bgColor: '#EDE9FE',
         textColor: '#5B21B6'
       },
-      delivered: { 
-        label: 'Selesai', 
+      delivered: {
+        label: 'Selesai',
         bgColor: '#D1FAE5',
         textColor: '#065F46'
       },
-      completed: { 
-        label: 'Selesai', 
+      completed: {
+        label: 'Selesai',
         bgColor: '#D1FAE5',
         textColor: '#065F46'
       },
-      cancelled: { 
-        label: 'Dibatalkan', 
+      cancelled: {
+        label: 'Dibatalkan',
         bgColor: '#FEE2E2',
         textColor: '#991B1B'
       }
@@ -252,14 +238,14 @@ export default function AdminOrders() {
         { key: 'completed', label: 'Selesai', color: '#10B981' },
         { key: 'cancelled', label: 'Dibatalkan', color: '#EF4444' }
       ];
-      
+
       return statuses.map(status => ({
         name: status.label,
         value: statusDistribution[status.key] || 0,
         color: status.color
       }));
     }
-    
+
     // Fallback to local calculation
     const statuses = [
       { key: 'pending_payment', label: 'Menunggu Pembayaran', color: '#F59E0B' },
@@ -268,7 +254,7 @@ export default function AdminOrders() {
       { key: 'completed', label: 'Selesai', color: '#10B981' },
       { key: 'cancelled', label: 'Dibatalkan', color: '#EF4444' }
     ];
-    
+
     return statuses.map(status => ({
       name: status.label,
       value: getStatusCount(status.key),
@@ -279,16 +265,16 @@ export default function AdminOrders() {
   const handleViewDetail = async (order: Order) => {
     setSelectedOrder(order);
     setShowDetailModal(true);
-    
+
     // Load payment proof if exists
     if (order.payment_proof) {
       try {
         console.log('📥 Loading payment proof for order:', order.id);
         const response = await orderAPI.getPaymentProof(order.id);
-        
+
         // ✅ FIX: Correct response structure
         console.log('✅ Payment proof response:', response);
-        
+
         if (response.success && response.data) {
           // Use correct path: response.data.mimetype (not response.data.data.mime_type)
           setPaymentProofImage(`data:${response.data.mimetype};base64,${response.data.base64}`);
@@ -332,13 +318,13 @@ export default function AdminOrders() {
       const headers = Object.keys(exportData[0]);
       const csvContent = [
         headers.join(','),
-        ...exportData.map(row => 
+        ...exportData.map(row =>
           headers.map(header => {
             const value = row[header as keyof typeof row];
             // Handle values with commas or quotes
             const stringValue = String(value).replace(/"/g, '""');
-            return stringValue.includes(',') || stringValue.includes('"') 
-              ? `"${stringValue}"` 
+            return stringValue.includes(',') || stringValue.includes('"')
+              ? `"${stringValue}"`
               : stringValue;
           }).join(',')
         )
@@ -347,7 +333,7 @@ export default function AdminOrders() {
       // Create BOM for Excel UTF-8 support
       const BOM = '\uFEFF';
       const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-      
+
       // Download file
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
@@ -383,7 +369,7 @@ export default function AdminOrders() {
           <h2 style={{ color: '#1F2937' }}>Kelola Pesanan</h2>
           <p className="text-gray-600 mt-1">Kelola dan pantau semua pesanan pelanggan Robot Temanikan</p>
         </div>
-        <Button 
+        <Button
           className="text-white flex items-center gap-2"
           style={{ backgroundColor: '#4880FF' }}
           onClick={handleExportData}
@@ -395,10 +381,10 @@ export default function AdminOrders() {
 
       {/* Statistics Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card 
+        <Card
           className="p-6 rounded-xl shadow-sm border-l-4"
-          style={{ 
-            backgroundColor: 'white', 
+          style={{
+            backgroundColor: 'white',
             borderLeftColor: '#4880FF'
           }}
         >
@@ -413,10 +399,10 @@ export default function AdminOrders() {
           </div>
         </Card>
 
-        <Card 
+        <Card
           className="p-6 rounded-xl shadow-sm border-l-4"
-          style={{ 
-            backgroundColor: 'white', 
+          style={{
+            backgroundColor: 'white',
             borderLeftColor: '#F59E0B'
           }}
         >
@@ -431,10 +417,10 @@ export default function AdminOrders() {
           </div>
         </Card>
 
-        <Card 
+        <Card
           className="p-6 rounded-xl shadow-sm border-l-4"
-          style={{ 
-            backgroundColor: 'white', 
+          style={{
+            backgroundColor: 'white',
             borderLeftColor: '#3B82F6'
           }}
         >
@@ -449,10 +435,10 @@ export default function AdminOrders() {
           </div>
         </Card>
 
-        <Card 
+        <Card
           className="p-6 rounded-xl shadow-sm border-l-4"
-          style={{ 
-            backgroundColor: 'white', 
+          style={{
+            backgroundColor: 'white',
             borderLeftColor: '#10B981'
           }}
         >
@@ -467,10 +453,10 @@ export default function AdminOrders() {
           </div>
         </Card>
 
-        <Card 
+        <Card
           className="p-6 rounded-xl shadow-sm border-l-4"
-          style={{ 
-            backgroundColor: 'white', 
+          style={{
+            backgroundColor: 'white',
             borderLeftColor: '#8B5CF6'
           }}
         >
@@ -492,7 +478,7 @@ export default function AdminOrders() {
       <Tabs defaultValue="orders" className="w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <TabsList className="h-auto p-0 bg-transparent">
-            <TabsTrigger 
+            <TabsTrigger
               value="orders"
               className="w-full data-[state=active]:bg-[#F3F3E0] data-[state=active]:border-2 data-[state=active]:border-[#4880FF] data-[state=active]:shadow-lg data-[state=inactive]:bg-white data-[state=inactive]:border-2 data-[state=inactive]:border-transparent hover:border-[#CBDCEB] p-6 rounded-xl transition-all shadow-sm h-auto"
             >
@@ -505,9 +491,9 @@ export default function AdminOrders() {
               </div>
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsList className="h-auto p-0 bg-transparent">
-            <TabsTrigger 
+            <TabsTrigger
               value="analytics"
               className="w-full data-[state=active]:bg-[#F3F3E0] data-[state=active]:border-2 data-[state=active]:border-[#4880FF] data-[state=active]:shadow-lg data-[state=inactive]:bg-white data-[state=inactive]:border-2 data-[state=inactive]:border-transparent hover:border-[#CBDCEB] p-6 rounded-xl transition-all shadow-sm h-auto"
             >
@@ -522,20 +508,30 @@ export default function AdminOrders() {
           </TabsList>
         </div>
 
-        {/* Daftar Pesanan Tab */}
-        <TabsContent value="orders" className="space-y-4 mt-6">
-          {/* Search & Filter Bar */}
-          <Card className="p-4" style={{ backgroundColor: 'white' }}>
-            <div className="flex flex-col md:flex-row gap-3">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input 
-                  placeholder="Cari berdasarkan nama pelanggan, no. pesanan, atau email..."
-                  className="pl-10"
+        <TabsContent value="orders" className="space-y-6 mt-6">
+          {/* Search and Filter Bar */}
+          <Card className="p-4 rounded-xl shadow-sm" style={{ backgroundColor: 'white' }}>
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Cari pesanan..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 w-full"
                 />
               </div>
+
+              {/* Date Picker */}
+              <div className="w-full md:w-[200px]">
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                 <SelectTrigger className="w-full md:w-[200px]">
                   <SelectValue placeholder="Filter Status" />
@@ -547,6 +543,19 @@ export default function AdminOrders() {
                   <SelectItem value="shipping">Dikirim</SelectItem>
                   <SelectItem value="delivered">Selesai</SelectItem>
                   <SelectItem value="cancelled">Dibatalkan</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Rows Per Page */}
+              <Select value={rowsPerPage.toString()} onValueChange={(val) => setRowsPerPage(Number(val))}>
+                <SelectTrigger className="w-full md:w-[100px]">
+                  <SelectValue placeholder="Rows" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10 Rows</SelectItem>
+                  <SelectItem value="25">25 Rows</SelectItem>
+                  <SelectItem value="50">50 Rows</SelectItem>
+                  <SelectItem value="80">80 Rows</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -561,8 +570,8 @@ export default function AdminOrders() {
                   <p className="text-sm">{error}</p>
                 </div>
               </div>
-              <Button 
-                onClick={fetchOrders} 
+              <Button
+                onClick={fetchOrders}
                 className="mt-4"
                 variant="outline"
               >
@@ -601,7 +610,7 @@ export default function AdminOrders() {
                       const statusConfig = getStatusConfig(order.status);
                       const customerName = order.user?.name || 'Customer';
                       const customerEmail = order.user?.email || '-';
-                      
+
                       return (
                         <tr key={order.id} className="border-b hover:bg-gray-50 transition-colors" style={{ borderColor: '#E5E7EB' }}>
                           <td className="px-6 py-4">
@@ -635,9 +644,9 @@ export default function AdminOrders() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <Badge 
+                            <Badge
                               className="px-3 py-1"
-                              style={{ 
+                              style={{
                                 backgroundColor: statusConfig.bgColor,
                                 color: statusConfig.textColor
                               }}
@@ -692,10 +701,10 @@ export default function AdminOrders() {
                   <XAxis dataKey="day" stroke="#6B7280" />
                   <YAxis stroke="#6B7280" />
                   <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="orders" 
-                    stroke="#4880FF" 
+                  <Line
+                    type="monotone"
+                    dataKey="orders"
+                    stroke="#4880FF"
                     strokeWidth={2}
                     dot={{ fill: '#4880FF', r: 4 }}
                     activeDot={{ r: 6 }}
@@ -739,7 +748,7 @@ export default function AdminOrders() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                   <XAxis dataKey="day" stroke="#6B7280" />
                   <YAxis stroke="#6B7280" />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value: any) => formatCurrency(value)}
                   />
                   <Bar dataKey="revenue" fill="#8B5CF6" radius={[8, 8, 0, 0]} />
@@ -758,7 +767,7 @@ export default function AdminOrders() {
               <DialogHeader>
                 <DialogTitle style={{ color: '#4880FF' }}>Detail Pesanan</DialogTitle>
               </DialogHeader>
-              
+
               <div className="space-y-4 py-4">
                 <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
                   <p className="text-sm text-gray-600 mb-1">ID Pesanan</p>
@@ -817,8 +826,8 @@ export default function AdminOrders() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Status</p>
-                    <Badge 
-                      style={{ 
+                    <Badge
+                      style={{
                         backgroundColor: getStatusConfig(selectedOrder.status).bgColor,
                         color: getStatusConfig(selectedOrder.status).textColor
                       }}
@@ -870,13 +879,13 @@ export default function AdminOrders() {
                   Bukti Pembayaran - {selectedOrder.order_number}
                 </DialogTitle>
               </DialogHeader>
-              
+
               <div className="py-4">
                 {paymentProofImage ? (
                   <div className="space-y-4">
                     <div className="rounded-lg overflow-hidden border" style={{ borderColor: '#E5E7EB' }}>
-                      <img 
-                        src={paymentProofImage} 
+                      <img
+                        src={paymentProofImage}
                         alt="Bukti Pembayaran"
                         className="w-full h-auto max-h-[500px] object-contain bg-gray-50"
                       />
@@ -940,7 +949,7 @@ export default function AdminOrders() {
               <DialogHeader>
                 <DialogTitle style={{ color: '#4880FF' }}>Update Status Pesanan</DialogTitle>
               </DialogHeader>
-              
+
               <div className="space-y-4 py-4">
                 <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
                   <p className="text-sm text-gray-600 mb-1">ID Pesanan</p>
@@ -1006,7 +1015,7 @@ export default function AdminOrders() {
           <DialogHeader>
             <DialogTitle style={{ color: '#10B981' }}>Status Berhasil Diupdate</DialogTitle>
           </DialogHeader>
-          
+
           <div className="py-6">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#D1FAE5' }}>

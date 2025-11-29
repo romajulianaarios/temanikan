@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Bell, AlertTriangle, Info, CheckCircle, ArrowLeft } from '../icons';
+import { Bell, AlertTriangle, Info, CheckCircle, ArrowLeft, Package, User } from '../icons';
 import { Button } from '../ui/button';
 import { Link } from '../Router';
+import { notificationAPI } from '../../services/api';
 
 interface Notification {
   id: number;
@@ -13,93 +14,54 @@ interface Notification {
   time: string;
   type: 'alert' | 'warning' | 'info' | 'success';
   read: boolean;
+  created_at: string;
 }
 
 export default function AllNotifications() {
-  const [notifications] = useState<Notification[]>([
-    {
-      id: 1,
-      title: 'Pengguna baru terdaftar',
-      message: 'Ahmad Wijaya telah mendaftar sebagai member premium.',
-      time: '5 menit yang lalu',
-      type: 'info',
-      read: false
-    },
-    {
-      id: 2,
-      title: 'Robot error pada pengguna',
-      message: 'Robot ID #1234 mengalami error pada akuarium milik Budi Santoso.',
-      time: '1 jam yang lalu',
-      type: 'alert',
-      read: false
-    },
-    {
-      id: 3,
-      title: 'Laporan penyakit meningkat',
-      message: 'Terjadi peningkatan kasus white spot disease sebesar 15% minggu ini.',
-      time: '2 jam yang lalu',
-      type: 'warning',
-      read: false
-    },
-    {
-      id: 4,
-      title: 'Pemeliharaan sistem selesai',
-      message: 'Pemeliharaan rutin server telah selesai. Semua sistem berjalan normal.',
-      time: '3 jam yang lalu',
-      type: 'success',
-      read: true
-    },
-    {
-      id: 5,
-      title: 'Permintaan bantuan dari pengguna',
-      message: 'Siti Nurhaliza meminta bantuan teknis melalui forum.',
-      time: '5 jam yang lalu',
-      type: 'info',
-      read: true
-    },
-    {
-      id: 6,
-      title: 'Update konten Fishpedia',
-      message: 'Konten baru untuk 5 spesies ikan telah ditambahkan ke database.',
-      time: '1 hari yang lalu',
-      type: 'success',
-      read: true
-    },
-    {
-      id: 7,
-      title: 'Aktivitas mencurigakan',
-      message: 'Terdeteksi multiple login attempts dari IP yang sama pada akun admin.',
-      time: '1 hari yang lalu',
-      type: 'alert',
-      read: true
-    },
-    {
-      id: 8,
-      title: 'Kapasitas server meningkat',
-      message: 'Penggunaan server mencapai 85%. Pertimbangkan untuk upgrade kapasitas.',
-      time: '2 hari yang lalu',
-      type: 'warning',
-      read: true
-    },
-    {
-      id: 9,
-      title: 'Backup data berhasil',
-      message: 'Backup database otomatis telah selesai tanpa error.',
-      time: '2 hari yang lalu',
-      type: 'success',
-      read: true
-    },
-    {
-      id: 10,
-      title: '100 pengguna aktif',
-      message: 'Sistem mencapai milestone 100 pengguna aktif harian.',
-      time: '3 hari yang lalu',
-      type: 'success',
-      read: true
-    }
-  ]);
-
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('semua');
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await notificationAPI.getNotifications();
+      if (response && response.notifications) {
+        // Transform API data to match component interface
+        const formattedNotifications = response.notifications.map((n: any) => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          time: new Date(n.created_at).toLocaleString('id-ID', {
+            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+          }),
+          type: n.type,
+          read: n.is_read,
+          created_at: n.created_at
+        }));
+        setNotifications(formattedNotifications);
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //   const markAsRead = async (id: number) => {
+  //     try {
+  //       await notificationAPI.markAsRead(id);
+  //       setNotifications(prev =>
+  //         prev.map(n => n.id === id ? { ...n, read: true } : n)
+  //       );
+  //     } catch (error) {
+  //       console.error('Failed to mark as read:', error);
+  //     }
+  //   };
 
   const getFilteredNotifications = () => {
     switch (activeTab) {
@@ -112,7 +74,11 @@ export default function AllNotifications() {
     }
   };
 
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type: string, title: string) => {
+    // Special icons based on title/context
+    if (title.toLowerCase().includes('pesanan')) return <Package className="w-5 h-5 text-blue-500" />;
+    if (title.toLowerCase().includes('pengguna') || title.toLowerCase().includes('user')) return <User className="w-5 h-5 text-green-500" />;
+
     switch (type) {
       case 'alert':
         return <AlertTriangle className="w-5 h-5 text-red-500" />;
@@ -181,57 +147,62 @@ export default function AllNotifications() {
 
           <TabsContent value={activeTab} className="p-0 m-0">
             <div className="divide-y" style={{ borderColor: '#CBDCEB' }}>
-              {getFilteredNotifications().map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-6 hover:bg-gray-50 transition cursor-pointer ${
-                    !notification.read ? 'bg-blue-50' : ''
-                  }`}
-                >
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0 mt-1">
-                      {getNotificationIcon(notification.type)}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4 mb-2">
-                        <div className="flex items-center gap-2">
-                          <h4 style={{ color: '#133E87' }}>
-                            {notification.title}
-                          </h4>
-                          {!notification.read && (
-                            <div 
-                              className="w-2 h-2 rounded-full" 
-                              style={{ backgroundColor: '#608BC1' }}
-                            />
-                          )}
-                        </div>
-                        <Badge className={getNotificationBadgeColor(notification.type)}>
-                          {notification.type === 'alert' ? 'Penting' :
-                           notification.type === 'warning' ? 'Peringatan' :
-                           notification.type === 'success' ? 'Berhasil' : 'Info'}
-                        </Badge>
-                      </div>
-                      
-                      <p className="text-sm text-gray-700 mb-2">
-                        {notification.message}
-                      </p>
-                      
-                      <p className="text-xs text-gray-500">
-                        {notification.time}
-                      </p>
-                    </div>
-                  </div>
+              {loading ? (
+                <div className="p-12 text-center">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <p className="mt-2 text-gray-500">Memuat notifikasi...</p>
                 </div>
-              ))}
-
-              {getFilteredNotifications().length === 0 && (
+              ) : getFilteredNotifications().length === 0 ? (
                 <div className="p-12 text-center">
                   <Bell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className="text-gray-500">
                     Tidak ada notifikasi
                   </p>
                 </div>
+              ) : (
+                getFilteredNotifications().map((notification) => (
+                  <div
+                    key={notification.id}
+                    onClick={() => window.location.href = `/admin/notifications/${notification.id}`}
+                    className={`p-6 hover:bg-gray-50 transition cursor-pointer ${!notification.read ? 'bg-blue-50' : ''
+                      }`}
+                  >
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 mt-1">
+                        {getNotificationIcon(notification.type, notification.title)}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-4 mb-2">
+                          <div className="flex items-center gap-2">
+                            <h4 style={{ color: '#133E87' }}>
+                              {notification.title}
+                            </h4>
+                            {!notification.read && (
+                              <div
+                                className="w-2 h-2 rounded-full"
+                                style={{ backgroundColor: '#608BC1' }}
+                              />
+                            )}
+                          </div>
+                          <Badge className={getNotificationBadgeColor(notification.type)}>
+                            {notification.type === 'alert' ? 'Penting' :
+                              notification.type === 'warning' ? 'Peringatan' :
+                                notification.type === 'success' ? 'Berhasil' : 'Info'}
+                          </Badge>
+                        </div>
+
+                        <p className="text-sm text-gray-700 mb-2">
+                          {notification.message}
+                        </p>
+
+                        <p className="text-xs text-gray-500">
+                          {notification.time}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </TabsContent>

@@ -1,3 +1,18 @@
+<<<<<<< HEAD
+import requests
+import json
+
+url = "http://localhost:5000/api/auth/login"
+headers = {"Content-Type": "application/json"}
+data = {}
+
+try:
+    response = requests.post(url, headers=headers, json=data)
+    print(f"Status Code: {response.status_code}")
+    print(f"Response: {response.text}")
+except Exception as e:
+    print(f"Error: {e}")
+=======
 """
 Test login untuk member user
 """
@@ -60,3 +75,4 @@ def test_login():
 if __name__ == '__main__':
     test_login()
 
+>>>>>>> d30aee01825ee235a8fb7c6fde3229ea629c2ebd

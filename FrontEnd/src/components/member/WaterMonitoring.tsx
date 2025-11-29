@@ -21,7 +21,7 @@ const formatDate = (date: Date, formatStr: string = 'dd MMM yyyy') => {
   const day = date.getDate();
   const month = months[date.getMonth()];
   const year = date.getFullYear();
-  
+
   if (formatStr === 'dd MMM yyyy') {
     return `${day} ${month} ${year}`;
   } else if (formatStr === 'PPP') {
@@ -198,11 +198,11 @@ export default function WaterMonitoring() {
 
   const handleExportData = () => {
     // In production, this would generate and download actual CSV/Excel file
-    alert(`Exporting data for ${timeRange === 'custom' && dateRange.from && dateRange.to 
+    alert(`Exporting data for ${timeRange === 'custom' && dateRange.from && dateRange.to
       ? `${formatDate(dateRange.from, 'dd MMM yyyy')} - ${formatDate(dateRange.to, 'dd MMM yyyy')}`
-      : timeRange === '24h' ? '24 Jam Terakhir' 
-      : timeRange === '7d' ? '7 Hari Terakhir' 
-      : '30 Hari Terakhir'}`);
+      : timeRange === '24h' ? '24 Jam Terakhir'
+        : timeRange === '7d' ? '7 Hari Terakhir'
+          : '30 Hari Terakhir'}`);
   };
 
   return (
@@ -266,9 +266,9 @@ export default function WaterMonitoring() {
                       {!tempFrom ? 'Pilih tanggal mulai' : 'Pilih tanggal akhir'}
                     </div>
                     <Calendar
-                      mode="single"
-                      selected={tempFrom || dateRange.to}
-                      onSelect={(date) => {
+                      mode="range"
+                      selected={tempFrom ? { from: tempFrom, to: undefined } : dateRange}
+                      onSelect={(date: any) => {
                         if (!tempFrom) {
                           setTempFrom(date);
                         } else {
@@ -281,8 +281,7 @@ export default function WaterMonitoring() {
                           }
                         }
                       }}
-                      disabled={(date) => tempFrom ? date < tempFrom : false}
-                      locale={id}
+                      disabled={(date) => false}
                       className="rounded-md border-0"
                     />
                     {tempFrom && (
@@ -311,7 +310,7 @@ export default function WaterMonitoring() {
             </div>
           )}
 
-          <Button 
+          <Button
             className="text-white hover:shadow-lg transition-all"
             style={{ backgroundColor: '#4880FF' }}
             onClick={handleExportData}
@@ -325,7 +324,7 @@ export default function WaterMonitoring() {
       {/* pH Chart */}
       <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
         <div className="flex items-center gap-3 mb-6">
-          <div 
+          <div
             className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{ backgroundColor: 'rgba(130, 128, 255, 0.1)' }}
           >
@@ -337,28 +336,28 @@ export default function WaterMonitoring() {
           </div>
         </div>
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart 
+          <AreaChart
             data={currentData.ph}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
             <defs>
               <linearGradient id="gradientPh" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8280FF" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#8280FF" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#8280FF" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#8280FF" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis 
-              dataKey="time" 
+            <XAxis
+              dataKey="time"
               stroke="#6B7280"
               style={{ fontSize: '12px' }}
             />
-            <YAxis 
-              stroke="#6B7280" 
+            <YAxis
+              stroke="#6B7280"
               domain={[6, 8]}
               style={{ fontSize: '12px' }}
             />
-            <Tooltip 
+            <Tooltip
               cursor={{ stroke: '#8280FF', strokeWidth: 2 }}
               contentStyle={{
                 backgroundColor: 'white',
@@ -367,21 +366,21 @@ export default function WaterMonitoring() {
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}
             />
-            <Area 
-              type="monotone" 
-              dataKey="value" 
-              stroke="#8280FF" 
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke="#8280FF"
               strokeWidth={3}
               fill="url(#gradientPh)"
               name="pH"
-              dot={{ 
-                fill: '#8280FF', 
-                strokeWidth: 2, 
+              dot={{
+                fill: '#8280FF',
+                strokeWidth: 2,
                 r: 5,
                 stroke: 'white'
               }}
-              activeDot={{ 
-                r: 8, 
+              activeDot={{
+                r: 8,
                 fill: '#8280FF',
                 stroke: 'white',
                 strokeWidth: 2
@@ -405,7 +404,7 @@ export default function WaterMonitoring() {
       {/* Temperature Chart */}
       <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
         <div className="flex items-center gap-3 mb-6">
-          <div 
+          <div
             className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{ backgroundColor: 'rgba(254, 197, 61, 0.1)' }}
           >
@@ -417,28 +416,28 @@ export default function WaterMonitoring() {
           </div>
         </div>
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart 
+          <AreaChart
             data={currentData.temp}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
             <defs>
               <linearGradient id="gradientTemp" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#FEC53D" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#FEC53D" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#FEC53D" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#FEC53D" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis 
-              dataKey="time" 
+            <XAxis
+              dataKey="time"
               stroke="#6B7280"
               style={{ fontSize: '12px' }}
             />
-            <YAxis 
-              stroke="#6B7280" 
+            <YAxis
+              stroke="#6B7280"
               domain={[24, 28]}
               style={{ fontSize: '12px' }}
             />
-            <Tooltip 
+            <Tooltip
               cursor={{ stroke: '#FEC53D', strokeWidth: 2 }}
               contentStyle={{
                 backgroundColor: 'white',
@@ -447,21 +446,21 @@ export default function WaterMonitoring() {
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}
             />
-            <Area 
-              type="monotone" 
-              dataKey="value" 
-              stroke="#FEC53D" 
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke="#FEC53D"
               strokeWidth={3}
               fill="url(#gradientTemp)"
               name="Suhu (°C)"
-              dot={{ 
-                fill: '#FEC53D', 
-                strokeWidth: 2, 
+              dot={{
+                fill: '#FEC53D',
+                strokeWidth: 2,
                 r: 5,
                 stroke: 'white'
               }}
-              activeDot={{ 
-                r: 8, 
+              activeDot={{
+                r: 8,
                 fill: '#FEC53D',
                 stroke: 'white',
                 strokeWidth: 2
@@ -485,7 +484,7 @@ export default function WaterMonitoring() {
       {/* Turbidity Chart */}
       <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
         <div className="flex items-center gap-3 mb-6">
-          <div 
+          <div
             className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{ backgroundColor: 'rgba(74, 217, 145, 0.1)' }}
           >
@@ -497,28 +496,28 @@ export default function WaterMonitoring() {
           </div>
         </div>
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart 
+          <AreaChart
             data={currentData.turbidity}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
             <defs>
               <linearGradient id="gradientTurbidity" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#4AD991" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#4AD991" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#4AD991" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#4AD991" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis 
-              dataKey="time" 
+            <XAxis
+              dataKey="time"
               stroke="#6B7280"
               style={{ fontSize: '12px' }}
             />
-            <YAxis 
-              stroke="#6B7280" 
+            <YAxis
+              stroke="#6B7280"
               domain={[0, 5]}
               style={{ fontSize: '12px' }}
             />
-            <Tooltip 
+            <Tooltip
               cursor={{ stroke: '#4AD991', strokeWidth: 2 }}
               contentStyle={{
                 backgroundColor: 'white',
@@ -527,21 +526,21 @@ export default function WaterMonitoring() {
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}
             />
-            <Area 
-              type="monotone" 
-              dataKey="value" 
-              stroke="#4AD991" 
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke="#4AD991"
               strokeWidth={3}
               fill="url(#gradientTurbidity)"
               name="Kekeruhan (NTU)"
-              dot={{ 
-                fill: '#4AD991', 
-                strokeWidth: 2, 
+              dot={{
+                fill: '#4AD991',
+                strokeWidth: 2,
                 r: 5,
                 stroke: 'white'
               }}
-              activeDot={{ 
-                r: 8, 
+              activeDot={{
+                r: 8,
                 fill: '#4AD991',
                 stroke: 'white',
                 strokeWidth: 2

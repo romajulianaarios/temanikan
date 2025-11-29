@@ -26,7 +26,7 @@ export default function MemberOverview() {
   const [showDiseaseModal, setShowDiseaseModal] = useState(false);
   const [diseaseData, setDiseaseData] = useState({
     fishType: 'Ikan Koi',
-    disease: 'White Spot',
+    disease: 'Parasitic Diseases',
     confidence: 85,
     date: '4 Nov 2025',
     time: '14:30',
@@ -36,6 +36,8 @@ export default function MemberOverview() {
     statusColor: '#CE3939',
     statusBg: 'rgba(206, 57, 57, 0.1)'
   });
+
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   // Fetch initial data from backend
   useEffect(() => {
@@ -59,6 +61,21 @@ export default function MemberOverview() {
           setRobotStatus(robotResponse.data.status);
           setRobotBattery(robotResponse.data.battery);
         }
+
+        // Fetch recent notifications
+        const notifResponse = await deviceAPI.getDashboardNotificationsRecent(numericDeviceId);
+        if (notifResponse.success && notifResponse.data) {
+          const formattedNotifs = notifResponse.data.map((n: any) => ({
+            id: n.id,
+            type: n.type || 'info',
+            message: n.message,
+            time: new Date(n.created_at).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+            iconColor: n.type === 'warning' ? '#CE3939' : n.type === 'success' ? '#4AD991' : '#8280FF',
+            icon: n.type === 'warning' ? AlertTriangle : n.type === 'success' ? CheckCircle : Clock
+          }));
+          setNotifications(formattedNotifs);
+        }
+
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       }
@@ -140,32 +157,7 @@ export default function MemberOverview() {
     },
   ];
 
-  const notifications = [
-    {
-      id: 1,
-      type: 'info',
-      message: 'Pembersihan otomatis dijadwalkan pada 20:00',
-      time: '1 jam yang lalu',
-      iconColor: '#8280FF',
-      icon: Clock
-    },
-    {
-      id: 2,
-      type: 'success',
-      message: 'Kualitas air dalam kondisi optimal',
-      time: '2 jam yang lalu',
-      iconColor: '#4AD991',
-      icon: CheckCircle
-    },
-    {
-      id: 3,
-      type: 'warning',
-      message: 'Terdeteksi gejala awal penyakit pada Ikan Koi',
-      time: '3 jam yang lalu',
-      iconColor: '#CE3939',
-      icon: AlertTriangle
-    },
-  ];
+
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -366,7 +358,7 @@ export default function MemberOverview() {
                 backgroundColor: 'rgba(206, 57, 57, 0.1)',
                 fontWeight: 600
               }}>
-                White Spot
+                Parasitic Diseases
               </span>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
