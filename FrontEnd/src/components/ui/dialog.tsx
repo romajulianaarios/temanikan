@@ -96,6 +96,7 @@ const DialogOverlay = React.forwardRef<
       pointerEvents: 'auto',
       background: 'rgba(0, 0, 0, 0.5)',
       backdropFilter: 'blur(8px)',
+      zIndex: 999,
       ...props.style
     }}
     {...props}
@@ -167,6 +168,7 @@ const DialogContent = React.forwardRef<
           borderRadius: '24px',
           border: '2px solid rgba(255, 255, 255, 0.5)',
           boxShadow: '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
+          zIndex: 1000,
           ...props.style
         }}
         {...props}

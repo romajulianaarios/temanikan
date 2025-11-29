@@ -305,6 +305,16 @@ export const robotAPI = {
 
 // Disease Detection API
 export const diseaseAPI = {
+  getAllDetections: async (limit: number = 50, deviceId?: number) => {
+    const response = await api.get('/disease-detections', {
+      params: {
+        limit,
+        device_id: deviceId
+      }
+    });
+    return response.data;
+  },
+
   getDetections: async (deviceId: number, limit: number = 50) => {
     const response = await api.get(`/devices/${deviceId}/disease-detections`, {
       params: { limit }

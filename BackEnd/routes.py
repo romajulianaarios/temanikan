@@ -11,6 +11,7 @@ import string
 from werkzeug.utils import secure_filename
 import os
 import base64
+import json
 
 def admin_required(fn):
     """
@@ -100,13 +101,19 @@ def register_routes(app):
     """Register all API routes"""
     
     UPLOAD_FOLDER = 'uploads/payment_proofs'
+    DISEASE_UPLOAD_FOLDER = 'uploads/disease_detections'
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+    IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-    # Make sure upload folder exists
+    # Make sure upload folders exist
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(DISEASE_UPLOAD_FOLDER, exist_ok=True)
 
     def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+    def allowed_image_file(filename):
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in IMAGE_EXTENSIONS
 
 
     # Authentication Routes
@@ -702,6 +709,45 @@ def register_routes(app):
         }), 200
     
     # Disease Detection Routes
+    @app.route('/api/disease-detections', methods=['GET'])
+    @jwt_required()
+    def get_all_disease_detections():
+        """Return recent detections across all user's devices."""
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({'success': False, 'message': 'User not found'}), 404
+
+        limit = request.args.get('limit', default=50, type=int)
+        device_filter = request.args.get('device_id', type=int)
+
+        query = DiseaseDetection.query.join(Device, DiseaseDetection.device_id == Device.id)
+
+        if user.role != 'admin':
+            query = query.filter(Device.user_id == user_id)
+
+        if device_filter:
+            query = query.filter(DiseaseDetection.device_id == device_filter)
+
+        detections = query.order_by(DiseaseDetection.detected_at.desc()).limit(limit).all()
+
+        payload = []
+        for detection in detections:
+            data = detection.to_dict()
+            if detection.device:
+                data['device'] = {
+                    'id': detection.device.id,
+                    'name': detection.device.name
+                }
+            payload.append(data)
+
+        return jsonify({
+            'success': True,
+            'detections': payload,
+            'count': len(payload)
+        }), 200
+
     @app.route('/api/devices/<int:device_id>/disease-detections', methods=['GET'])
     @jwt_required()
     def get_disease_detections(device_id):
@@ -720,9 +766,152 @@ def register_routes(app):
             .order_by(DiseaseDetection.detected_at.desc()).limit(limit).all()
         
         return jsonify({
+            'success': True,
             'detections': [d.to_dict() for d in detections],
             'count': len(detections)
         }), 200
+
+    @app.route('/api/devices/<int:device_id>/disease-detections', methods=['POST'])
+    @jwt_required()
+    def create_disease_detection(device_id):
+        user_id = get_jwt_identity()
+        device = Device.query.get(device_id)
+
+        if not device:
+            return jsonify({'success': False, 'message': 'Device not found'}), 404
+
+        user = User.query.get(user_id)
+        if device.user_id != user_id and user.role != 'admin':
+            return jsonify({'success': False, 'message': 'Unauthorized access'}), 403
+
+        if 'image' not in request.files:
+            return jsonify({'success': False, 'message': 'Image is required'}), 400
+
+        image = request.files['image']
+
+        if image.filename == '':
+            return jsonify({'success': False, 'message': 'Invalid image filename'}), 400
+
+        if not allowed_image_file(image.filename):
+            return jsonify({'success': False, 'message': 'Unsupported image format'}), 400
+
+        filename = secure_filename(image.filename)
+        unique_filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}_{filename}"
+        filepath = os.path.abspath(os.path.join(DISEASE_UPLOAD_FOLDER, unique_filename))
+
+        try:
+            image.save(filepath)
+        except Exception as e:
+            print(f"❌ Error saving detection image: {e}")
+            return jsonify({'success': False, 'message': 'Failed to save image'}), 500
+
+        def parse_float(value, default=0.0):
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return default
+
+        def parse_detected_at(raw_value):
+            if not raw_value:
+                return None
+            try:
+                return datetime.fromisoformat(raw_value)
+            except ValueError:
+                return None
+
+        def prepare_symptoms(raw_value):
+            if not raw_value:
+                return None
+            cleaned = raw_value.strip()
+            if not cleaned:
+                return None
+            try:
+                parsed = json.loads(cleaned)
+                if isinstance(parsed, list):
+                    return json.dumps(parsed)
+            except json.JSONDecodeError:
+                pass
+            # fallback: split by comma
+            parts = [part.strip() for part in cleaned.split(',') if part.strip()]
+            return json.dumps(parts if parts else [cleaned])
+
+        metadata = {}
+        metadata_payload = request.form.get('metadata')
+        if metadata_payload:
+            try:
+                decoded = json.loads(metadata_payload)
+                if isinstance(decoded, dict):
+                    metadata.update(decoded)
+            except json.JSONDecodeError:
+                pass
+
+        metadata_fields = ['fish_type', 'location', 'status_label', 'status_color', 'status_bg', 'source']
+        for field in metadata_fields:
+            value = request.form.get(field)
+            if value:
+                metadata[field] = value
+
+        notes_value = request.form.get('notes')
+        if notes_value:
+            metadata.setdefault('notes', notes_value)
+
+        stored_notes = json.dumps(metadata) if metadata else notes_value
+
+        detection = DiseaseDetection(
+            device_id=device_id,
+            disease_name=request.form.get('disease_name', 'Unknown'),
+            confidence=parse_float(request.form.get('confidence'), 0.0),
+            severity=request.form.get('severity', 'low'),
+            image_url=filepath,
+            symptoms=prepare_symptoms(request.form.get('symptoms')),
+            recommended_treatment=request.form.get('recommended_treatment'),
+            status=request.form.get('status', 'detected'),
+            notes=stored_notes,
+            detected_at=parse_detected_at(request.form.get('detected_at')) or datetime.utcnow()
+        )
+
+        try:
+            db.session.add(detection)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error saving detection record: {e}")
+            return jsonify({'success': False, 'message': 'Failed to save detection data'}), 500
+
+        detection_data = detection.to_dict()
+
+        return jsonify({
+            'success': True,
+            'message': 'Detection saved successfully',
+            'detection': detection_data
+        }), 201
+
+    @app.route('/api/disease-detections/<int:detection_id>/image', methods=['GET'])
+    @jwt_required()
+    def get_disease_detection_image(detection_id):
+        user_id = get_jwt_identity()
+        detection = DiseaseDetection.query.get(detection_id)
+
+        if not detection:
+            return jsonify({'error': 'Detection not found'}), 404
+
+        device = Device.query.get(detection.device_id)
+        user = User.query.get(user_id)
+
+        if device.user_id != user_id and user.role != 'admin':
+            return jsonify({'error': 'Unauthorized access'}), 403
+
+        if not detection.image_url or not os.path.exists(detection.image_url):
+            return jsonify({'error': 'Image not found'}), 404
+
+        try:
+            mime_type = 'image/jpeg'
+            if detection.image_url.lower().endswith('.png'):
+                mime_type = 'image/png'
+            return send_file(detection.image_url, mimetype=mime_type)
+        except Exception as e:
+            print(f"❌ Error serving detection image: {e}")
+            return jsonify({'error': 'Failed to load image'}), 500
     
     @app.route('/api/disease-detections/<int:detection_id>', methods=['PUT'])
     @jwt_required()
