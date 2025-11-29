@@ -57,9 +57,11 @@ export const Routes = ({ children, basePath = '' }: { children: React.ReactNode;
   let currentPath = context.currentPath;
   let isInBasePath = true;
   
+  // Normalize basePath (always define it, even if empty)
+  const normalizedBase = basePath ? (basePath.endsWith('/') ? basePath.slice(0, -1) : basePath) : '';
+  
   if (basePath) {
     // Normalize paths
-    const normalizedBase = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
     const normalizedCurrent = currentPath.endsWith('/') && currentPath.length > 1 ? currentPath.slice(0, -1) : currentPath;
     
     if (normalizedCurrent === normalizedBase) {
@@ -96,7 +98,11 @@ export const Routes = ({ children, basePath = '' }: { children: React.ReactNode;
         matches = false; // Wildcard handled separately
       } else if (path === '') {
         // Empty path means root of basePath
-        matches = normalizedCurrentPath === normalizedBase || normalizedCurrentPath === normalizedBase + '/';
+        if (basePath) {
+          matches = normalizedCurrentPath === normalizedBase || normalizedCurrentPath === normalizedBase + '/';
+        } else {
+          matches = normalizedCurrentPath === '/' || normalizedCurrentPath === '';
+        }
       } else {
         // Regular path matching
         matches = normalizedFullPath === normalizedCurrentPath ||

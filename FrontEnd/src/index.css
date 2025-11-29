@@ -4097,3 +4097,25 @@ header.sticky button.navbar-register-btn {
     transform: scale(1);
   }
 }
+
+/* Global Bubble Button Style untuk Dashboard Admin */
+.bubble-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer;
+  will-change: transform, background-color, box-shadow;
+  font-family: 'Nunito Sans', sans-serif !important;
+}
+
+.bubble-button:hover {
+  transform: translateY(-2px) scale(1.05) !important;
+}
+
+.bubble-button:active {
+  transform: translateY(0) scale(1.02) !important;
+}
+
+/* Bubble Card Style */
+.bubble-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  will-change: transform, box-shadow;
+}

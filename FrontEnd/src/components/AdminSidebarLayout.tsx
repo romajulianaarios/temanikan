@@ -106,21 +106,40 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
   };
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#F5F6FA' }}>
+    <div className="min-h-screen flex relative overflow-hidden" style={{ 
+      background: 'linear-gradient(to bottom, #87CEEB 0%, #4A90E2 15%, #357ABD 30%, #2E5C8A 50%, #1E3A5F 70%, #0F2027 100%)',
+      position: 'relative'
+    }}>
+      {/* Background Bubbles */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#0F5BE5] rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#FFD6D6] rounded-full blur-3xl"></div>
+      </div>
+      
       {/* Sidebar - Desktop */}
       <aside 
         className={`hidden lg:flex flex-col fixed left-0 top-0 h-full transition-all duration-300 z-40 shadow-lg`}
         style={{ 
           width: sidebarCollapsed ? '80px' : '280px',
-          backgroundColor: '#FFFFFF'
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRight: '1px solid rgba(255, 255, 255, 0.3)'
         }}
       >
         {/* Sidebar Header */}
-        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: '#E5E7EB' }}>
+        <div className="p-4 border-b flex items-center justify-between" style={{ 
+          borderColor: 'rgba(255, 255, 255, 0.3)',
+          backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          backdropFilter: 'blur(10px)'
+        }}>
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2">
               <Fish className="w-7 h-7" style={{ color: '#4880FF' }} />
-              <span className="text-lg" style={{ color: '#1F2937', fontWeight: 700 }}>temanikan</span>
+              <span className="text-lg font-bold" style={{ 
+                color: '#133E87',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 700
+              }}>temanikan</span>
             </div>
           )}
           {sidebarCollapsed && (
@@ -128,11 +147,24 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
           )}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors ml-auto"
+            className="bubble-button p-1.5 rounded-full transition-all duration-300"
+            style={{
+              backgroundColor: 'rgba(72, 128, 255, 0.2)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(72, 128, 255, 0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.2)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
           >
             <ChevronLeft 
               className={`w-5 h-5 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`}
-              style={{ color: '#6B7280' }}
+              style={{ color: '#4880FF' }}
             />
           </button>
         </div>
@@ -143,38 +175,100 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                isActivePath(item.path) ? 'shadow-sm' : ''
-              }`}
+              className="bubble-button flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
               style={{ 
-                backgroundColor: isActivePath(item.path) ? '#4880FF' : 'transparent',
-                color: isActivePath(item.path) ? '#FFFFFF' : '#6B7280',
-                fontWeight: isActivePath(item.path) ? 600 : 500,
+                backgroundColor: isActivePath(item.path) 
+                  ? '#4880FF' 
+                  : '#FFFFFF',
+                border: isActivePath(item.path) 
+                  ? '2px solid rgba(72, 128, 255, 0.5)' 
+                  : '2px solid rgba(72, 128, 255, 0.15)',
+                color: isActivePath(item.path) ? '#FFFFFF' : '#133E87',
+                fontWeight: isActivePath(item.path) ? 700 : 600,
+                fontFamily: 'Nunito Sans, sans-serif',
+                boxShadow: isActivePath(item.path) 
+                  ? '0 6px 25px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset' 
+                  : '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
               }}
               title={sidebarCollapsed ? item.label : ''}
+              onMouseEnter={(e) => {
+                if (!isActivePath(item.path)) {
+                  e.currentTarget.style.backgroundColor = '#F0F5FF';
+                  e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
+                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActivePath(item.path)) {
+                  e.currentTarget.style.backgroundColor = '#FFFFFF';
+                  e.currentTarget.style.transform = 'translateX(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.15)';
+                }
+              }}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>{item.label}</span>}
+              {/* Bubble glow for active item */}
+              {isActivePath(item.path) && (
+                <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-30 pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%)',
+                    filter: 'blur(15px)'
+                  }}
+                ></div>
+              )}
+              <item.icon className="w-5 h-5 flex-shrink-0 relative z-10" />
+              {!sidebarCollapsed && <span className="relative z-10">{item.label}</span>}
             </Link>
           ))}
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t" style={{ borderColor: '#E5E7EB' }}>
+        <div className="p-4 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}>
           <Link
             to="/admin/settings"
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-              location.pathname === '/admin/settings' ? 'shadow-sm' : ''
-            }`}
+            className="bubble-button flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
             style={{ 
-              backgroundColor: location.pathname === '/admin/settings' ? '#4880FF' : 'transparent',
-              color: location.pathname === '/admin/settings' ? '#FFFFFF' : '#6B7280',
-              fontWeight: location.pathname === '/admin/settings' ? 600 : 500,
+              backgroundColor: location.pathname === '/admin/settings' ? '#4880FF' : '#FFFFFF',
+              border: location.pathname === '/admin/settings' 
+                ? '2px solid rgba(72, 128, 255, 0.5)' 
+                : '2px solid rgba(72, 128, 255, 0.15)',
+              color: location.pathname === '/admin/settings' ? '#FFFFFF' : '#133E87',
+              fontWeight: location.pathname === '/admin/settings' ? 700 : 600,
+              fontFamily: 'Nunito Sans, sans-serif',
+              boxShadow: location.pathname === '/admin/settings' 
+                ? '0 6px 25px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset' 
+                : '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
             }}
             title={sidebarCollapsed ? 'Pengaturan' : ''}
+            onMouseEnter={(e) => {
+              if (location.pathname !== '/admin/settings') {
+                e.currentTarget.style.backgroundColor = '#F0F5FF';
+                e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (location.pathname !== '/admin/settings') {
+                e.currentTarget.style.backgroundColor = '#FFFFFF';
+                e.currentTarget.style.transform = 'translateX(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.15)';
+              }
+            }}
           >
-            <Settings className="w-5 h-5 flex-shrink-0" />
-            {!sidebarCollapsed && <span>Pengaturan</span>}
+            {/* Bubble glow for active item */}
+            {location.pathname === '/admin/settings' && (
+              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-30 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%)',
+                  filter: 'blur(15px)'
+                }}
+              ></div>
+            )}
+            <Settings className="w-5 h-5 flex-shrink-0 relative z-10" />
+            {!sidebarCollapsed && <span className="relative z-10">Pengaturan</span>}
           </Link>
         </div>
       </aside>
@@ -192,19 +286,45 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
         className={`lg:hidden fixed left-0 top-0 h-full w-280px z-50 shadow-lg transform transition-transform ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
-        style={{ backgroundColor: '#FFFFFF', width: '280px' }}
+        style={{ 
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRight: '1px solid rgba(255, 255, 255, 0.3)',
+          width: '280px'
+        }}
       >
         {/* Mobile Sidebar Header */}
-        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: '#E5E7EB' }}>
+        <div className="p-4 border-b flex items-center justify-between" style={{ 
+          borderColor: 'rgba(255, 255, 255, 0.3)',
+          backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          backdropFilter: 'blur(10px)'
+        }}>
           <div className="flex items-center gap-2">
             <Fish className="w-7 h-7" style={{ color: '#4880FF' }} />
-            <span className="text-lg" style={{ color: '#1F2937', fontWeight: 700 }}>temanikan</span>
+            <span className="text-lg font-bold" style={{ 
+              color: '#133E87',
+              fontFamily: 'Nunito Sans, sans-serif',
+              fontWeight: 700
+            }}>temanikan</span>
           </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="bubble-button p-1.5 rounded-full transition-all duration-300"
+            style={{
+              backgroundColor: 'rgba(72, 128, 255, 0.2)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(72, 128, 255, 0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.2)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
           >
-            <X className="w-5 h-5" style={{ color: '#6B7280' }} />
+            <X className="w-5 h-5" style={{ color: '#4880FF' }} />
           </button>
         </div>
 
@@ -215,37 +335,101 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
               key={item.path}
               to={item.path}
               onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                isActivePath(item.path) ? 'shadow-sm' : ''
-              }`}
+              className="bubble-button flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
               style={{ 
-                backgroundColor: isActivePath(item.path) ? '#4880FF' : 'transparent',
-                color: isActivePath(item.path) ? '#FFFFFF' : '#6B7280',
-                fontWeight: isActivePath(item.path) ? 600 : 500,
+                backgroundColor: isActivePath(item.path) 
+                  ? '#4880FF' 
+                  : '#FFFFFF',
+                border: isActivePath(item.path) 
+                  ? '2px solid rgba(72, 128, 255, 0.5)' 
+                  : '2px solid rgba(72, 128, 255, 0.15)',
+                color: isActivePath(item.path) ? '#FFFFFF' : '#133E87',
+                fontWeight: isActivePath(item.path) ? 700 : 600,
+                fontFamily: 'Nunito Sans, sans-serif',
+                boxShadow: isActivePath(item.path) 
+                  ? '0 6px 25px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset' 
+                  : '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+              }}
+              onMouseEnter={(e) => {
+                if (!isActivePath(item.path)) {
+                  e.currentTarget.style.backgroundColor = '#F0F5FF';
+                  e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
+                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActivePath(item.path)) {
+                  e.currentTarget.style.backgroundColor = '#FFFFFF';
+                  e.currentTarget.style.transform = 'translateX(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.15)';
+                }
               }}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              <span>{item.label}</span>
+              {/* Bubble glow for active item */}
+              {isActivePath(item.path) && (
+                <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-30 pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%)',
+                    filter: 'blur(15px)'
+                  }}
+                ></div>
+              )}
+              <item.icon className="w-5 h-5 flex-shrink-0 relative z-10" />
+              <span className="relative z-10">{item.label}</span>
             </Link>
           ))}
         </nav>
 
         {/* Mobile Sidebar Footer */}
-        <div className="p-4 border-t" style={{ borderColor: '#E5E7EB' }}>
+        <div className="p-4 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}>
           <Link
             to="/admin/settings"
             onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-              location.pathname === '/admin/settings' ? 'shadow-sm' : ''
-            }`}
+            className="bubble-button flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
             style={{ 
-              backgroundColor: location.pathname === '/admin/settings' ? '#4880FF' : 'transparent',
-              color: location.pathname === '/admin/settings' ? '#FFFFFF' : '#6B7280',
-              fontWeight: location.pathname === '/admin/settings' ? 600 : 500,
+              backgroundColor: location.pathname === '/admin/settings' 
+                ? '#4880FF' 
+                : '#FFFFFF',
+              border: location.pathname === '/admin/settings' 
+                ? '2px solid rgba(72, 128, 255, 0.5)' 
+                : '2px solid rgba(72, 128, 255, 0.15)',
+              color: location.pathname === '/admin/settings' ? '#FFFFFF' : '#133E87',
+              fontWeight: location.pathname === '/admin/settings' ? 700 : 600,
+              fontFamily: 'Nunito Sans, sans-serif',
+              boxShadow: location.pathname === '/admin/settings' 
+                ? '0 6px 25px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset' 
+                : '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+            }}
+            onMouseEnter={(e) => {
+              if (location.pathname !== '/admin/settings') {
+                e.currentTarget.style.backgroundColor = '#F0F5FF';
+                e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (location.pathname !== '/admin/settings') {
+                e.currentTarget.style.backgroundColor = '#FFFFFF';
+                e.currentTarget.style.transform = 'translateX(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.15)';
+              }
             }}
           >
-            <Settings className="w-5 h-5 flex-shrink-0" />
-            <span>Pengaturan</span>
+            {/* Bubble glow for active item */}
+            {location.pathname === '/admin/settings' && (
+              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-30 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%)',
+                  filter: 'blur(15px)'
+                }}
+              ></div>
+            )}
+            <Settings className="w-5 h-5 flex-shrink-0 relative z-10" />
+            <span className="relative z-10">Pengaturan</span>
           </Link>
         </div>
       </aside>
@@ -257,48 +441,101 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
         }`}
       >
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 shadow-sm" style={{ backgroundColor: '#FFFFFF' }}>
+        <header className="sticky top-0 z-30" style={{ 
+          backgroundColor: 'rgba(255, 255, 255, 0.15)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 4px 30px rgba(72, 128, 255, 0.1)'
+        }}>
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               {/* Mobile Menu Button */}
               <button 
-                className="lg:hidden hover:bg-gray-100 p-2 rounded-lg transition-colors"
+                className="bubble-button lg:hidden p-2 rounded-full transition-all duration-300"
+                style={{
+                  backgroundColor: 'rgba(72, 128, 255, 0.2)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(72, 128, 255, 0.3)'
+                }}
                 onClick={() => setMobileMenuOpen(true)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.2)';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
               >
-                <Menu className="w-6 h-6" style={{ color: '#1F2937' }} />
+                <Menu className="w-6 h-6" style={{ color: '#4880FF' }} />
               </button>
 
               {/* Page Title */}
               <div className="hidden sm:block">
-                <h1 style={{ color: '#1F2937' }}>{title}</h1>
+                <h1 style={{ 
+                  color: '#133E87',
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  fontWeight: 700,
+                  fontSize: '1.5rem'
+                }}>{title}</h1>
               </div>
 
               {/* Right Side Actions */}
               <div className="flex items-center gap-3 ml-auto">
                 {/* Language Selector */}
                 <select 
-                  className="hidden md:block px-2.5 py-1.5 rounded-lg border text-xs"
-                  style={{ borderColor: '#E5E7EB', color: '#6B7280' }}
+                  className="bubble-button hidden md:block px-3 py-2 rounded-full text-sm font-semibold transition-all duration-300"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(72, 128, 255, 0.3)',
+                    color: '#133E87',
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    cursor: 'pointer'
+                  }}
                   defaultValue="id"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
                 >
                   <option value="id">ID</option>
                   <option value="en">EN</option>
                 </select>
 
                 {/* Notification Dropdown */}
-                <DropdownMenu open={notificationOpen} onOpenChange={setNotificationOpen}>
-                  <DropdownMenuTrigger asChild>
-                    <button className="relative hover:bg-gray-100 p-2 rounded-lg transition-colors">
-                      <Bell className="w-5 h-5" style={{ color: '#6B7280' }} />
+                <div className="relative">
+                  <DropdownMenu open={notificationOpen} onOpenChange={setNotificationOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <button className="bubble-button p-2 rounded-full transition-all duration-300"
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(72, 128, 255, 0.3)'
+                        }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
+                      <Bell className="w-5 h-5" style={{ color: '#4880FF' }} />
                       <span 
-                        className="absolute top-1 right-1 w-4 h-4 rounded-full text-xs flex items-center justify-center text-white"
+                        className="absolute top-1 right-1 w-4 h-4 rounded-full text-xs flex items-center justify-center text-white font-bold"
                         style={{ backgroundColor: '#EF4444', fontSize: '10px' }}
                       >
                         {unreadNotifications.length}
                       </span>
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-80" style={{ backgroundColor: 'white' }}>
+                  <DropdownMenuContent align="end" sideOffset={4} className="w-80" style={{ backgroundColor: 'white' }}>
                     <DropdownMenuLabel style={{ color: '#1F2937' }}>
                       Notifikasi Belum Dibaca
                     </DropdownMenuLabel>
@@ -337,27 +574,54 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
                         Lihat Semua Notifikasi
                       </span>
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
                 
                 {/* User Profile Dropdown Menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-2 hover:bg-gray-100 px-2.5 py-1.5 rounded-lg transition-colors">
+                <div className="relative">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="bubble-button flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300"
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(72, 128, 255, 0.3)'
+                        }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
                       <div 
                         className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: '#4880FF' }}
+                        style={{ 
+                          background: 'linear-gradient(135deg, #4880FF, #0F5BE5)',
+                          boxShadow: '0 2px 8px rgba(72, 128, 255, 0.4)'
+                        }}
                       >
                         <User className="w-4 h-4 text-white" />
                       </div>
                       <div className="hidden lg:flex flex-col items-start">
-                        <p className="text-xs" style={{ color: '#1F2937', fontWeight: 600 }}>{currentUser.name}</p>
-                        <p className="text-xs" style={{ color: '#6B7280', fontSize: '11px' }}>{currentUser.role}</p>
+                        <p className="text-xs font-semibold" style={{ 
+                          color: '#133E87',
+                          fontFamily: 'Nunito Sans, sans-serif',
+                          fontWeight: 700
+                        }}>{currentUser.name}</p>
+                        <p className="text-xs" style={{ 
+                          color: '#608BC1',
+                          fontSize: '11px',
+                          fontFamily: 'Nunito Sans, sans-serif'
+                        }}>{currentUser.role}</p>
                       </div>
-                      <ChevronDown className="w-4 h-4 hidden lg:block" style={{ color: '#6B7280' }} />
+                      <ChevronDown className="w-4 h-4 hidden lg:block" style={{ color: '#4880FF' }} />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuContent align="end" sideOffset={4} className="w-56">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm" style={{ color: '#1F2937' }}>{currentUser.name}</p>
@@ -400,14 +664,15 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
-                </DropdownMenu>
+                  </DropdownMenu>
+                </div>
               </div>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 relative" style={{ zIndex: 1 }}>
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

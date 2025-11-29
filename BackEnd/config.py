@@ -17,7 +17,7 @@ class Config:
     SQLALCHEMY_ECHO = False
     
     # Gemini AI Configuration
-    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyDSNzO6U0zgApDk3hD3aGpczdHev7RCIbg')
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyA_nyNIO60t4OUKkJLKgPnXw4EwoUcOfB8')
 
 class DevelopmentConfig(Config):
     """Development configuration"""

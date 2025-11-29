@@ -37,8 +37,14 @@ def create_app(config_name='development'):
     def missing_token_callback(error):
         return jsonify({'success': False, 'message': 'Authorization token missing'}), 401
     
-    from routes_ml import ml_bp
-    app.register_blueprint(ml_bp, url_prefix='/api')
+    # Try to load ML routes (optional - backend can run without ML features)
+    try:
+        from routes_ml import ml_bp
+        app.register_blueprint(ml_bp, url_prefix='/api')
+        print("ML routes loaded successfully")
+    except ImportError as e:
+        print(f"⚠️  ML routes not available: {e}")
+        print("Backend will run without ML features (login and other features will still work)")
     
     register_routes(app)
     

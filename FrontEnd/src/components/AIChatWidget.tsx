@@ -180,9 +180,33 @@ export default function AIChatWidget({ isOpen, onClose }: AIChatWidgetProps) {
     } catch (error: any) {
       console.error('Error sending message:', error);
       
+      // Get error message
+      let errorMessage = error.response?.data?.error || error.response?.data?.message || 'Gagal mengirim pesan. Silakan coba lagi.';
+      
       // Check if it's a token error
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Gagal mengirim pesan. Silakan coba lagi.';
       const isTokenError = errorMessage.includes('Token') || errorMessage.includes('token') || error.response?.status === 401 || error.response?.status === 422;
+      
+      // Check if it's an API key error (403)
+      const isAPIKeyError = error.response?.status === 403 || errorMessage.includes('API key') || errorMessage.includes('403') || errorMessage.includes('Forbidden');
+      
+      // Check if it's a quota error (429)
+      const isQuotaError = error.response?.status === 429 || errorMessage.includes('quota') || errorMessage.includes('Quota');
+      
+      // Format error message based on type
+      let formattedError = '';
+      if (isTokenError) {
+        formattedError = `⚠️ ${errorMessage}\n\nSilakan logout dan login kembali untuk memperbarui token Anda.`;
+      } else if (isAPIKeyError) {
+        formattedError = `⚠️ Layanan AI Chat sedang tidak tersedia.\n\nKemungkinan penyebab:\n• API key tidak valid atau expired\n• API key tidak memiliki akses ke Gemini API\n• Konfigurasi backend perlu diperbarui\n\nSilakan hubungi administrator untuk memperbaiki masalah ini.`;
+      } else if (isQuotaError) {
+        formattedError = `⚠️ Quota API telah habis.\n\nTerlalu banyak request ke layanan AI. Silakan tunggu beberapa saat dan coba lagi nanti.`;
+      } else {
+        // Remove technical error details for user-friendly message
+        if (errorMessage.includes('AI service error:')) {
+          errorMessage = errorMessage.replace('AI service error:', '').trim();
+        }
+        formattedError = `⚠️ ${errorMessage}\n\nSilakan coba lagi dalam beberapa saat. Jika masalah berlanjut, hubungi administrator.`;
+      }
       
       // Remove loading message and add error
       setMessages(prev => {
@@ -190,9 +214,7 @@ export default function AIChatWidget({ isOpen, onClose }: AIChatWidgetProps) {
         return [...filtered, {
           id: `error-${Date.now()}`,
           message: '',
-          response: isTokenError 
-            ? `⚠️ ${errorMessage}\n\nSilakan logout dan login kembali untuk memperbarui token Anda.`
-            : `❌ Error: ${errorMessage}`,
+          response: formattedError,
           has_image: false,
           created_at: new Date().toISOString(),
           isUser: false

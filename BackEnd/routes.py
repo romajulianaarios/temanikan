@@ -37,6 +37,103 @@ def admin_required(fn):
     return wrapper
 
 
+def generate_fallback_response(message: str, fish_species_list):
+    """
+    Generate fallback response from database when AI API is not available.
+    Provides helpful information based on fish species in database.
+    """
+    message_lower = message.lower()
+    
+    # Check if asking about specific fish
+    for fish in fish_species_list:
+        if fish.name.lower() in message_lower or (fish.scientific_name and fish.scientific_name.lower() in message_lower):
+            response = f"Informasi tentang {fish.name}"
+            if fish.scientific_name:
+                response += f" ({fish.scientific_name})"
+            response += ":\n\n"
+            
+            if fish.description:
+                response += fish.description + "\n\n"
+            
+            if fish.water_temp:
+                response += f"Suhu air yang disarankan: {fish.water_temp}\n"
+            if fish.ph_range:
+                response += f"Rentang pH: {fish.ph_range}\n"
+            if fish.size:
+                response += f"Ukuran: {fish.size}\n"
+            if fish.diet:
+                response += f"Diet: {fish.diet}\n"
+            
+            response += "\nCatatan: Layanan AI sedang tidak tersedia. Informasi ini berasal dari database Temanikan."
+            return response
+    
+    # Check for common questions
+    if any(word in message_lower for word in ['penyakit', 'sakit', 'symptoms', 'gejala']):
+        return """Informasi tentang Penyakit Ikan:
+
+Penyakit ikan hias umumnya disebabkan oleh kualitas air yang buruk, stres, atau infeksi bakteri dan parasit.
+
+Gejala umum penyakit ikan meliputi perubahan warna, bintik-bintik putih, sirip yang rusak, atau perilaku tidak normal seperti menggosok-gosokkan tubuh ke dinding akuarium.
+
+Untuk diagnosis yang lebih akurat, disarankan untuk memeriksa kualitas air terlebih dahulu. Parameter penting meliputi suhu, pH, amonia, nitrit, dan nitrat.
+
+Pengobatan penyakit ikan biasanya melibatkan karantina ikan yang sakit, perbaikan kualitas air, dan pemberian obat yang sesuai dengan jenis penyakit.
+
+Pencegahan adalah kunci. Pastikan kualitas air tetap baik, hindari overfeeding, dan lakukan pembersihan rutin akuarium.
+
+Catatan: Layanan AI sedang tidak tersedia. Untuk informasi lebih detail, silakan konsultasi dengan ahli akuarium atau dokter hewan."""
+    
+    elif any(word in message_lower for word in ['perawatan', 'cara', 'tips', 'bagaimana']):
+        return """Tips Perawatan Ikan Hias:
+
+Perawatan ikan hias yang baik dimulai dengan menjaga kualitas air. Lakukan penggantian air secara rutin, sekitar 20-30 persen setiap minggu.
+
+Penting untuk memantau parameter air seperti suhu, pH, amonia, nitrit, dan nitrat secara berkala menggunakan test kit.
+
+Pemberian pakan harus dilakukan dengan tepat. Hindari overfeeding karena dapat menyebabkan penumpukan amonia dan masalah kualitas air.
+
+Pembersihan filter dan substrat harus dilakukan secara berkala, namun jangan terlalu sering karena dapat mengganggu ekosistem yang sudah terbentuk.
+
+Pastikan akuarium memiliki sistem filtrasi yang memadai dan sirkulasi air yang baik untuk menjaga oksigen terlarut.
+
+Catatan: Layanan AI sedang tidak tersedia. Informasi ini adalah panduan umum. Untuk informasi spesifik tentang jenis ikan tertentu, silakan cek FishPedia di menu navigasi."""
+    
+    elif any(word in message_lower for word in ['air', 'kualitas', 'ph', 'suhu', 'temperature']):
+        return """Informasi tentang Kualitas Air Akuarium:
+
+Kualitas air adalah faktor terpenting dalam perawatan ikan hias. Parameter utama yang perlu dipantau adalah suhu, pH, amonia, nitrit, dan nitrat.
+
+Suhu air harus disesuaikan dengan kebutuhan spesies ikan. Umumnya ikan tropis membutuhkan suhu antara 24-28 derajat Celsius.
+
+Nilai pH yang ideal bervariasi tergantung jenis ikan. Sebagian besar ikan hias tropis membutuhkan pH antara 6.5 hingga 7.5.
+
+Amonia dan nitrit harus selalu berada di level nol. Kedua senyawa ini sangat beracun bagi ikan.
+
+Nitrat sebaiknya dijaga di bawah 40 ppm. Nitrat yang tinggi dapat menyebabkan stres dan masalah kesehatan pada ikan.
+
+Untuk menjaga kualitas air, lakukan penggantian air rutin, hindari overfeeding, dan pastikan sistem filtrasi berfungsi dengan baik.
+
+Catatan: Layanan AI sedang tidak tersedia. Untuk informasi spesifik tentang kebutuhan air jenis ikan tertentu, silakan cek FishPedia."""
+    
+    else:
+        # Generic helpful response
+        fish_names = [f.name for f in fish_species_list[:5]]
+        return f"""Terima kasih atas pertanyaan Anda tentang: {message}
+
+Saat ini layanan AI sedang tidak tersedia karena masalah konfigurasi API. Namun, saya dapat membantu Anda dengan informasi dari database Temanikan.
+
+Beberapa jenis ikan yang tersedia di database kami antara lain: {', '.join(fish_names) if fish_names else 'tidak ada data'}.
+
+Untuk informasi lebih lengkap, silakan:
+1. Cek FishPedia di menu navigasi untuk informasi detail tentang berbagai jenis ikan
+2. Gunakan fitur deteksi penyakit jika Anda memiliki foto ikan yang bermasalah
+3. Kunjungi Forum untuk berdiskusi dengan komunitas
+
+Jika Anda memiliki pertanyaan spesifik tentang jenis ikan tertentu, silakan sebutkan nama ikannya dan saya akan mencari informasi dari database.
+
+Catatan: Layanan AI sedang tidak tersedia. Informasi ini berasal dari database Temanikan."""
+
+
 def register_routes(app):
     """Register all API routes"""
     
@@ -2182,13 +2279,13 @@ Setiap paragraf harus jelas, informatif, dan mudah dipahami. Jangan gunakan form
             full_prompt = f"{system_prompt}\n\nPertanyaan pengguna: {message}"
             
             # Use Gemini REST API directly
-            # Use gemini-2.5-flash (fast and free tier) or gemini-pro-latest
-            model_name = "gemini-2.5-flash"  # Fast and supports both text and images
+            # Use gemini-2.0-flash (latest model)
+            model_name = "gemini-2.0-flash"  # Latest fast model that supports both text and images
             if image_base64:
-                model_name = "gemini-2.5-flash"  # Flash supports vision
+                model_name = "gemini-2.0-flash"  # Flash supports vision
             
-            # Use v1beta endpoint (standard for Gemini API)
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+            # Use v1beta endpoint with API key in header (recommended method)
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
             
             payload = {
                 "contents": [{
@@ -2210,7 +2307,8 @@ Setiap paragraf harus jelas, informatif, dan mudah dipahami. Jangan gunakan form
                 })
             
             headers = {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-goog-api-key': api_key
             }
             
             try:
@@ -2237,32 +2335,86 @@ Setiap paragraf harus jelas, informatif, dan mudah dipahami. Jangan gunakan form
             except requests.exceptions.RequestException as req_error:
                 print(f"Error calling Gemini API: {req_error}")
                 error_msg = str(req_error)
+                status_code = None
+                error_detail = None
+                
                 if hasattr(req_error, 'response') and req_error.response is not None:
-                    error_detail = req_error.response.text
+                    status_code = req_error.response.status_code
+                    try:
+                        error_detail = req_error.response.json()
+                    except:
+                        error_detail = req_error.response.text
+                    print(f"Response status: {status_code}")
                     print(f"Response: {error_detail}")
-                    # Try fallback to gemini-pro-latest if flash fails with 404
-                    if '404' in str(req_error):
-                        try:
-                            print("Trying fallback to gemini-pro-latest...")
-                            fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-latest:generateContent?key={api_key}"
-                            fallback_response = requests.post(fallback_url, headers=headers, json=payload, timeout=30)
-                            fallback_response.raise_for_status()
-                            result = fallback_response.json()
-                            if 'candidates' in result and len(result['candidates']) > 0:
-                                if 'content' in result['candidates'][0] and 'parts' in result['candidates'][0]['content']:
-                                    ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
-                                    if not ai_response:
-                                        return jsonify({'error': 'AI service error: Empty response from fallback model'}), 500
+                
+                # Handle specific error codes
+                if status_code == 403:
+                    # API key issue - try fallback model first, then provide fallback response from database
+                    try:
+                        print("403 Forbidden - Trying fallback to gemini-2.0-flash with header auth...")
+                        fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+                        fallback_headers = {
+                            'Content-Type': 'application/json',
+                            'X-goog-api-key': api_key
+                        }
+                        fallback_response = requests.post(fallback_url, headers=fallback_headers, json=payload, timeout=30)
+                        fallback_response.raise_for_status()
+                        result = fallback_response.json()
+                        if 'candidates' in result and len(result['candidates']) > 0:
+                            if 'content' in result['candidates'][0] and 'parts' in result['candidates'][0]['content']:
+                                ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
+                                if ai_response:
+                                    # Success with fallback, continue normally
+                                    pass
                                 else:
-                                    return jsonify({'error': 'AI service error: Invalid response format from fallback'}), 500
+                                    # Provide fallback response from database
+                                    ai_response = generate_fallback_response(message, fish_species)
                             else:
-                                return jsonify({'error': 'AI service error: No candidates in fallback response'}), 500
-                        except Exception as fallback_error:
-                            return jsonify({'error': f'AI service error: {error_msg} (fallback also failed: {str(fallback_error)})'}), 500
-                    else:
-                        return jsonify({'error': f'AI service error: {error_msg}'}), 500
+                                # Provide fallback response from database
+                                ai_response = generate_fallback_response(message, fish_species)
+                        else:
+                            # Provide fallback response from database
+                            ai_response = generate_fallback_response(message, fish_species)
+                    except Exception as fallback_error:
+                        print(f"Fallback model also failed: {fallback_error}")
+                        # Provide fallback response from database
+                        ai_response = generate_fallback_response(message, fish_species)
+                elif status_code == 404:
+                    # Model not found - try fallback, then use database fallback
+                    try:
+                        print("404 Not Found - Trying fallback to gemini-2.0-flash...")
+                        fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+                        fallback_headers = {
+                            'Content-Type': 'application/json',
+                            'X-goog-api-key': api_key
+                        }
+                        fallback_response = requests.post(fallback_url, headers=fallback_headers, json=payload, timeout=30)
+                        fallback_response.raise_for_status()
+                        result = fallback_response.json()
+                        if 'candidates' in result and len(result['candidates']) > 0:
+                            if 'content' in result['candidates'][0] and 'parts' in result['candidates'][0]['content']:
+                                ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
+                                if not ai_response:
+                                    # Use database fallback
+                                    ai_response = generate_fallback_response(message, fish_species)
+                            else:
+                                # Use database fallback
+                                ai_response = generate_fallback_response(message, fish_species)
+                        else:
+                            # Use database fallback
+                            ai_response = generate_fallback_response(message, fish_species)
+                    except Exception as fallback_error:
+                        print(f"Fallback model also failed: {fallback_error}")
+                        # Use database fallback
+                        ai_response = generate_fallback_response(message, fish_species)
+                elif status_code == 429:
+                    # Quota exceeded - use database fallback instead of error
+                    print("429 Quota exceeded - Using database fallback response")
+                    ai_response = generate_fallback_response(message, fish_species)
                 else:
-                    return jsonify({'error': f'AI service error: {error_msg}'}), 500
+                    # Generic error - use database fallback instead of returning error
+                    print(f"Error {status_code} - Using database fallback response")
+                    ai_response = generate_fallback_response(message, fish_species)
             except Exception as api_error:
                 print(f"Error processing API response: {api_error}")
                 import traceback

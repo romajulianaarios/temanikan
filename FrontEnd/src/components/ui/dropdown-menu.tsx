@@ -28,23 +28,46 @@ const DropdownMenuTrigger = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
 >(({ className, children, asChild, ...props }, ref) => {
   const context = React.useContext(DropdownMenuContext);
+  const triggerRef = React.useRef<HTMLElement | null>(null);
 
   const handleClick = () => {
     context?.setOpen(!context.open);
   };
 
+  React.useEffect(() => {
+    if (triggerRef.current) {
+      triggerRef.current.setAttribute('data-dropdown-trigger', 'true');
+    }
+  }, []);
+
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement<any>, {
       onClick: handleClick,
-      ref,
+      ref: (node: HTMLElement) => {
+        triggerRef.current = node;
+        if (typeof ref === 'function') {
+          ref(node as any);
+        } else if (ref) {
+          (ref as any).current = node;
+        }
+      },
+      'data-dropdown-trigger': 'true',
     });
   }
 
   return (
     <button
-      ref={ref}
+      ref={(node) => {
+        triggerRef.current = node;
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          (ref as any).current = node;
+        }
+      }}
       className={className}
       onClick={handleClick}
+      data-dropdown-trigger="true"
       {...props}
     >
       {children}
@@ -63,7 +86,10 @@ const DropdownMenuContent = React.forwardRef<
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (contentRef.current && !contentRef.current.contains(event.target as Node)) {
-        context?.setOpen(false);
+        const trigger = document.querySelector('[data-dropdown-trigger]') as HTMLElement;
+        if (trigger && !trigger.contains(event.target as Node)) {
+          context?.setOpen(false);
+        }
       }
     };
 

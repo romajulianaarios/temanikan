@@ -81,35 +81,51 @@ export default function AdminOverview() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <Card 
             key={index} 
-            className="bubble-card p-6 transition-all duration-300" 
+            className="bubble-card p-6 transition-all duration-300 relative overflow-hidden" 
             style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '20px',
-              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+              backgroundColor: '#FFFFFF',
+              border: '2px solid rgba(72, 128, 255, 0.2)',
+              borderRadius: '32px',
+              boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+              e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+              e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+              e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
             }}
           >
+            {/* Bubble glow effect */}
+            <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-40 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+                filter: 'blur(30px)'
+              }}
+            ></div>
+            <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full opacity-20 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(255, 214, 214, 0.3), transparent 70%)',
+                filter: 'blur(25px)'
+              }}
+            ></div>
             <div className="flex items-start justify-between mb-4">
               <div 
-                className="p-3 rounded-full"
+                className="p-3 rounded-full transition-all duration-300"
                 style={{ 
-                  backgroundColor: 'rgba(72, 128, 255, 0.2)',
-                  backdropFilter: 'blur(10px)'
+                  background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(72, 128, 255, 0.3)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
                 }}
               >
                 <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
@@ -120,10 +136,19 @@ export default function AdminOverview() {
                 <TrendingDown className="w-5 h-5 text-red-600" />
               )}
             </div>
-            <p className="text-sm mb-1" style={{ color: '#666' }}>{stat.label}</p>
+            <p className="text-sm mb-1 font-semibold" style={{ 
+              color: '#608BC1',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}>{stat.label}</p>
             <div className="flex items-end gap-2">
-              <p className="text-3xl font-bold" style={{ color: '#133E87' }}>{stat.value}</p>
-              <span className={`text-sm font-semibold ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+              <p className="text-3xl font-bold" style={{ 
+                color: '#133E87',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 800
+              }}>{stat.value}</p>
+              <span className={`text-sm font-bold ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}
+                style={{ fontFamily: 'Nunito Sans, sans-serif' }}
+              >
                 {stat.change}
               </span>
             </div>
@@ -134,24 +159,42 @@ export default function AdminOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* User Growth Chart */}
         <Card 
-          className="p-6 transition-all duration-300" 
+          className="p-6 transition-all duration-300 relative overflow-hidden" 
           style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '20px',
-            boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
           }}
         >
-          <h3 className="mb-4 font-bold" style={{ color: '#133E87' }}>Pertumbuhan Pengguna</h3>
+          {/* Bubble glow effect */}
+          <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full opacity-40 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(35px)'
+            }}
+          ></div>
+          <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full opacity-25 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(255, 214, 214, 0.3), transparent 70%)',
+              filter: 'blur(30px)'
+            }}
+          ></div>
+          <h3 className="mb-4 font-bold text-xl" style={{ 
+            color: '#133E87',
+            fontFamily: 'Nunito Sans, sans-serif',
+            fontWeight: 800
+          }}>Pertumbuhan Pengguna</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart 
               data={userGrowthData}
@@ -192,24 +235,42 @@ export default function AdminOverview() {
 
         {/* Disease Distribution */}
         <Card 
-          className="p-6 transition-all duration-300" 
+          className="p-6 transition-all duration-300 relative overflow-hidden" 
           style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '20px',
-            boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
           }}
         >
-          <h3 className="mb-4 font-bold" style={{ color: '#133E87' }}>Distribusi Jenis Penyakit</h3>
+          {/* Bubble glow effect */}
+          <div className="absolute -top-12 -left-12 w-48 h-48 rounded-full opacity-40 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(35px)'
+            }}
+          ></div>
+          <div className="absolute -bottom-10 -right-10 w-36 h-36 rounded-full opacity-25 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(255, 214, 214, 0.3), transparent 70%)',
+              filter: 'blur(30px)'
+            }}
+          ></div>
+          <h3 className="mb-4 font-bold text-xl" style={{ 
+            color: '#133E87',
+            fontFamily: 'Nunito Sans, sans-serif',
+            fontWeight: 800
+          }}>Distribusi Jenis Penyakit</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -260,36 +321,63 @@ export default function AdminOverview() {
 
       {/* System Alerts */}
       <Card 
-        className="p-6 transition-all duration-300" 
+        className="p-6 transition-all duration-300 relative overflow-hidden" 
         style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          borderRadius: '20px',
-          boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-4px)';
-          e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
+          e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+          e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
         }}
       >
+        {/* Bubble glow effect */}
+        <div className="absolute -bottom-12 -right-12 w-48 h-48 rounded-full opacity-40 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+            filter: 'blur(35px)'
+          }}
+        ></div>
+        <div className="absolute -top-10 -left-10 w-36 h-36 rounded-full opacity-25 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(255, 214, 214, 0.3), transparent 70%)',
+            filter: 'blur(30px)'
+          }}
+        ></div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold" style={{ color: '#133E87' }}>Peringatan Sistem Terbaru</h3>
+          <h3 className="font-bold text-xl" style={{ 
+            color: '#133E87',
+            fontFamily: 'Nunito Sans, sans-serif',
+            fontWeight: 800
+          }}>Peringatan Sistem Terbaru</h3>
           <Link 
             to="/admin/notifications" 
-            className="text-sm font-semibold hover:underline transition-all" 
-            style={{ color: '#608BC1' }}
+            className="bubble-button text-sm font-bold px-4 py-2 rounded-full transition-all duration-300" 
+            style={{ 
+              color: '#FFFFFF',
+              backgroundColor: 'rgba(72, 128, 255, 0.6)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(72, 128, 255, 0.5)',
+              fontFamily: 'Nunito Sans, sans-serif',
+              boxShadow: '0 4px 15px rgba(72, 128, 255, 0.3)'
+            }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#4880FF';
-              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.8)';
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(72, 128, 255, 0.4)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#608BC1';
-              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.6)';
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.3)';
             }}
           >
             Lihat Semua
@@ -299,24 +387,31 @@ export default function AdminOverview() {
           {recentAlerts.map((alert) => (
             <div 
               key={alert.id}
-              className="flex items-start gap-3 p-4 rounded-xl transition-all duration-300"
+              className="flex items-start gap-3 p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
               style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1)'
+                backgroundColor: '#FFFFFF',
+                border: '2px solid rgba(72, 128, 255, 0.15)',
+                borderRadius: '20px',
+                boxShadow: '0 4px 20px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                e.currentTarget.style.transform = 'translateX(4px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(72, 128, 255, 0.2)';
+                e.currentTarget.style.transform = 'translateX(6px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 8px 30px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
-                e.currentTarget.style.transform = 'translateX(0)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1)';
+                e.currentTarget.style.transform = 'translateX(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 20px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.15)';
               }}
             >
+              {/* Small bubble glow */}
+              <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                  filter: 'blur(20px)'
+                }}
+              ></div>
               {alert.type === 'critical' && (
                 <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               )}
@@ -328,12 +423,23 @@ export default function AdminOverview() {
               )}
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm" style={{ color: '#133E87' }}>{alert.message}</p>
+                  <p className="text-sm font-semibold" style={{ 
+                    color: '#133E87',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}>{alert.message}</p>
                   {alert.type === 'critical' && (
-                    <Badge className="bg-red-100 text-red-800">Kritis</Badge>
+                    <Badge className="px-3 py-1 rounded-full font-bold text-xs" style={{
+                      backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                      color: '#DC2626',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      fontFamily: 'Nunito Sans, sans-serif'
+                    }}>Kritis</Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-600">
+                <div className="flex items-center gap-2 text-xs font-medium" style={{ 
+                  color: '#608BC1',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}>
                   <span>{alert.user}</span>
                   <span>•</span>
                   <span>{alert.time}</span>
