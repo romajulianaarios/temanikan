@@ -31,36 +31,36 @@ function SuccessNotification({ open, onClose, message, title = 'Berhasil!' }: Su
       <DialogContent className="max-w-md">
         <div className="text-center py-6">
           {/* Success Icon */}
-          <div className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center" 
-               style={{ backgroundColor: '#E8F5E9' }}>
-            <svg 
-              className="w-10 h-10" 
+          <div className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: '#E8F5E9' }}>
+            <svg
+              className="w-10 h-10"
               style={{ color: '#4CAF50' }}
-              fill="none" 
-              stroke="currentColor" 
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2.5} 
-                d="M5 13l4 4L19 7" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M5 13l4 4L19 7"
               />
             </svg>
           </div>
-          
+
           {/* Title */}
           <h3 className="text-2xl font-semibold mb-3" style={{ color: '#133E87' }}>
             {title}
           </h3>
-          
+
           {/* Message */}
           <p className="text-base mb-6" style={{ color: '#608BC1' }}>
             {message}
           </p>
-          
+
           {/* OK Button */}
-          <Button 
+          <Button
             onClick={onClose}
             className="px-8 py-2 text-white bg-primary-gradient hover:opacity-90 transition-opacity"
           >
@@ -86,36 +86,36 @@ function ErrorNotification({ open, onClose, message, title = 'Perhatian!' }: Err
       <DialogContent className="max-w-md">
         <div className="text-center py-6">
           {/* Error Icon */}
-          <div className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center" 
-               style={{ backgroundColor: '#FFEBEE' }}>
-            <svg 
-              className="w-10 h-10" 
+          <div className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: '#FFEBEE' }}>
+            <svg
+              className="w-10 h-10"
               style={{ color: '#F44336' }}
-              fill="none" 
-              stroke="currentColor" 
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2.5} 
-                d="M6 18L18 6M6 6l12 12" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M6 18L18 6M6 6l12 12"
               />
             </svg>
           </div>
-          
+
           {/* Title */}
           <h3 className="text-2xl font-semibold mb-3" style={{ color: '#133E87' }}>
             {title}
           </h3>
-          
+
           {/* Message */}
           <p className="text-base mb-6" style={{ color: '#608BC1' }}>
             {message}
           </p>
-          
+
           {/* OK Button */}
-          <Button 
+          <Button
             onClick={onClose}
             className="px-8 py-2 text-white hover:opacity-90 transition-opacity"
             style={{ background: 'linear-gradient(135deg, #133E87 0%, #608BC1 100%)' }}
@@ -147,9 +147,9 @@ function PasswordInput({ id, label, placeholder = '••••••••', va
   return (
     <div>
       <Label htmlFor={id} className="mb-3 block">{label}</Label>
-      <Input 
-        id={id} 
-        type="password" 
+      <Input
+        id={id}
+        type="password"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -174,23 +174,23 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
   const [pendingRedirect, setPendingRedirect] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [internalOpen, setInternalOpen] = useState(open); // Internal state to control dialog
-  
+
   // Success notification state
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  
+
   // Error notification state
   const [showErrorNotification, setShowErrorNotification] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  
+
   // Login error state (for inline error display)
   const [loginError, setLoginError] = useState('');
   const [hasTypedAfterError, setHasTypedAfterError] = useState(false);
-  
+
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  
+
   // Member registration form state
   const [memberName, setMemberName] = useState('');
   const [memberEmail, setMemberEmail] = useState('');
@@ -231,7 +231,7 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
       } else {
         navigate('/member');
       }
-      
+
       setPendingRedirect(false);
       onOpenChange(false);
       resetModal();
@@ -260,12 +260,12 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
     setIsLoading(true);
     setLoginError(''); // Clear previous errors first
     setHasTypedAfterError(false); // Reset typing state
-    
+
     try {
       console.log('Attempting login with:', loginEmail);
       const result = await login(loginEmail, loginPassword);
       console.log('Login result:', result);
-      
+
       if (result && result.success) {
         // Login successful - prepare for redirect
         console.log('Login successful, setting pending redirect');
@@ -301,23 +301,23 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
 
   const handleMemberRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate passwords match
     if (memberPassword !== memberConfirmPassword) {
       setErrorMessage('Password dan Konfirmasi Password tidak cocok');
       setShowErrorNotification(true);
       return;
     }
-    
+
     // Validate password length
     if (memberPassword.length < 8) {
       setErrorMessage('Password harus minimal 8 karakter');
       setShowErrorNotification(true);
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       // Call register function from AuthContext
       const result = await register({
@@ -329,7 +329,7 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
         age: memberAge ? parseInt(memberAge) : undefined,
         primary_fish_type: memberPrimaryFishType
       });
-      
+
       if (result.success) {
         // Reset form
         setMemberName('');
@@ -340,7 +340,7 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
         setMemberPrimaryFishType('');
         setMemberPassword('');
         setMemberConfirmPassword('');
-        
+
         // Tampilkan popup sukses
         setSuccessMessage(result.message);
         setShowSuccessNotification(true);
@@ -352,14 +352,14 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
       setIsLoading(false);
     }
   };
-  
+
   const handleSuccessClose = () => {
     setShowSuccessNotification(false);
     setSuccessMessage('');
     // Redirect ke halaman login setelah menutup popup
     setCurrentView('login');
   };
-  
+
   const handleErrorClose = () => {
     setShowErrorNotification(false);
     setErrorMessage('');
@@ -382,10 +382,10 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
             <form onSubmit={handleLogin} className="space-y-5">
               <div>
                 <Label htmlFor="login-email" className="mb-3 block">Email</Label>
-                <Input 
-                  id="login-email" 
-                  type="email" 
-                  placeholder="nama@email.com" 
+                <Input
+                  id="login-email"
+                  type="email"
+                  placeholder="nama@email.com"
                   value={loginEmail}
                   onChange={(e) => {
                     setLoginEmail(e.target.value);
@@ -401,10 +401,10 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
 
               <div>
                 <Label htmlFor="login-password" className="mb-3 block">Password</Label>
-                <Input 
-                  id="login-password" 
-                  type="password" 
-                  placeholder="••••••••" 
+                <Input
+                  id="login-password"
+                  type="password"
+                  placeholder="••••••••"
                   value={loginPassword}
                   onChange={(e) => {
                     setLoginPassword(e.target.value);
@@ -420,9 +420,9 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
 
               {/* Remember Me Checkbox */}
               <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox" 
-                  id="remember" 
+                <input
+                  type="checkbox"
+                  id="remember"
                   className="w-4 h-4"
                 />
                 <Label htmlFor="remember" className="cursor-pointer text-sm">
@@ -430,7 +430,7 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                 </Label>
               </div>
 
-              <Button 
+              <Button
                 type="submit"
                 className="w-full text-white bg-primary-gradient"
                 disabled={isLoading}
@@ -440,7 +440,7 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
             </form>
 
             <div className="text-center">
-              <button 
+              <button
                 onClick={() => setCurrentView('register')}
                 className="text-sm hover:underline"
                 style={{ color: '#608BC1' }}
@@ -466,9 +466,9 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
             <form onSubmit={handleMemberRegister} className="space-y-5">
               <div>
                 <Label htmlFor="nama-lengkap" className="mb-3 block">Nama Lengkap</Label>
-                <Input 
-                  id="nama-lengkap" 
-                  type="text" 
+                <Input
+                  id="nama-lengkap"
+                  type="text"
                   placeholder="Masukkan nama lengkap"
                   value={memberName}
                   onChange={(e) => setMemberName(e.target.value)}
@@ -478,9 +478,9 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
 
               <div>
                 <Label htmlFor="register-email" className="mb-3 block">Email</Label>
-                <Input 
-                  id="register-email" 
-                  type="email" 
+                <Input
+                  id="register-email"
+                  type="email"
                   placeholder="nama@email.com"
                   value={memberEmail}
                   onChange={(e) => setMemberEmail(e.target.value)}
@@ -490,9 +490,9 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
 
               <div>
                 <Label htmlFor="nomor-hp" className="mb-3 block">Nomor HP</Label>
-                <Input 
-                  id="nomor-hp" 
-                  type="tel" 
+                <Input
+                  id="nomor-hp"
+                  type="tel"
                   placeholder="+62 812 3456 7890"
                   value={memberPhone}
                   onChange={(e) => setMemberPhone(e.target.value)}
@@ -502,9 +502,9 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
 
               <div>
                 <Label htmlFor="alamat" className="mb-3 block">Alamat</Label>
-                <Input 
-                  id="alamat" 
-                  type="text" 
+                <Input
+                  id="alamat"
+                  type="text"
                   placeholder="Masukkan alamat lengkap"
                   value={memberAddress}
                   onChange={(e) => setMemberAddress(e.target.value)}
@@ -514,9 +514,9 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
 
               <div>
                 <Label htmlFor="usia" className="mb-3 block">Usia</Label>
-                <Input 
-                  id="usia" 
-                  type="number" 
+                <Input
+                  id="usia"
+                  type="number"
                   placeholder="Masukkan usia"
                   value={memberAge}
                   onChange={(e) => setMemberAge(e.target.value)}
@@ -550,21 +550,21 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                 </select>
               </div>
 
-              <PasswordInput 
+              <PasswordInput
                 id="register-password"
                 label="Password"
                 value={memberPassword}
                 onChange={setMemberPassword}
               />
 
-              <PasswordInput 
+              <PasswordInput
                 id="confirm-password"
                 label="Konfirmasi Password"
                 value={memberConfirmPassword}
                 onChange={setMemberConfirmPassword}
               />
 
-              <Button 
+              <Button
                 type="submit"
                 className="w-full text-white bg-primary-gradient"
                 disabled={isLoading}
@@ -574,7 +574,7 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
             </form>
 
             <div className="text-center">
-              <button 
+              <button
                 onClick={() => setCurrentView('login')}
                 className="text-sm hover:underline"
                 style={{ color: '#608BC1' }}
@@ -590,7 +590,7 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
   // Custom handler that prevents closing when there's an error
   const handleDialogOpenChange = (isOpen: boolean) => {
     console.log('📢 Dialog open change requested:', isOpen, 'loginError:', loginError);
-    
+
     // If trying to close (isOpen = false)
     if (!isOpen) {
       // CRITICAL: Don't allow closing when there's an active login error
@@ -616,7 +616,7 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
   return (
     <>
       <Dialog open={internalOpen} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto glass-modal">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto glass-modal z-[10000]">
           <DialogHeader>
             <DialogTitle style={{ color: '#133E87' }}>Selamat Datang di Temanikan</DialogTitle>
           </DialogHeader>
@@ -626,15 +626,15 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
       </Dialog>
 
       {/* Success Notification Popup */}
-      <SuccessNotification 
+      <SuccessNotification
         open={showSuccessNotification}
         onClose={handleSuccessClose}
         message={successMessage}
         title="Registrasi Berhasil!"
       />
-      
+
       {/* Error Notification Popup */}
-      <ErrorNotification 
+      <ErrorNotification
         open={showErrorNotification}
         onClose={handleErrorClose}
         message={errorMessage}

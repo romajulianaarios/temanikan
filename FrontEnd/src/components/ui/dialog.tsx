@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { XIcon } from "../icons";
 import { cn } from "./utils";
 
@@ -11,13 +12,13 @@ interface DialogContextValue {
 
 const DialogContext = React.createContext<DialogContextValue | undefined>(undefined);
 
-const Dialog = ({ 
-  open: controlledOpen, 
-  onOpenChange, 
+const Dialog = ({
+  open: controlledOpen,
+  onOpenChange,
   defaultOpen = false,
-  children 
-}: { 
-  open?: boolean; 
+  children
+}: {
+  open?: boolean;
   onOpenChange?: (open: boolean) => void;
   defaultOpen?: boolean;
   children: React.ReactNode;
@@ -38,7 +39,7 @@ const DialogTrigger = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
 >(({ className, children, onClick, asChild, ...props }, ref) => {
   const context = React.useContext(DialogContext);
-  
+
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     onClick?.(e);
     context?.onOpenChange(true);
@@ -63,10 +64,22 @@ const DialogTrigger = React.forwardRef<
 });
 DialogTrigger.displayName = "DialogTrigger";
 
+
+
+// ... (existing imports)
+
 const DialogPortal = ({ children }: { children: React.ReactNode }) => {
   const context = React.useContext(DialogContext);
-  if (!context?.open) return null;
-  return <>{children}</>;
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!context?.open || !mounted) return null;
+
+  return createPortal(children, document.body);
 };
 
 const DialogOverlay = React.forwardRef<
@@ -89,7 +102,7 @@ const DialogClose = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement>
 >(({ className, children, onClick, ...props }, ref) => {
   const context = React.useContext(DialogContext);
-  
+
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     onClick?.(e);
     context?.onOpenChange(false);

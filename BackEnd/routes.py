@@ -2943,7 +2943,7 @@ def register_routes(app):
             'total_detections': len(detections),
             'period_days': days
         }), 200
-<<<<<<< HEAD
+
 
     # ==================== DEVICE ENDPOINTS ====================
 
@@ -3043,9 +3043,7 @@ def register_routes(app):
             'device': device.to_dict()
         }), 200
 
-<<<<<<< HEAD
 
-=======
     @app.route('/api/notifications/<int:notification_id>', methods=['GET'])
     @jwt_required()
     def get_notification_detail(notification_id):
@@ -3068,7 +3066,7 @@ def register_routes(app):
             'success': True,
             'data': notification.to_dict()
         }), 200
-=======
+
     
     # AI Chat Routes with Gemini (using direct HTTP API)
     @app.route('/api/ai/chat', methods=['POST'])
@@ -3279,5 +3277,4 @@ Setiap paragraf harus jelas, informatif, dan mudah dipahami. Jangan gunakan form
         db.session.commit()
         
         return jsonify({'message': 'Chat deleted successfully'}), 200
->>>>>>> b7c531e5cbced4492f7c79b4709f0d784812a476
->>>>>>> d30aee01825ee235a8fb7c6fde3229ea629c2ebd
+
