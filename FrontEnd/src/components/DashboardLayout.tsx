@@ -308,7 +308,7 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
                 )}
             </nav>
 
-            <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 relative z-10">
+            <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 relative">
                 {children}
             </main>
         </div>

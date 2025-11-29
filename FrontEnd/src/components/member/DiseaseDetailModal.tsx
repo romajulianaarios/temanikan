@@ -24,7 +24,7 @@ export default function DiseaseDetailModal({ isOpen, onClose, disease }: Disease
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl" style={{ backgroundColor: 'white' }}>
+            <DialogContent className="max-w-md" style={{ backgroundColor: 'white' }}>
                 <DialogHeader>
                     <DialogTitle className="text-xl" style={{ color: '#1F2937', fontWeight: 700 }}>
                         Detail Deteksi Penyakit
