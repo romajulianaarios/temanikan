@@ -35,3 +35,6 @@ echo Tekan tombol apapun untuk menutup window ini...
 pause >nul
 
 
+
+
+

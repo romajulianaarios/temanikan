@@ -146,7 +146,7 @@ function PasswordInput({ id, label, placeholder = '••••••••', va
 
   return (
     <div>
-      <Label htmlFor={id} className="mb-3 block">{label}</Label>
+      <Label htmlFor={id} className="mb-3 block" style={{ color: '#133E87', fontWeight: '500' }}>{label}</Label>
       <Input 
         id={id} 
         type="password" 
@@ -157,6 +157,13 @@ function PasswordInput({ id, label, placeholder = '••••••••', va
         required={required}
         minLength={8}
         className={showError ? 'border-red-300' : ''}
+        style={{
+          borderRadius: '12px',
+          border: showError ? '2px solid #F44336' : '2px solid rgba(72, 128, 255, 0.2)',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(10px)',
+          padding: '12px 16px',
+        }}
       />
       {showError && (
         <p className="text-xs text-red-500 mt-1">
@@ -372,8 +379,16 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
           <div className="space-y-4">
             {/* Error Message Display */}
             {loginError && (
-              <div className="p-3 rounded-lg" style={{ backgroundColor: '#FFEBEE', border: '1px solid #F44336' }}>
-                <p className="text-sm" style={{ color: '#D32F2F' }}>
+              <div 
+                className="p-4 rounded-2xl" 
+                style={{ 
+                  backgroundColor: 'rgba(255, 235, 238, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  border: '2px solid rgba(244, 67, 54, 0.4)',
+                  boxShadow: '0 4px 16px rgba(244, 67, 54, 0.2)'
+                }}
+              >
+                <p className="text-sm font-medium" style={{ color: '#D32F2F' }}>
                   ⚠️ {loginError}
                 </p>
               </div>
@@ -381,7 +396,7 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
 
             <form onSubmit={handleLogin} className="space-y-5">
               <div>
-                <Label htmlFor="login-email" className="mb-3 block">Email</Label>
+                <Label htmlFor="login-email" className="mb-3 block" style={{ color: '#133E87', fontWeight: '500' }}>Email</Label>
                 <Input 
                   id="login-email" 
                   type="email" 
@@ -396,11 +411,18 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                   }}
                   required
                   className={loginError && !hasTypedAfterError ? 'border-red-500 focus:border-red-500' : ''}
+                  style={{
+                    borderRadius: '12px',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '12px 16px',
+                  }}
                 />
               </div>
 
               <div>
-                <Label htmlFor="login-password" className="mb-3 block">Password</Label>
+                <Label htmlFor="login-password" className="mb-3 block" style={{ color: '#133E87', fontWeight: '500' }}>Password</Label>
                 <Input 
                   id="login-password" 
                   type="password" 
@@ -415,6 +437,13 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                   }}
                   required
                   className={loginError && !hasTypedAfterError ? 'border-red-500 focus:border-red-500' : ''}
+                  style={{
+                    borderRadius: '12px',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '12px 16px',
+                  }}
                 />
               </div>
 
@@ -430,20 +459,44 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                 </Label>
               </div>
 
-              <Button 
+              <button 
                 type="submit"
-                className="w-full text-white bg-primary-gradient"
+                className="w-full bubble-button rounded-full py-3 px-6 font-bold text-white transition-all duration-300"
+                style={{ 
+                  background: 'linear-gradient(135deg, #133E87 0%, #608BC1 100%)',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 4px 20px rgba(72, 128, 255, 0.4)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(72, 128, 255, 0.6)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(72, 128, 255, 0.4)';
+                }}
                 disabled={isLoading}
               >
                 {isLoading ? 'Loading...' : 'Login'}
-              </Button>
+              </button>
             </form>
 
             <div className="text-center">
               <button 
                 onClick={() => setCurrentView('register')}
-                className="text-sm hover:underline"
-                style={{ color: '#608BC1' }}
+                className="text-sm hover:underline transition-all"
+                style={{ 
+                  color: '#608BC1',
+                  fontWeight: '500'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#133E87';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#608BC1';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
               >
                 Belum punya akun? Daftar di sini.
               </button>
@@ -456,8 +509,19 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
           <div className="space-y-4">
             <button
               onClick={() => setCurrentView('login')}
-              className="flex items-center gap-2 text-sm hover:underline mb-2"
-              style={{ color: '#608BC1' }}
+              className="flex items-center gap-2 text-sm hover:underline mb-2 transition-all"
+              style={{ 
+                color: '#608BC1',
+                fontWeight: '500'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#133E87';
+                e.currentTarget.style.transform = 'translateX(-4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#608BC1';
+                e.currentTarget.style.transform = 'translateX(0)';
+              }}
             >
               <ArrowLeft className="w-4 h-4" />
               Kembali
@@ -465,7 +529,7 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
 
             <form onSubmit={handleMemberRegister} className="space-y-5">
               <div>
-                <Label htmlFor="nama-lengkap" className="mb-3 block">Nama Lengkap</Label>
+                <Label htmlFor="nama-lengkap" className="mb-3 block" style={{ color: '#133E87', fontWeight: '500' }}>Nama Lengkap</Label>
                 <Input 
                   id="nama-lengkap" 
                   type="text" 
@@ -473,11 +537,18 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                   value={memberName}
                   onChange={(e) => setMemberName(e.target.value)}
                   required
+                  style={{
+                    borderRadius: '12px',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '12px 16px',
+                  }}
                 />
               </div>
 
               <div>
-                <Label htmlFor="register-email" className="mb-3 block">Email</Label>
+                <Label htmlFor="register-email" className="mb-3 block" style={{ color: '#133E87', fontWeight: '500' }}>Email</Label>
                 <Input 
                   id="register-email" 
                   type="email" 
@@ -485,11 +556,18 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                   value={memberEmail}
                   onChange={(e) => setMemberEmail(e.target.value)}
                   required
+                  style={{
+                    borderRadius: '12px',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '12px 16px',
+                  }}
                 />
               </div>
 
               <div>
-                <Label htmlFor="nomor-hp" className="mb-3 block">Nomor HP</Label>
+                <Label htmlFor="nomor-hp" className="mb-3 block" style={{ color: '#133E87', fontWeight: '500' }}>Nomor HP</Label>
                 <Input 
                   id="nomor-hp" 
                   type="tel" 
@@ -497,11 +575,18 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                   value={memberPhone}
                   onChange={(e) => setMemberPhone(e.target.value)}
                   required
+                  style={{
+                    borderRadius: '12px',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '12px 16px',
+                  }}
                 />
               </div>
 
               <div>
-                <Label htmlFor="alamat" className="mb-3 block">Alamat</Label>
+                <Label htmlFor="alamat" className="mb-3 block" style={{ color: '#133E87', fontWeight: '500' }}>Alamat</Label>
                 <Input 
                   id="alamat" 
                   type="text" 
@@ -509,11 +594,18 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                   value={memberAddress}
                   onChange={(e) => setMemberAddress(e.target.value)}
                   required
+                  style={{
+                    borderRadius: '12px',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '12px 16px',
+                  }}
                 />
               </div>
 
               <div>
-                <Label htmlFor="usia" className="mb-3 block">Usia</Label>
+                <Label htmlFor="usia" className="mb-3 block" style={{ color: '#133E87', fontWeight: '500' }}>Usia</Label>
                 <Input 
                   id="usia" 
                   type="number" 
@@ -523,17 +615,31 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                   min="1"
                   max="150"
                   required
+                  style={{
+                    borderRadius: '12px',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '12px 16px',
+                  }}
                 />
               </div>
 
               <div>
-                <Label htmlFor="jenis-ikan" className="mb-3 block">Jenis Ikan Hias Utama</Label>
+                <Label htmlFor="jenis-ikan" className="mb-3 block" style={{ color: '#133E87', fontWeight: '500' }}>Jenis Ikan Hias Utama</Label>
                 <select
                   id="jenis-ikan"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={memberPrimaryFishType}
                   onChange={(e) => setMemberPrimaryFishType(e.target.value)}
                   required
+                  style={{
+                    borderRadius: '12px',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '12px 16px',
+                  }}
                 >
                   <option value="">Pilih jenis ikan</option>
                   <option value="Ikan Koi">Ikan Koi</option>
@@ -564,13 +670,26 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
                 onChange={setMemberConfirmPassword}
               />
 
-              <Button 
+              <button 
                 type="submit"
-                className="w-full text-white bg-primary-gradient"
+                className="w-full bubble-button rounded-full py-3 px-6 font-bold text-white transition-all duration-300"
+                style={{ 
+                  background: 'linear-gradient(135deg, #133E87 0%, #608BC1 100%)',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 4px 20px rgba(72, 128, 255, 0.4)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(72, 128, 255, 0.6)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(72, 128, 255, 0.4)';
+                }}
                 disabled={isLoading}
               >
                 {isLoading ? 'Loading...' : 'Daftar Sekarang'}
-              </Button>
+              </button>
             </form>
 
             <div className="text-center">
@@ -618,7 +737,14 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
       <Dialog open={internalOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto glass-modal">
           <DialogHeader>
-            <DialogTitle style={{ color: '#133E87' }}>Selamat Datang di Temanikan</DialogTitle>
+            <DialogTitle style={{ 
+              color: '#133E87', 
+              fontSize: '24px',
+              fontWeight: '700',
+              marginBottom: '8px'
+            }}>
+              Selamat Datang di Temanikan
+            </DialogTitle>
           </DialogHeader>
 
           {renderContent()}

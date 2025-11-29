@@ -64,7 +64,7 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
       <Fish3DBackground />
       
       {/* Konten */}
-      <div className="relative z-10">
+      <div className="relative" style={{ zIndex: 10 }}>
       <style>{`
         /* Global Bubble Button Style dengan Hover Interaktif */
         .bubble-button {
@@ -224,10 +224,10 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Heading */}
           <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-black mb-3 sm:mb-4 px-2">
+            <h2 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-2" style={{ color: '#FFFFFF', textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)' }}>
               Lebih dari 10.000 penghobi ikan telah bergabung di Temanikan 🐠
             </h2>
-            <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-3xl mx-auto px-2">
+            <p className="text-sm sm:text-base md:text-lg max-w-3xl mx-auto px-2" style={{ color: '#FFFFFF', fontWeight: '500', textShadow: '0 2px 6px rgba(0, 0, 0, 0.4)' }}>
               Komunitas kami terus tumbuh! Temanikan dipercaya oleh pecinta ikan hias di seluruh Indonesia untuk belajar, berdiskusi, dan memantau akuarium secara cerdas.
             </p>
           </div>
@@ -235,60 +235,83 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
           {/* Stats Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
             {/* Card 1: Pengguna */}
-            <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center hover:bg-blue-50 transition-colors">
+            <div className="rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center transition-colors" style={{ 
+              background: 'rgba(15, 91, 229, 0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(255, 255, 255, 0.3)'
+            }}>
               <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
-                <Users className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#78B0E8' }} />
+                <Users className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#FFFFFF' }} />
               </div>
-              <div className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Pengguna</div>
-              <div className="text-lg sm:text-xl md:text-2xl font-bold text-black">10K+</div>
+              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2" style={{ color: '#FFFFFF', fontWeight: '600', textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)' }}>Pengguna</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold" style={{ color: '#FFFFFF', fontWeight: '800', textShadow: '0 2px 6px rgba(0, 0, 0, 0.5)' }}>10K+</div>
             </div>
 
             {/* Card 2: Waktu */}
-            <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center hover:bg-blue-50 transition-colors">
+            <div className="rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center transition-colors" style={{ 
+              background: 'rgba(15, 91, 229, 0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(255, 255, 255, 0.3)'
+            }}>
               <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
-                <Clock className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#78B0E8' }} />
+                <Clock className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#FFFFFF' }} />
               </div>
-              <div className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Waktu</div>
-              <div className="text-lg sm:text-xl md:text-2xl font-bold text-black">1K jam</div>
+              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2" style={{ color: '#FFFFFF', fontWeight: '600', textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)' }}>Waktu</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold" style={{ color: '#FFFFFF', fontWeight: '800', textShadow: '0 2px 6px rgba(0, 0, 0, 0.5)' }}>1K jam</div>
             </div>
 
             {/* Card 3: Ikan */}
-            <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center hover:bg-blue-50 transition-colors">
+            <div className="rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center transition-colors" style={{ 
+              background: 'rgba(15, 91, 229, 0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(255, 255, 255, 0.3)'
+            }}>
               <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
-                <Fish className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#78B0E8' }} />
+                <Fish className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#FFFFFF' }} />
               </div>
-              <div className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Ikan</div>
-              <div className="text-lg sm:text-xl md:text-2xl font-bold text-black">500+Spesies</div>
+              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2" style={{ color: '#FFFFFF', fontWeight: '600', textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)' }}>Ikan</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold" style={{ color: '#FFFFFF', fontWeight: '800', textShadow: '0 2px 6px rgba(0, 0, 0, 0.5)' }}>500+Spesies</div>
             </div>
 
             {/* Card 4: Robot */}
-            <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center hover:bg-blue-50 transition-colors">
+            <div className="rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center transition-colors" style={{ 
+              background: 'rgba(15, 91, 229, 0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(255, 255, 255, 0.3)'
+            }}>
               <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
-                <Bot className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#78B0E8' }} />
+                <Bot className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#FFFFFF' }} />
               </div>
-              <div className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Robot</div>
-              <div className="text-lg sm:text-xl md:text-2xl font-bold text-black">9000+Robot</div>
+              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2" style={{ color: '#FFFFFF', fontWeight: '600', textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)' }}>Robot</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold" style={{ color: '#FFFFFF', fontWeight: '800', textShadow: '0 2px 6px rgba(0, 0, 0, 0.5)' }}>9000+Robot</div>
             </div>
 
             {/* Card 5: Akurasi */}
-            <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center hover:bg-blue-50 transition-colors">
+            <div className="rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center transition-colors" style={{ 
+              background: 'rgba(15, 91, 229, 0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(255, 255, 255, 0.3)'
+            }}>
               <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
-                <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#78B0E8' }} />
+                <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#FFFFFF' }} />
               </div>
-              <div className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Akurasi</div>
-              <div className="text-lg sm:text-xl md:text-2xl font-bold text-black">95%Terdeteksi</div>
+              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2" style={{ color: '#FFFFFF', fontWeight: '600', textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)' }}>Akurasi</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold" style={{ color: '#FFFFFF', fontWeight: '800', textShadow: '0 2px 6px rgba(0, 0, 0, 0.5)' }}>95%Terdeteksi</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Tentang Kami Section */}
-      <section id="tentang" className="py-12 sm:py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="tentang" className="py-12 sm:py-16 md:py-24 relative overflow-hidden">
+        <div className="absolute inset-0" style={{
+          background: 'linear-gradient(to bottom, rgba(15, 91, 229, 0.1), rgba(30, 58, 138, 0.15))'
+        }}></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div>
-              <h2 className="text-2xl sm:text-3xl md:text-5xl mb-4 sm:mb-6" style={{ color: '#0F5BE5' }}>Tentang Temanikan</h2>
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-4 sm:mb-6">
+              <h2 className="text-2xl sm:text-3xl md:text-5xl mb-4 sm:mb-6" style={{ color: '#FFFFFF', fontWeight: '800', textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)' }}>Tentang Temanikan</h2>
+              <p className="text-sm sm:text-base md:text-lg mb-4 sm:mb-6" style={{ color: '#FFFFFF', fontWeight: '500', lineHeight: '1.8', textShadow: '0 2px 6px rgba(0, 0, 0, 0.4)' }}>
                 TEMANIKAN adalah platform one-stop solution yang dirancang khusus untuk para aquarist. Kami adalah jembatan yang menghubungkan kecintaan Anda pada ikan hias dengan teknologi canggih Machine Learning dan dukungan komunitas, semuanya terpusat dalam satu website.
               </p>
               
@@ -303,7 +326,7 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
                     <p className="text-sm">4.9 / 5 rating</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-500">Dipercaya oleh 10,000+ pengguna di Indonesia</p>
+                <p className="text-sm" style={{ color: '#FFFFFF', textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)', opacity: '0.9' }}>Dipercaya oleh 10,000+ pengguna di Indonesia</p>
               </div>
             </div>
 
@@ -349,10 +372,11 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             <h2 
               className="text-4xl md:text-6xl mb-6 font-extrabold" 
               style={{ 
-                color: '#0F5BE5',
-                textShadow: '0 4px 12px rgba(15, 91, 229, 0.2)',
+                color: '#FFFFFF',
+                textShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
                 letterSpacing: '-0.02em',
-                lineHeight: '1.2'
+                lineHeight: '1.2',
+                fontWeight: '900'
               }}
             >
               Mengapa Memilih Temanikan?
@@ -360,9 +384,10 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             <p 
               className="text-xl md:text-2xl max-w-3xl mx-auto font-semibold" 
               style={{ 
-                color: '#111827',
+                color: '#FFFFFF',
                 lineHeight: '1.6',
-                textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                fontWeight: '600',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)'
               }}
             >
               Platform lengkap dengan teknologi Machine Learning untuk perawatan ikan hias yang lebih cerdas dan efektif
@@ -584,9 +609,10 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             <h2 
               className="text-4xl md:text-6xl mb-6 font-extrabold" 
               style={{ 
-                color: '#0F5BE5',
-                textShadow: '0 4px 12px rgba(15, 91, 229, 0.2)',
-                letterSpacing: '-0.02em'
+                color: '#FFFFFF',
+                textShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                letterSpacing: '-0.02em',
+                fontWeight: '900'
               }}
             >
               Forum Komunitas Temanikan
@@ -594,8 +620,10 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             <p 
               className="text-xl md:text-2xl max-w-2xl mx-auto font-semibold" 
               style={{ 
-                color: '#111827',
-                lineHeight: '1.6'
+                color: '#FFFFFF',
+                lineHeight: '1.6',
+                fontWeight: '600',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)'
               }}
             >
               Bergabunglah dengan komunitas pecinta ikan hias terbesar di Indonesia
@@ -662,7 +690,7 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
                     Cari
                   </button>
                 </div>
-                <p className="text-center text-sm text-gray-500 mt-4">
+                <p className="text-center text-sm mt-4" style={{ color: '#FFFFFF', textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)', opacity: '0.9' }}>
                   * Login diperlukan untuk mengakses forum
                 </p>
               </div>
@@ -674,29 +702,29 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             <div className="text-center">
               <div 
                 className="text-3xl md:text-4xl font-extrabold mb-2" 
-                style={{ color: '#0F5BE5' }}
+                style={{ color: '#60A5FA' }}
               >
                 10K+
               </div>
-              <div className="text-sm font-medium text-gray-600">Anggota</div>
+              <div className="text-sm font-medium" style={{ color: '#E5E7EB' }}>Anggota</div>
             </div>
             <div className="text-center">
               <div 
                 className="text-3xl md:text-4xl font-extrabold mb-2" 
-                style={{ color: '#0F5BE5' }}
+                style={{ color: '#60A5FA' }}
               >
                 5K+
               </div>
-              <div className="text-sm font-medium text-gray-600">Topik</div>
+              <div className="text-sm font-medium" style={{ color: '#E5E7EB' }}>Topik</div>
             </div>
             <div className="text-center">
               <div 
                 className="text-3xl md:text-4xl font-extrabold mb-2" 
-                style={{ color: '#0F5BE5' }}
+                style={{ color: '#60A5FA' }}
               >
                 50K+
               </div>
-              <div className="text-sm font-medium text-gray-600">Diskusi</div>
+              <div className="text-sm font-medium" style={{ color: '#E5E7EB' }}>Diskusi</div>
             </div>
           </div>
 
@@ -728,11 +756,14 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
       </section>
 
       {/* Testimoni Section */}
-      <section id="testimoni" className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="testimoni" className="py-16 md:py-24 relative overflow-hidden">
+        <div className="absolute inset-0" style={{
+          background: 'linear-gradient(to bottom, rgba(15, 91, 229, 0.1), rgba(30, 58, 138, 0.15))'
+        }}></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl mb-4">Apa Kata Mereka?</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-5xl mb-4" style={{ color: '#FFFFFF', fontWeight: '800', textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)' }}>Apa Kata Mereka?</h2>
+            <p className="text-lg max-w-3xl mx-auto" style={{ color: '#FFFFFF', fontWeight: '500', textShadow: '0 2px 6px rgba(0, 0, 0, 0.4)' }}>
               Ribuan pengguna telah merasakan manfaat Temanikan dalam merawat ikan hias mereka. Simak pengalaman mereka!
             </p>
           </div>
@@ -879,12 +910,13 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             </p>
             <button 
               onClick={() => handleAuthClick('register')}
-              className="bubble-button px-10 py-5 text-lg font-bold rounded-full transition-all duration-300 relative z-10"
+              className="bubble-button px-6 py-3 text-base font-bold rounded-full transition-all duration-300 relative z-10"
               style={{
                 background: 'linear-gradient(135deg, #FFD700, #FFC700)',
                 color: '#000000',
                 boxShadow: '0 8px 24px rgba(255, 215, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.3)',
-                border: '3px solid rgba(255, 255, 255, 0.5)'
+                border: '3px solid rgba(255, 255, 255, 0.5)',
+                whiteSpace: 'nowrap'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'linear-gradient(135deg, #FFC700, #FFB700)';

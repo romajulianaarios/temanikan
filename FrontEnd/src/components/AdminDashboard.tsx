@@ -13,55 +13,55 @@ import AdminOrders from './admin/AdminOrders';
 
 export default function AdminDashboard() {
   return (
-    <Routes>
-      <Route path="/admin" element={
+    <Routes basePath="/admin">
+      <Route path="" element={
         <AdminSidebarLayout title="Dashboard Admin">
           <AdminOverview />
         </AdminSidebarLayout>
       } />
-      <Route path="/admin/users" element={
+      <Route path="users" element={
         <AdminSidebarLayout title="Manajemen Pengguna">
           <UserManagement />
         </AdminSidebarLayout>
       } />
-      <Route path="/admin/robots" element={
+      <Route path="robots" element={
         <AdminSidebarLayout title="Status Robot Global">
           <RobotStatus />
         </AdminSidebarLayout>
       } />
-      <Route path="/admin/disease-trends" element={
+      <Route path="disease-trends" element={
         <AdminSidebarLayout title="Tren Deteksi Penyakit">
           <DiseaseTrends />
         </AdminSidebarLayout>
       } />
-      <Route path="/admin/fishpedia" element={
+      <Route path="fishpedia" element={
         <AdminSidebarLayout title="Kelola Fishpedia">
           <AdminFishpedia />
         </AdminSidebarLayout>
       } />
-      <Route path="/admin/forum" element={
+      <Route path="forum" element={
         <AdminSidebarLayout title="Moderasi Forum">
           <ForumModeration />
         </AdminSidebarLayout>
       } />
-      <Route path="/admin/profile" element={
+      <Route path="profile" element={
         <AdminSidebarLayout title="Profil Admin">
           <AdminProfile />
         </AdminSidebarLayout>
       } />
-      <Route path="/admin/settings" element={
+      <Route path="settings" element={
         <AdminSidebarLayout title="Pengaturan Sistem">
           <SystemSettings />
         </AdminSidebarLayout>
       } />
-      <Route path="/admin/notifications" element={
+      <Route path="notifications" element={
         <AdminSidebarLayout 
           title="Semua Notifikasi"
         >
           <AllNotifications />
         </AdminSidebarLayout>
       } />
-      <Route path="/admin/orders" element={
+      <Route path="orders" element={
         <AdminSidebarLayout 
           title="Kelola Pesanan"
         >

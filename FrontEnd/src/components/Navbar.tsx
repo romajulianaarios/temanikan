@@ -124,7 +124,7 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
   };
 
   return (
-    <header className="relative z-50" style={{ background: 'transparent' }}>
+    <header className="relative" style={{ background: 'transparent', zIndex: 50 }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div 
           className="flex items-center justify-between sticky top-3"
