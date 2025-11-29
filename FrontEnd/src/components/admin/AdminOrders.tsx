@@ -59,6 +59,15 @@ export default function AdminOrders() {
   const [paymentProofImage, setPaymentProofImage] = useState<string | null>(null);
   const [showPaymentProofModal, setShowPaymentProofModal] = useState(false);
 
+  const statusFilterOptions = [
+    { value: 'all', label: 'Semua Status' },
+    { value: 'pending', label: 'Menunggu Pembayaran' },
+    { value: 'confirmed', label: 'Dikonfirmasi' },
+    { value: 'shipping', label: 'Dikirim' },
+    { value: 'delivered', label: 'Selesai' },
+    { value: 'cancelled', label: 'Dibatalkan' }
+  ];
+
   const fetchOrders = async () => {
     try {
       setLoading(true);
@@ -539,15 +548,16 @@ export default function AdminOrders() {
 
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                 <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="Filter Status" />
+                  <SelectValue placeholder="Filter Status">
+                    {statusFilterOptions.find(option => option.value === selectedStatus)?.label || 'Filter Status'}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="pending">Menunggu Pembayaran</SelectItem>
-                  <SelectItem value="confirmed">Dikonfirmasi</SelectItem>
-                  <SelectItem value="shipping">Dikirim</SelectItem>
-                  <SelectItem value="delivered">Selesai</SelectItem>
-                  <SelectItem value="cancelled">Dibatalkan</SelectItem>
+                  {statusFilterOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 

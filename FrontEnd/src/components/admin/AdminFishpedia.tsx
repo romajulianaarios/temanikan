@@ -9,7 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Search, Plus, Edit, Trash2, Eye, Upload } from '../icons';
-import { fishpediaAPI } from '../../services/api';
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -88,15 +87,16 @@ export default function AdminFishpedia() {
     try {
       setLoading(true);
       setError(null);
-      
-      // ✅ Use correct public endpoint that returns all species
-      const response = await fishpediaAPI.getSpecies();
-      
-      console.log('📥 Fishpedia response:', response);
-      
-      if (response.success && response.species) {
-        // Backend sudah return format yang benar (camelCase)
-        setFishEntries(response.species);
+
+      const response = await api.get('/admin/fishpedia', {
+        params: { per_page: 100 }
+      });
+
+      const payload = response.data;
+      console.log('📥 Fishpedia response:', payload);
+
+      if (payload.success && Array.isArray(payload.data)) {
+        setFishEntries(payload.data as FishEntry[]);
       }
     } catch (err: any) {
       console.error('❌ Error fetching fish data:', err);
@@ -145,7 +145,7 @@ export default function AdminFishpedia() {
         formData.append('image', formImage);
       }
 
-      const response = await api.post('/fishpedia', formData, {
+      const response = await api.post('/admin/fishpedia', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -187,7 +187,7 @@ export default function AdminFishpedia() {
         formData.append('image', formImage);
       }
 
-      const response = await api.put(`/fishpedia/${selectedFish.id}`, formData, {
+      const response = await api.put(`/admin/fishpedia/${selectedFish.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -211,7 +211,7 @@ export default function AdminFishpedia() {
     if (!selectedFish) return;
     
     try {
-      const response = await api.delete(`/fishpedia/${selectedFish.id}`);
+      const response = await api.delete(`/admin/fishpedia/${selectedFish.id}`);
       
       if (response.data.success) {
         await fetchFishData();

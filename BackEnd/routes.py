@@ -6,12 +6,14 @@ from models import FishSpecies, ForumTopic, ForumReply, Order, Notification, Cha
 from models import ForumTopicLike, ForumReplyLike, ForumReport
 from datetime import datetime, timedelta
 from functools import wraps  # ✅ TAMBAHKAN BARIS INI
+from sqlalchemy import or_
 import random
 import string
 from werkzeug.utils import secure_filename
 import os
 import base64
 import json
+import mimetypes
 
 def admin_required(fn):
     """
@@ -32,6 +34,20 @@ def admin_required(fn):
         
         if user.role != 'admin':
             return jsonify({'success': False, 'message': 'Admin access required'}), 403
+
+            payment_labels = {
+                'pending': 'Menunggu Pembayaran',
+                'paid': 'Pembayaran Diterima',
+                'failed': 'Pembayaran Gagal'
+            }
+            payment_label = payment_labels.get(payment_status, payment_status.replace('_', ' ').title())
+            payment_notif_type = 'success' if payment_status == 'paid' else 'warning' if payment_status == 'failed' else 'info'
+            queue_notification(
+                order.user_id,
+                'Status Pembayaran Diperbarui',
+                f"Status pembayaran untuk pesanan #{order.order_number} sekarang {payment_label}.",
+                payment_notif_type
+            )
         
         # User is admin, proceed to endpoint
         return fn(*args, **kwargs)
@@ -102,18 +118,124 @@ def register_routes(app):
     
     UPLOAD_FOLDER = 'uploads/payment_proofs'
     DISEASE_UPLOAD_FOLDER = 'uploads/disease_detections'
+    FISHPEDIA_UPLOAD_FOLDER = os.path.abspath('uploads/fishpedia')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
     IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
     # Make sure upload folders exist
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     os.makedirs(DISEASE_UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(FISHPEDIA_UPLOAD_FOLDER, exist_ok=True)
 
     def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
     def allowed_image_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in IMAGE_EXTENSIONS
+
+    def save_fishpedia_image(file_storage):
+        if not file_storage or file_storage.filename == '':
+            return None
+        if not allowed_image_file(file_storage.filename):
+            return None
+
+        filename = secure_filename(file_storage.filename)
+        unique_filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}_{filename}"
+        abs_path = os.path.join(FISHPEDIA_UPLOAD_FOLDER, unique_filename)
+        file_storage.save(abs_path)
+        return unique_filename
+
+    def build_fishpedia_image_url(filename):
+        if not filename:
+            return None
+        return f"/api/fishpedia/images/{filename}"
+
+    def delete_fishpedia_image(image_url):
+        if not image_url:
+            return
+        prefix = '/api/fishpedia/images/'
+        if not image_url.startswith(prefix):
+            return
+        filename = image_url.replace(prefix, '', 1)
+        file_path = os.path.join(FISHPEDIA_UPLOAD_FOLDER, filename)
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception as remove_err:
+                print(f"⚠️ Unable to delete fishpedia image {file_path}: {remove_err}")
+
+    def parse_range(min_value, max_value, suffix=''):
+        if min_value and max_value:
+            base = f"{min_value}-{max_value}"
+        else:
+            base = min_value or max_value
+        if not base:
+            return None
+        if suffix and suffix not in base:
+            return f"{base}{suffix}"
+        return base
+
+    def get_request_data():
+        if request.content_type and 'application/json' in request.content_type:
+            return request.get_json() or {}
+        return request.form.to_dict()
+
+    def extract_fishpedia_payload(form_data):
+        payload = {}
+        payload['name'] = form_data.get('name')
+        payload['scientific_name'] = form_data.get('scientific_name') or form_data.get('scientificName')
+        payload['category'] = form_data.get('category')
+        payload['description'] = form_data.get('description')
+        payload['family'] = form_data.get('family')
+        payload['habitat'] = form_data.get('habitat')
+        payload['care_level'] = form_data.get('difficulty') or form_data.get('care_level')
+        payload['temperament'] = form_data.get('temperament')
+        payload['diet'] = form_data.get('diet')
+        payload['max_size'] = form_data.get('max_size') or form_data.get('size')
+        payload['min_tank_size'] = form_data.get('min_tank_size') or form_data.get('tank_size')
+
+        temp_min = form_data.get('temp_min') or form_data.get('temperature_min')
+        temp_max = form_data.get('temp_max') or form_data.get('temperature_max')
+        payload['water_temp'] = form_data.get('water_temp') or form_data.get('temperature_range') or parse_range(temp_min, temp_max, '°C')
+
+        ph_min = form_data.get('ph_min') or form_data.get('phMin')
+        ph_max = form_data.get('ph_max') or form_data.get('phMax')
+        payload['ph_range'] = form_data.get('ph_range') or parse_range(ph_min, ph_max)
+
+        payload['status'] = form_data.get('status') or 'draft'
+        payload['image_url'] = form_data.get('image_url') or form_data.get('image')
+        return payload
+
+    def apply_fishpedia_fields(instance, payload):
+        for field, value in payload.items():
+            if value is not None and hasattr(instance, field):
+                setattr(instance, field, value)
+
+    def queue_notification(user_id, title, message, notif_type='info', device_id=None):
+        """Queue a notification without committing the session."""
+        if not user_id or not title or not message:
+            return None
+
+        notification = Notification(
+            user_id=user_id,
+            device_id=device_id,
+            type=notif_type or 'info',
+            title=title[:200],
+            message=message
+        )
+        db.session.add(notification)
+        return notification
+
+    def notify_admins(title, message, notif_type='info'):
+        """Broadcast a notification to every active admin account."""
+        admins = User.query.filter_by(role='admin').all()
+        created = 0
+        for admin in admins:
+            if admin.is_active is False:
+                continue
+            if queue_notification(admin.id, title, message, notif_type):
+                created += 1
+        return created
 
 
     # Authentication Routes
@@ -144,6 +266,11 @@ def register_routes(app):
         user.set_password(data['password'])
         
         db.session.add(user)
+        notify_admins(
+            'Pengguna Baru Terdaftar',
+            f"Member baru {user.name} ({user.email}) baru saja mendaftar.",
+            'info'
+        )
         db.session.commit()
         
         # UBAH: Tidak return token, hanya return success message
@@ -988,6 +1115,22 @@ def register_routes(app):
             return jsonify({'success': False, 'message': 'Species not found'}), 404
         
         return jsonify({'success': True, 'fish': species.to_dict()}), 200
+
+    @app.route('/api/fishpedia/images/<path:filename>', methods=['GET'])
+    def get_fishpedia_image(filename):
+        safe_path = os.path.normpath(os.path.join(FISHPEDIA_UPLOAD_FOLDER, filename))
+        if not safe_path.startswith(FISHPEDIA_UPLOAD_FOLDER):
+            return jsonify({'error': 'Invalid file path'}), 400
+
+        if not os.path.exists(safe_path):
+            return jsonify({'error': 'Image not found'}), 404
+
+        mime_type, _ = mimetypes.guess_type(safe_path)
+        try:
+            return send_file(safe_path, mimetype=mime_type or 'application/octet-stream')
+        except Exception as e:
+            print(f"❌ Error serving fishpedia image: {e}")
+            return jsonify({'error': 'Failed to load image'}), 500
     
     # ============================================================================
     # ADMIN FISHPEDIA MANAGEMENT ROUTES (CRUD)
@@ -1062,6 +1205,104 @@ def register_routes(app):
             
         except Exception as e:
             print(f"Error getting fishpedia detail: {str(e)}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/admin/fishpedia', methods=['POST'])
+    @admin_required
+    def admin_create_fishpedia():
+        """Admin: Create new fishpedia entry"""
+        try:
+            data = get_request_data()
+            payload = extract_fishpedia_payload(data)
+
+            required_fields = ['name', 'scientific_name', 'category']
+            missing = [field for field in required_fields if not payload.get(field)]
+            if missing:
+                return jsonify({
+                    'success': False,
+                    'message': f"Missing required fields: {', '.join(missing)}"
+                }), 400
+
+            file_storage = request.files.get('image') if 'image' in request.files else None
+            if file_storage and not allowed_image_file(file_storage.filename):
+                return jsonify({'success': False, 'message': 'Unsupported image format'}), 400
+
+            filename = save_fishpedia_image(file_storage) if file_storage else None
+            if filename:
+                payload['image_url'] = build_fishpedia_image_url(filename)
+
+            new_species = FishSpecies(**payload)
+            db.session.add(new_species)
+            db.session.commit()
+
+            return jsonify({
+                'success': True,
+                'message': 'Fishpedia entry created successfully',
+                'data': new_species.to_dict()
+            }), 201
+
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error creating fishpedia entry: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/admin/fishpedia/<int:article_id>', methods=['PUT'])
+    @admin_required
+    def admin_update_fishpedia(article_id):
+        """Admin: Update existing fishpedia entry"""
+        try:
+            article = FishSpecies.query.get(article_id)
+            if not article:
+                return jsonify({'success': False, 'message': 'Article not found'}), 404
+
+            data = get_request_data()
+            payload = extract_fishpedia_payload(data)
+
+            file_storage = request.files.get('image') if 'image' in request.files else None
+            if file_storage and not allowed_image_file(file_storage.filename):
+                return jsonify({'success': False, 'message': 'Unsupported image format'}), 400
+
+            if file_storage:
+                filename = save_fishpedia_image(file_storage)
+                if filename:
+                    delete_fishpedia_image(article.image_url)
+                    payload['image_url'] = build_fishpedia_image_url(filename)
+
+            apply_fishpedia_fields(article, payload)
+            db.session.commit()
+
+            return jsonify({
+                'success': True,
+                'message': 'Fishpedia entry updated successfully',
+                'data': article.to_dict()
+            }), 200
+
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error updating fishpedia entry: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/admin/fishpedia/<int:article_id>', methods=['DELETE'])
+    @admin_required
+    def admin_delete_fishpedia(article_id):
+        """Admin: Delete fishpedia entry"""
+        try:
+            article = FishSpecies.query.get(article_id)
+            if not article:
+                return jsonify({'success': False, 'message': 'Article not found'}), 404
+
+            delete_fishpedia_image(article.image_url)
+            db.session.delete(article)
+            db.session.commit()
+
+            return jsonify({
+                'success': True,
+                'message': 'Fishpedia entry deleted successfully'
+            }), 200
+
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error deleting fishpedia entry: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
 
 
@@ -1550,6 +1791,70 @@ def register_routes(app):
         
         return jsonify({'user': user.to_dict()}), 200
     
+    def generate_order_number():
+        today = datetime.utcnow().strftime('%Y%m%d')
+        suffix = ''.join(random.choices(string.digits, k=5))
+        return f"ORD-{today}-{suffix}"
+
+    @app.route('/api/orders', methods=['POST'])
+    @jwt_required()
+    def create_order():
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+
+            data = request.get_json() or {}
+
+            product_name = data.get('product_name')
+            total_price = data.get('total_price')
+            quantity = int(data.get('quantity', 1) or 1)
+
+            if not product_name or total_price is None:
+                return jsonify({'error': 'product_name and total_price are required'}), 400
+
+            if quantity <= 0:
+                quantity = 1
+
+            order = Order(
+                order_number=generate_order_number(),
+                user_id=current_user_id,
+                product_name=product_name,
+                quantity=quantity,
+                total_price=float(total_price),
+                shipping_address=data.get('shipping_address'),
+                payment_method=data.get('payment_method'),
+                notes=data.get('notes')
+            )
+
+            db.session.add(order)
+            db.session.flush()
+
+            queue_notification(
+                current_user_id,
+                'Pesanan Berhasil Dibuat',
+                f"Pesanan #{order.order_number} berhasil dibuat dan sedang menunggu diproses.",
+                'success'
+            )
+
+            notify_admins(
+                'Pesanan Baru Masuk',
+                f"Member {current_user.name} membuat pesanan #{order.order_number} dengan total Rp {order.total_price:,.0f}",
+                'info'
+            )
+
+            db.session.commit()
+
+            return jsonify({
+                'success': True,
+                'message': 'Order created successfully',
+                'data': order.to_dict()
+            }), 201
+
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error creating order: {e}")
+            return jsonify({'error': str(e)}), 500
+
     @app.route('/api/orders', methods=['GET'])
     @jwt_required()
     def get_orders():
@@ -1666,6 +1971,7 @@ def register_routes(app):
         
         try:
             current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
             
             # Get order and verify ownership
             order = Order.query.filter_by(id=order_id, user_id=current_user_id).first()
@@ -1712,6 +2018,19 @@ def register_routes(app):
             order.payment_proof = filepath
             order.payment_status = 'pending_verification'
             order.updated_at = datetime.utcnow()
+
+            queue_notification(
+                current_user_id,
+                'Pembayaran Berhasil Diupload',
+                f"Bukti pembayaran untuk pesanan #{order.order_number} berhasil diunggah dan menunggu verifikasi.",
+                'success'
+            )
+
+            notify_admins(
+                'Bukti Pembayaran Diterima',
+                f"Member {current_user.name if current_user else current_user_id} mengunggah bukti pembayaran untuk pesanan #{order.order_number}.",
+                'info'
+            )
             
             db.session.commit()
             print(f"✅ Order {order_id} updated in database")
@@ -1938,6 +2257,22 @@ def register_routes(app):
             
             order.status = new_status
             order.updated_at = datetime.utcnow()
+
+            status_labels = {
+                'pending': 'Menunggu Konfirmasi',
+                'confirmed': 'Sedang Diproses',
+                'shipping': 'Sedang Dikirim',
+                'delivered': 'Telah Diterima',
+                'cancelled': 'Dibatalkan'
+            }
+            status_label = status_labels.get(new_status, new_status.replace('_', ' ').title())
+            notif_type = 'success' if new_status in ['confirmed', 'shipping', 'delivered'] else 'warning' if new_status == 'cancelled' else 'info'
+            queue_notification(
+                order.user_id,
+                'Status Pesanan Diperbarui',
+                f"Status pesanan #{order.order_number} Anda telah diperbarui menjadi \"{status_label}\".",
+                notif_type
+            )
             db.session.commit()
             
             return jsonify({
@@ -2279,7 +2614,14 @@ def register_routes(app):
                 user_to_update.phone = data['phone']
             
             # Don't allow role changes for security
-            
+            if user_to_update.role == 'member':
+                queue_notification(
+                    user_to_update.id,
+                    'Profil Diperbarui',
+                    'Profil akun Anda telah diperbarui oleh Admin.',
+                    'info'
+                )
+
             db.session.commit()
             
             return jsonify({
@@ -2318,6 +2660,16 @@ def register_routes(app):
             
             # Toggle status
             user_to_toggle.is_active = not user_to_toggle.is_active
+
+            status_phrase = 'diaktifkan' if user_to_toggle.is_active else 'dinonaktifkan'
+            notif_type = 'success' if user_to_toggle.is_active else 'warning'
+            if user_to_toggle.role == 'member':
+                queue_notification(
+                    user_to_toggle.id,
+                    'Status Akun Diubah',
+                    f"Akun Anda telah {status_phrase} oleh Admin.",
+                    notif_type
+                )
             db.session.commit()
             
             status_text = 'activated' if user_to_toggle.is_active else 'deactivated'
