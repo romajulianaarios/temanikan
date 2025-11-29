@@ -147,18 +147,92 @@ class DiseaseDetection(db.Model):
     notes = db.Column(db.Text)
     
     def to_dict(self):
+        # Resolve accessible image URL
+        image_url = None
+        raw_path = self.image_url
+        if raw_path:
+            if raw_path.startswith('http://') or raw_path.startswith('https://') or raw_path.startswith('/api/'):
+                image_url = raw_path
+            else:
+                image_url = f'/api/disease-detections/{self.id}/image'
+
+        # Parse metadata stored in notes (JSON) to enrich frontend fields
+        metadata = {}
+        friendly_notes = None
+        if self.notes:
+            try:
+                parsed = json.loads(self.notes)
+                if isinstance(parsed, dict):
+                    metadata = parsed
+                    friendly_notes = parsed.get('notes') or parsed.get('note')
+                else:
+                    friendly_notes = self.notes
+            except (json.JSONDecodeError, TypeError):
+                friendly_notes = self.notes
+
+        fish_type = metadata.get('fish_type') or metadata.get('fishType')
+        location = metadata.get('location')
+
+        # Determine status label/color based on metadata fallback severity/status
+        status_label = metadata.get('status_label')
+        status_color = metadata.get('status_color')
+        status_bg = metadata.get('status_bg')
+
+        severity_key = (self.severity or '').lower()
+        status_key = (self.status or '').lower()
+        severity_map = {
+            'critical': {'label': 'Darurat', 'color': '#CE3939', 'bg': 'rgba(206, 57, 57, 0.1)'},
+            'high': {'label': 'Perhatian', 'color': '#FEC53D', 'bg': 'rgba(254, 197, 61, 0.1)'},
+            'medium': {'label': 'Perhatian', 'color': '#FEC53D', 'bg': 'rgba(254, 197, 61, 0.1)'},
+            'low': {'label': 'Observasi', 'color': '#8280FF', 'bg': 'rgba(130, 128, 255, 0.1)'},
+            'default': {'label': 'Observasi', 'color': '#8280FF', 'bg': 'rgba(130, 128, 255, 0.1)'}
+        }
+
+        resolved_map = severity_map.get('low')
+        if status_key == 'resolved':
+            resolved_map = {'label': 'Sehat', 'color': '#4AD991', 'bg': 'rgba(74, 217, 145, 0.1)'}
+
+        fallback_meta = resolved_map if status_key == 'resolved' else severity_map.get(severity_key, severity_map['default'])
+        status_label = status_label or fallback_meta['label']
+        status_color = status_color or fallback_meta['color']
+        status_bg = status_bg or fallback_meta['bg']
+
+        # Parse symptoms list if stored as JSON
+        symptoms_list = []
+        if self.symptoms:
+            try:
+                parsed_symptoms = json.loads(self.symptoms)
+                if isinstance(parsed_symptoms, list):
+                    symptoms_list = parsed_symptoms
+                elif isinstance(parsed_symptoms, str):
+                    symptoms_list = [parsed_symptoms]
+            except (json.JSONDecodeError, TypeError):
+                parts = [part.strip() for part in self.symptoms.split(',') if part.strip()]
+                symptoms_list = parts or [self.symptoms]
+
+        confidence_value = round(self.confidence or 0, 2)
+
         return {
             'id': self.id,
             'device_id': self.device_id,
             'disease_name': self.disease_name,
-            'confidence': self.confidence,
+            'confidence': confidence_value,
+            'confidence_percent': confidence_value,
             'severity': self.severity,
-            'image_url': self.image_url,
+            'image_url': image_url,
+            'image_path': raw_path if raw_path and image_url != raw_path else None,
             'symptoms': self.symptoms,
+            'symptoms_list': symptoms_list,
             'recommended_treatment': self.recommended_treatment,
             'detected_at': self.detected_at.isoformat() if self.detected_at else None,
             'status': self.status,
-            'notes': self.notes
+            'notes': friendly_notes or self.notes,
+            'fish_type': fish_type,
+            'location': location,
+            'status_label': status_label,
+            'status_color': status_color,
+            'status_bg': status_bg,
+            'metadata': metadata
         }
 
 class FishSpecies(db.Model):

@@ -63,6 +63,11 @@ export default function MyOrders() {
     description: 'Robot pembersih akuarium otomatis dengan AI detection terintegrasi'
   };
 
+  const dialogOverlayStyle = {
+    backdropFilter: 'none',
+    background: 'rgba(15, 23, 42, 0.45)'
+  };
+
   // Fetch orders on mount
   useEffect(() => {
     fetchOrders();
@@ -743,7 +748,11 @@ export default function MyOrders() {
 
       {/* Success Modal */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="max-w-md" style={{ backgroundColor: 'white' }}>
+        <DialogContent
+          className="max-w-md"
+          style={{ backgroundColor: 'white' }}
+          overlayStyle={dialogOverlayStyle}
+        >
           <DialogHeader>
             <div className="flex justify-between items-start">
               <DialogTitle className="flex items-center gap-3" style={{ color: '#4880FF' }}>
@@ -827,48 +836,54 @@ export default function MyOrders() {
 
       {/* Detail Modal */}
       <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
-        <DialogContent className="max-w-md" style={{ backgroundColor: 'white' }}>
+        <DialogContent
+          className="w-[92vw] sm:max-w-md text-[12px] md:text-[13px] max-h-[80vh] overflow-y-auto"
+          style={{ backgroundColor: 'white', fontFamily: '"Nunito Sans", sans-serif', borderRadius: '12px' }}
+          overlayStyle={dialogOverlayStyle}
+        >
           {selectedOrder && (
             <>
               <DialogHeader>
-                <DialogTitle style={{ color: '#4880FF' }}>Detail Pesanan</DialogTitle>
+                <DialogTitle className="text-base font-semibold" style={{ color: '#4880FF', fontFamily: 'inherit' }}>
+                  Detail Pesanan
+                </DialogTitle>
               </DialogHeader>
               
               <div className="space-y-4 py-4">
                 <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
-                  <p className="text-sm text-gray-600 mb-1">ID Pesanan</p>
-                  <p className="text-lg" style={{ color: '#4880FF' }}>{selectedOrder.order_number}</p>
+                  <p className="text-gray-600 mb-1">ID Pesanan</p>
+                  <p className="text-[13px] font-semibold" style={{ color: '#4880FF' }}>{selectedOrder.order_number}</p>
                 </div>
 
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Nama Pemesan</p>
+                    <p className="text-gray-600 mb-1">Nama Pemesan</p>
                     <p style={{ color: '#2D3436' }}>{selectedOrder.user?.name || 'Customer'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Produk</p>
+                    <p className="text-gray-600 mb-1">Produk</p>
                     <p style={{ color: '#2D3436' }}>{selectedOrder.product_name}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Jumlah</p>
+                    <p className="text-gray-600 mb-1">Jumlah</p>
                     <p style={{ color: '#2D3436' }}>{selectedOrder.quantity} unit</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Tanggal Pesanan</p>
+                    <p className="text-gray-600 mb-1">Tanggal Pesanan</p>
                     <p style={{ color: '#2D3436' }}>{formatDate(selectedOrder.created_at)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Metode Pembayaran</p>
+                    <p className="text-gray-600 mb-1">Metode Pembayaran</p>
                     <p style={{ color: '#2D3436' }}>{getPaymentMethodLabel(selectedOrder.payment_method || '')}</p>
                   </div>
                   {selectedOrder.shipping_address && (
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">Alamat Pengiriman</p>
+                      <p className="text-gray-600 mb-1">Alamat Pengiriman</p>
                       <p style={{ color: '#2D3436' }}>{selectedOrder.shipping_address}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Status</p>
+                    <p className="text-gray-600 mb-1">Status</p>
                     <Badge 
                       style={{ 
                         backgroundColor: getStatusConfig(selectedOrder.status, selectedOrder.payment_status).bgColor,
@@ -880,8 +895,8 @@ export default function MyOrders() {
                   </div>
                   <div className="border-t pt-3" style={{ borderColor: '#CBDCEB' }}>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: '#2D3436' }}>Total Pembayaran</span>
-                      <span className="text-2xl" style={{ color: '#4880FF' }}>
+                      <span className="font-semibold" style={{ color: '#2D3436' }}>Total Pembayaran</span>
+                      <span className="text-base md:text-lg font-bold" style={{ color: '#4880FF' }}>
                         {formatCurrency(selectedOrder.total_price)}
                       </span>
                     </div>
@@ -916,7 +931,11 @@ export default function MyOrders() {
 
       {/* Payment Success Modal */}
       <Dialog open={showPaymentSuccessModal} onOpenChange={setShowPaymentSuccessModal}>
-        <DialogContent className="max-w-md" style={{ backgroundColor: 'white' }}>
+        <DialogContent
+          className="max-w-md"
+          style={{ backgroundColor: 'white' }}
+          overlayStyle={dialogOverlayStyle}
+        >
           <DialogHeader>
             <div className="flex flex-col items-center gap-4 py-4">
               <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#D1FAE5' }}>
@@ -956,7 +975,11 @@ export default function MyOrders() {
 
       {/* Payment Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent className="max-w-lg" style={{ backgroundColor: 'white' }}>
+        <DialogContent
+          className="max-w-lg"
+          style={{ backgroundColor: 'white' }}
+          overlayStyle={dialogOverlayStyle}
+        >
           {selectedOrder && (
             <>
               <DialogHeader>

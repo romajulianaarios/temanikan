@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Link } from '../Router';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { CheckCircle, XCircle, AlertTriangle, Bot, Calendar } from '../icons';
+import { mockCleaningRecords } from './data/robotMockData';
 
 interface CleaningRecord {
   id: number;
@@ -20,118 +20,19 @@ interface CleaningRecord {
 export default function CleaningHistory() {
   const [activeTab, setActiveTab] = useState('semua');
 
-  const cleaningRecords: CleaningRecord[] = [
-    {
-      id: 1,
-      date: '4 Nov 2025',
-      time: '20:00',
-      duration: '45 menit',
-      status: 'completed',
-      batteryUsed: 35,
-      areasCleaned: ['Dasar kolam', 'Dinding kolam', 'Area filter']
-    },
-    {
-      id: 2,
-      date: '3 Nov 2025',
-      time: '20:00',
-      duration: '42 menit',
-      status: 'completed',
-      batteryUsed: 32,
-      areasCleaned: ['Dasar kolam', 'Dinding kolam']
-    },
-    {
-      id: 3,
-      date: '2 Nov 2025',
-      time: '20:00',
-      duration: '48 menit',
-      status: 'completed',
-      batteryUsed: 38,
-      areasCleaned: ['Dasar kolam', 'Dinding kolam', 'Area filter']
-    },
-    {
-      id: 4,
-      date: '2 Nov 2025',
-      time: '10:00',
-      duration: '15 menit',
-      status: 'interrupted',
-      batteryUsed: 12,
-      areasCleaned: ['Dasar kolam'],
-      notes: 'Pembersihan dihentikan secara manual'
-    },
-    {
-      id: 5,
-      date: '1 Nov 2025',
-      time: '20:00',
-      duration: '44 menit',
-      status: 'completed',
-      batteryUsed: 34,
-      areasCleaned: ['Dasar kolam', 'Dinding kolam']
-    },
-    {
-      id: 6,
-      date: '31 Okt 2025',
-      time: '20:00',
-      duration: '0 menit',
-      status: 'failed',
-      batteryUsed: 0,
-      areasCleaned: [],
-      notes: 'Baterai terlalu rendah untuk memulai pembersihan'
-    },
-    {
-      id: 7,
-      date: '30 Okt 2025',
-      time: '20:00',
-      duration: '46 menit',
-      status: 'completed',
-      batteryUsed: 36,
-      areasCleaned: ['Dasar kolam', 'Dinding kolam', 'Area filter']
-    },
-    {
-      id: 8,
-      date: '29 Okt 2025',
-      time: '20:00',
-      duration: '43 menit',
-      status: 'completed',
-      batteryUsed: 33,
-      areasCleaned: ['Dasar kolam', 'Dinding kolam']
-    },
-    {
-      id: 9,
-      date: '28 Okt 2025',
-      time: '20:00',
-      duration: '47 menit',
-      status: 'completed',
-      batteryUsed: 37,
-      areasCleaned: ['Dasar kolam', 'Dinding kolam', 'Area filter']
-    },
-    {
-      id: 10,
-      date: '27 Okt 2025',
-      time: '20:00',
-      duration: '41 menit',
-      status: 'completed',
-      batteryUsed: 31,
-      areasCleaned: ['Dasar kolam', 'Dinding kolam']
-    },
-    {
-      id: 11,
-      date: '26 Okt 2025',
-      time: '20:00',
-      duration: '45 menit',
-      status: 'completed',
-      batteryUsed: 35,
-      areasCleaned: ['Dasar kolam', 'Dinding kolam']
-    },
-    {
-      id: 12,
-      date: '25 Okt 2025',
-      time: '20:00',
-      duration: '44 menit',
-      status: 'completed',
-      batteryUsed: 34,
-      areasCleaned: ['Dasar kolam', 'Dinding kolam', 'Area filter']
-    }
-  ];
+  const cleaningRecords: CleaningRecord[] = mockCleaningRecords.map((record) => {
+    const startDate = new Date(record.started_at);
+    return {
+      id: record.id,
+      date: startDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+      time: startDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      duration: record.duration_minutes > 0 ? `${record.duration_minutes} menit` : '0 menit',
+      status: record.status,
+      batteryUsed: record.battery_used,
+      areasCleaned: record.areas_cleaned,
+      notes: record.notes
+    };
+  });
 
   const getFilteredRecords = () => {
     switch (activeTab) {

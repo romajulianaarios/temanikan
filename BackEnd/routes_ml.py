@@ -19,11 +19,17 @@ def load_model():
     global model
     if model is None:
         try:
+            print(f"DEBUG: Current __file__: {__file__}")
+            print(f"DEBUG: Calculated MODEL_PATH: {MODEL_PATH}")
+            print(f"DEBUG: Checking if file exists: {os.path.exists(MODEL_PATH)}")
+            
             print(f"Loading model from: {MODEL_PATH}")
             model = YOLO(MODEL_PATH)
             print("Model loaded successfully")
         except Exception as e:
             print(f"Error loading model: {e}")
+            import traceback
+            traceback.print_exc()
 
 from flask_jwt_extended import jwt_required
 

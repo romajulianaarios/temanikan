@@ -305,6 +305,16 @@ export const robotAPI = {
 
 // Disease Detection API
 export const diseaseAPI = {
+  getAllDetections: async (limit: number = 50, deviceId?: number) => {
+    const response = await api.get('/disease-detections', {
+      params: {
+        limit,
+        device_id: deviceId
+      }
+    });
+    return response.data;
+  },
+
   getDetections: async (deviceId: number, limit: number = 50) => {
     const response = await api.get(`/devices/${deviceId}/disease-detections`, {
       params: { limit }
@@ -695,6 +705,11 @@ export const notificationAPI = {
 
   markAllAsRead: async () => {
     const response = await api.put('/notifications/read-all');
+    return response.data;
+  },
+
+  getNotificationDetail: async (notificationId: number) => {
+    const response = await api.get(`/notifications/${notificationId}`);
     return response.data;
   },
 };

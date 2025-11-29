@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import { XIcon } from "../icons";
 import { cn } from "./utils";
 
+let openDialogCount = 0;
+
 interface DialogContextValue {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -89,16 +91,15 @@ const DialogOverlay = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "fixed inset-0 animate-in fade-in-0",
+      "fixed inset-0",
       className
     )}
-    style={{ 
+    style={{
       pointerEvents: 'auto',
-      zIndex: 999998,
-      isolation: 'isolate',
       background: 'rgba(0, 0, 0, 0.5)',
       backdropFilter: 'blur(8px)',
-      ...props.style 
+      zIndex: 999,
+      ...props.style
     }}
     {...props}
   />
@@ -129,11 +130,17 @@ const DialogClose = React.forwardRef<
 });
 DialogClose.displayName = "DialogClose";
 
+interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  overlayClassName?: string;
+  overlayStyle?: React.CSSProperties;
+}
+
 const DialogContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => {
+  DialogContentProps
+>(({ className, children, overlayClassName, overlayStyle, ...props }, ref) => {
   const context = React.useContext(DialogContext);
+  const isOpen = context?.open;
 
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -142,37 +149,47 @@ const DialogContent = React.forwardRef<
       }
     };
 
-    if (context?.open) {
+    if (isOpen) {
       document.addEventListener('keydown', handleEscape);
+      openDialogCount += 1;
+      document.body.classList.add('dialog-open');
       document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      if (isOpen) {
+        openDialogCount = Math.max(openDialogCount - 1, 0);
+        if (openDialogCount === 0) {
+          document.body.classList.remove('dialog-open');
+          document.body.style.overflow = 'unset';
+        }
+      }
     };
-  }, [context?.open, context]);
+  }, [isOpen, context]);
 
   return (
     <DialogPortal>
-      <DialogOverlay onClick={() => context?.onOpenChange(false)} />
+      <DialogOverlay
+        className={overlayClassName}
+        style={overlayStyle}
+        onClick={() => context?.onOpenChange(false)}
+      />
       <div
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 p-6 animate-in fade-in-0 zoom-in-95",
+          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 p-6",
           className
         )}
-        style={{ 
-          pointerEvents: 'auto', 
+        style={{
+          pointerEvents: 'auto',
           position: 'fixed',
-          zIndex: 999999,
-          isolation: 'isolate',
           background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
           borderRadius: '24px',
           border: '2px solid rgba(255, 255, 255, 0.5)',
           boxShadow: '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
-          ...props.style 
+          zIndex: 1000,
+          ...props.style
         }}
         {...props}
       >

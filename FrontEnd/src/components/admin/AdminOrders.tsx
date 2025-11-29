@@ -172,6 +172,11 @@ export default function AdminOrders() {
     });
   };
 
+  const dialogOverlayStyle = {
+    backdropFilter: 'none',
+    background: 'rgba(15, 23, 42, 0.45)'
+  };
+
   const getStatusConfig = (status: string) => {
     const configs: Record<string, any> = {
       pending: {
@@ -761,48 +766,54 @@ export default function AdminOrders() {
 
       {/* Detail Modal */}
       <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
-        <DialogContent className="max-w-md" style={{ backgroundColor: 'white' }}>
+        <DialogContent
+          className="w-[92vw] sm:max-w-md text-[12px] md:text-[13px] max-h-[80vh] overflow-y-auto"
+          style={{ backgroundColor: 'white', fontFamily: '"Nunito Sans", sans-serif', borderRadius: '12px' }}
+          overlayStyle={dialogOverlayStyle}
+        >
           {selectedOrder && (
             <>
               <DialogHeader>
-                <DialogTitle style={{ color: '#4880FF' }}>Detail Pesanan</DialogTitle>
+                <DialogTitle className="text-base font-semibold" style={{ color: '#4880FF', fontFamily: 'inherit' }}>
+                  Detail Pesanan
+                </DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4 py-4">
                 <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
-                  <p className="text-sm text-gray-600 mb-1">ID Pesanan</p>
-                  <p className="text-lg" style={{ color: '#4880FF' }}>{selectedOrder.order_number}</p>
+                  <p className="text-gray-600 mb-1">ID Pesanan</p>
+                  <p className="text-[13px] font-semibold" style={{ color: '#4880FF' }}>{selectedOrder.order_number}</p>
                 </div>
 
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Nama Customer</p>
+                    <p className="text-gray-600 mb-1">Nama Customer</p>
                     <p style={{ color: '#2D3436' }}>{selectedOrder.user?.name || 'Customer'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Email Customer</p>
+                    <p className="text-gray-600 mb-1">Email Customer</p>
                     <p style={{ color: '#2D3436' }}>{selectedOrder.user?.email || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Produk</p>
+                    <p className="text-gray-600 mb-1">Produk</p>
                     <p style={{ color: '#2D3436' }}>{selectedOrder.product_name}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Jumlah</p>
+                    <p className="text-gray-600 mb-1">Jumlah</p>
                     <p style={{ color: '#2D3436' }}>{selectedOrder.quantity} unit</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Tanggal Pesanan</p>
+                    <p className="text-gray-600 mb-1">Tanggal Pesanan</p>
                     <p style={{ color: '#2D3436' }}>{formatDate(selectedOrder.created_at)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Metode Pembayaran</p>
+                    <p className="text-gray-600 mb-1">Metode Pembayaran</p>
                     <p style={{ color: '#2D3436' }}>{selectedOrder.payment_method || '-'}</p>
                   </div>
                   {/* Payment Proof Section */}
                   {selectedOrder?.payment_proof && (
                     <div>
-                      <p className="text-sm text-gray-600 mb-2">Bukti Pembayaran</p>
+                      <p className="text-gray-600 mb-2">Bukti Pembayaran</p>
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2 text-sm" style={{ color: '#10B981' }}>
                           <CheckCircle className="w-4 h-4" />
@@ -821,11 +832,11 @@ export default function AdminOrders() {
                     </div>
                   )}
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Alamat Pengiriman</p>
+                    <p className="text-gray-600 mb-1">Alamat Pengiriman</p>
                     <p style={{ color: '#2D3436' }}>{selectedOrder.shipping_address || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Status</p>
+                    <p className="text-gray-600 mb-1">Status</p>
                     <Badge
                       style={{
                         backgroundColor: getStatusConfig(selectedOrder.status).bgColor,
@@ -837,8 +848,8 @@ export default function AdminOrders() {
                   </div>
                   <div className="border-t pt-3" style={{ borderColor: '#E5E7EB' }}>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: '#2D3436' }}>Total Pembayaran</span>
-                      <span className="text-2xl" style={{ color: '#4880FF' }}>
+                      <span className="font-semibold" style={{ color: '#2D3436' }}>Total Pembayaran</span>
+                      <span className="text-base md:text-lg font-bold" style={{ color: '#4880FF' }}>
                         {formatCurrency(selectedOrder.total_price)}
                       </span>
                     </div>
@@ -871,16 +882,20 @@ export default function AdminOrders() {
 
       {/* Payment Proof Modal - MODAL BARU */}
       <Dialog open={showPaymentProofModal} onOpenChange={setShowPaymentProofModal}>
-        <DialogContent className="max-w-2xl" style={{ backgroundColor: 'white' }}>
+        <DialogContent
+          className="w-[95vw] sm:max-w-2xl text-[12px] md:text-[13px] max-h-[85vh] overflow-y-auto"
+          style={{ backgroundColor: 'white', fontFamily: '"Nunito Sans", sans-serif', borderRadius: '12px' }}
+          overlayStyle={dialogOverlayStyle}
+        >
           {selectedOrder && (
             <>
               <DialogHeader>
-                <DialogTitle style={{ color: '#4880FF' }}>
+                <DialogTitle className="text-base font-semibold" style={{ color: '#4880FF', fontFamily: 'inherit' }}>
                   Bukti Pembayaran - {selectedOrder.order_number}
                 </DialogTitle>
               </DialogHeader>
 
-              <div className="py-4">
+              <div className="py-4 space-y-4">
                 {paymentProofImage ? (
                   <div className="space-y-4">
                     <div className="rounded-lg overflow-hidden border" style={{ borderColor: '#E5E7EB' }}>
@@ -890,14 +905,14 @@ export default function AdminOrders() {
                         className="w-full h-auto max-h-[500px] object-contain bg-gray-50"
                       />
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
                       <div>
-                        <p className="text-sm text-gray-600">Customer</p>
+                        <p className="text-gray-600">Customer</p>
                         <p style={{ color: '#2D3436' }}>{selectedOrder.user?.name}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Total Pembayaran</p>
-                        <p className="text-xl" style={{ color: '#4880FF' }}>
+                        <p className="text-gray-600">Total Pembayaran</p>
+                        <p className="text-base md:text-lg font-semibold" style={{ color: '#4880FF' }}>
                           Rp {selectedOrder.total_price?.toLocaleString('id-ID')}
                         </p>
                       </div>
@@ -911,7 +926,7 @@ export default function AdminOrders() {
                 )}
               </div>
 
-              <DialogFooter className="flex gap-2">
+              <DialogFooter className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"
                   onClick={() => {
