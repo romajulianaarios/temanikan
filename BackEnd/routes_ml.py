@@ -8,10 +8,8 @@ import numpy as np
 ml_bp = Blueprint('ml', __name__)
 
 # Load model
-# Adjust path as necessary. Assuming 'Machine Learning' folder is in the root of the workspace,
-# and we are running from 'BackEnd' directory.
-# We might need to go up one level if 'Machine Learning' is a sibling of 'BackEnd'.
-MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Machine Learning', 'best.pt')
+# Model file now lives directly inside BackEnd for easier hosting.
+MODEL_PATH = os.path.join(os.path.dirname(__file__), 'best.pt')
 
 model = None
 
