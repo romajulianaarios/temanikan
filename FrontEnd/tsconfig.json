@@ -5,23 +5,14 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-
-    /* JSX Configuration - PENTING! */
-    "jsx": "react-jsx",              // ✅ Untuk React 17+
-    // atau
-    // "jsx": "react",               // Untuk React 16 atau older
-    
+    "jsx": "react-jsx",
     "jsxFactory": "React.createElement",
     "jsxFragmentFactory": "React.Fragment",
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-
-    /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

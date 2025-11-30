@@ -199,6 +199,41 @@ def register_routes(app):
             return f"{base}{suffix}"
         return base
 
+    def get_device_online_status(last_online):
+        """Return 'online' if device pinged recently, otherwise 'offline'."""
+        if not last_online:
+            return 'offline'
+
+        delta = datetime.utcnow() - last_online
+        # Consider device online if pinged within last 5 minutes
+        return 'online' if delta <= timedelta(minutes=5) else 'offline'
+
+    def format_last_active(last_online):
+        """Human friendly text describing when device was last seen."""
+        if not last_online:
+            return 'Belum pernah aktif'
+
+        delta = datetime.utcnow() - last_online
+        minutes = int(delta.total_seconds() // 60)
+        hours = minutes // 60
+        days = delta.days
+
+        if minutes < 1:
+            return 'Baru saja'
+        if minutes == 1:
+            return '1 menit lalu'
+        if minutes < 60:
+            return f"{minutes} menit lalu"
+        if hours == 1:
+            return '1 jam lalu'
+        if hours < 24:
+            return f"{hours} jam lalu"
+        if days == 1:
+            return 'Kemarin'
+        if days < 7:
+            return f"{days} hari lalu"
+        return last_online.strftime('%d %b %Y, %H:%M')
+
     def get_request_data():
         if request.content_type and 'application/json' in request.content_type:
             return request.get_json() or {}
