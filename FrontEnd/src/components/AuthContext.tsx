@@ -175,7 +175,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         return {
           success: true,
-          message: response.message || 'Login berhasil'
+          message: response.message || 'Login berhasil',
+          user: response.user // ✨ Return user data untuk redirect
         };
       } else {
         console.error('❌ No access_token in response!');

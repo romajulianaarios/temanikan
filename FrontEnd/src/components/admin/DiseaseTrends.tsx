@@ -146,13 +146,41 @@ export default function DiseaseTrends() {
       {/* Disease Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {diseaseStats.map((stat, index) => (
-          <Card key={index} className="p-6" style={{ backgroundColor: 'white' }}>
-            <div className="flex items-start justify-between mb-2">
+          <Card 
+            key={index} 
+            className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+            style={{ 
+              backgroundColor: '#FFFFFF',
+              border: '2px solid rgba(72, 128, 255, 0.2)',
+              borderRadius: '32px',
+              boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+              e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+            }}
+          >
+            <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+                filter: 'blur(20px)'
+              }}
+            ></div>
+            <div className="flex items-start justify-between mb-2 relative z-10">
               <div>
-                <p className="text-sm text-gray-600 mb-1">{stat.name}</p>
+                <p className="text-sm font-semibold mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{stat.name}</p>
                 <div className="flex items-end gap-2">
-                  <p className="text-3xl" style={{ color: '#133E87' }}>{stat.total}</p>
-                  <span className={`text-sm ${stat.trend === 'up' ? 'text-red-600' : 'text-green-600'}`}>
+                  <p className="text-3xl font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{stat.total}</p>
+                  <span className={`text-sm font-bold ${stat.trend === 'up' ? 'text-red-600' : 'text-green-600'}`}
+                    style={{ fontFamily: 'Nunito Sans, sans-serif' }}
+                  >
                     {stat.change}
                   </span>
                 </div>
@@ -163,19 +191,25 @@ export default function DiseaseTrends() {
                 <TrendingDown className="w-5 h-5 text-green-600" />
               )}
             </div>
-            <div className="mt-3">
+            <div className="mt-3 relative z-10">
               {stat.severity === 'high' && (
-                <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">
+                <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800 font-semibold"
+                  style={{ fontFamily: 'Nunito Sans, sans-serif' }}
+                >
                   Tinggi
                 </span>
               )}
               {stat.severity === 'medium' && (
-                <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 font-semibold"
+                  style={{ fontFamily: 'Nunito Sans, sans-serif' }}
+                >
                   Sedang
                 </span>
               )}
               {stat.severity === 'low' && (
-                <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 font-semibold"
+                  style={{ fontFamily: 'Nunito Sans, sans-serif' }}
+                >
                   Rendah
                 </span>
               )}
@@ -185,10 +219,35 @@ export default function DiseaseTrends() {
       </div>
 
       {/* Filters */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <div className="flex flex-col md:flex-row gap-4">
+      <Card 
+        className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="flex flex-col md:flex-row gap-4 relative z-10">
           <div className="flex-1">
-            <label className="block text-sm mb-2" style={{ color: '#133E87' }}>
+            <label className="block text-sm mb-2 font-semibold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
               Periode
             </label>
             <Select value={periodFilter} onValueChange={setPeriodFilter}>
@@ -204,7 +263,7 @@ export default function DiseaseTrends() {
             </Select>
           </div>
           <div className="flex-1">
-            <label className="block text-sm mb-2" style={{ color: '#133E87' }}>
+            <label className="block text-sm mb-2 font-semibold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
               Jenis Penyakit
             </label>
             <Select value={diseaseFilter} onValueChange={setDiseaseFilter}>
@@ -221,7 +280,7 @@ export default function DiseaseTrends() {
             </Select>
           </div>
           <div className="flex-1">
-            <label className="block text-sm mb-2" style={{ color: '#133E87' }}>
+            <label className="block text-sm mb-2 font-semibold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
               Lokasi
             </label>
             <Select value={locationFilter} onValueChange={setLocationFilter}>
@@ -243,13 +302,39 @@ export default function DiseaseTrends() {
       </Card>
 
       {/* Monthly Trends */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <h3 className="mb-4" style={{ color: '#133E87' }}>Tren Deteksi Bulanan</h3>
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart
-            data={monthlyTrends}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
+      <Card 
+        className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <h3 className="mb-4 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Tren Deteksi Bulanan</h3>
+        <div className="relative z-10">
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart
+              data={monthlyTrends}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
             <CartesianGrid strokeDasharray="3 3" stroke="#CBDCEB" />
             <XAxis
               dataKey="month"
@@ -325,12 +410,39 @@ export default function DiseaseTrends() {
             )}
           </LineChart>
         </ResponsiveContainer>
+        </div>
       </Card>
 
       {/* Regional Distribution */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <h3 className="mb-4" style={{ color: '#133E87' }}>Distribusi Regional</h3>
-        <ResponsiveContainer width="100%" height={400}>
+      <Card 
+        className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <h3 className="mb-4 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Distribusi Regional</h3>
+        <div className="relative z-10">
+          <ResponsiveContainer width="100%" height={400}>
           <BarChart
             data={regionalData}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -366,12 +478,38 @@ export default function DiseaseTrends() {
             />
           </BarChart>
         </ResponsiveContainer>
+        </div>
       </Card>
 
       {/* Insights */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <h3 className="mb-4" style={{ color: '#133E87' }}>Insight & Rekomendasi</h3>
-        <div className="space-y-3">
+      <Card 
+        className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <h3 className="mb-4 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Insight & Rekomendasi</h3>
+        <div className="space-y-3 relative z-10">
           <div
             className="p-4 rounded-lg flex items-start gap-3"
             style={{ backgroundColor: '#fee2e2' }}

@@ -77,7 +77,7 @@
 
 @layer theme {
   :root, :host {
-    --font-sans: "Nunito Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --color-red-50: oklch(.971 .013 17.38);
     --color-red-100: oklch(.936 .032 17.717);
@@ -4098,7 +4098,24 @@ header.sticky button.navbar-register-btn {
   }
 }
 
-body.dialog-open .admin-top-header {
-  border-color: transparent !important;
-  box-shadow: none !important;
+/* Global Bubble Button Style untuk Dashboard Admin */
+.bubble-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer;
+  will-change: transform, background-color, box-shadow;
+  font-family: 'Nunito Sans', sans-serif !important;
+}
+
+.bubble-button:hover {
+  transform: translateY(-2px) scale(1.05) !important;
+}
+
+.bubble-button:active {
+  transform: translateY(0) scale(1.02) !important;
+}
+
+/* Bubble Card Style */
+.bubble-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  will-change: transform, box-shadow;
 }

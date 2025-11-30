@@ -12,8 +12,6 @@ import string
 from werkzeug.utils import secure_filename
 import os
 import base64
-import json
-import mimetypes
 
 def admin_required(fn):
     """
@@ -54,188 +52,114 @@ def admin_required(fn):
     return wrapper
 
 
-def get_device_online_status(last_online):
+def generate_fallback_response(message: str, fish_species_list):
     """
-    Check if device is online based on last_online timestamp.
-    Returns 'online' if active within last 5 minutes, else 'offline'.
+    Generate fallback response from database when AI API is not available.
+    Provides helpful information based on fish species in database.
     """
-    if not last_online:
-        return 'offline'
+    message_lower = message.lower()
     
-    try:
-        # If last_online is string, try to parse it
-        if isinstance(last_online, str):
-            last_online = datetime.fromisoformat(last_online)
+    # Check if asking about specific fish
+    for fish in fish_species_list:
+        if fish.name.lower() in message_lower or (fish.scientific_name and fish.scientific_name.lower() in message_lower):
+            response = f"Informasi tentang {fish.name}"
+            if fish.scientific_name:
+                response += f" ({fish.scientific_name})"
+            response += ":\n\n"
             
-        # Compare with current UTC time
-        now = datetime.utcnow()
-        time_diff = now - last_online
-        
-        # Consider online if active in last 5 minutes (300 seconds)
-        if time_diff.total_seconds() <= 300:
-            return 'online'
-        return 'offline'
-    except Exception as e:
-        print(f"Error calculating online status: {e}")
-        return 'offline'
-
-
-def format_last_active(last_online):
-    """
-    Format last_online timestamp to human readable string.
-    Example: '2 menit yang lalu', '1 jam yang lalu', etc.
-    """
-    if not last_online:
-        return 'Belum pernah aktif'
+            if fish.description:
+                response += fish.description + "\n\n"
+            
+            if fish.water_temp:
+                response += f"Suhu air yang disarankan: {fish.water_temp}\n"
+            if fish.ph_range:
+                response += f"Rentang pH: {fish.ph_range}\n"
+            if fish.size:
+                response += f"Ukuran: {fish.size}\n"
+            if fish.diet:
+                response += f"Diet: {fish.diet}\n"
+            
+            response += "\nCatatan: Layanan AI sedang tidak tersedia. Informasi ini berasal dari database Temanikan."
+            return response
     
-    try:
-        # If last_online is string, try to parse it
-        if isinstance(last_online, str):
-            last_online = datetime.fromisoformat(last_online)
-            
-        now = datetime.utcnow()
-        time_diff = now - last_online
-        seconds = time_diff.total_seconds()
-        
-        if seconds < 60:
-            return 'Baru saja'
-        elif seconds < 3600:
-            minutes = int(seconds / 60)
-            return f'{minutes} menit yang lalu'
-        elif seconds < 86400:
-            hours = int(seconds / 3600)
-            return f'{hours} jam yang lalu'
-        else:
-            days = int(seconds / 86400)
-            return f'{days} hari yang lalu'
-    except Exception as e:
-        print(f"Error formatting last active: {e}")
-        return '-'
+    # Check for common questions
+    if any(word in message_lower for word in ['penyakit', 'sakit', 'symptoms', 'gejala']):
+        return """Informasi tentang Penyakit Ikan:
+
+Penyakit ikan hias umumnya disebabkan oleh kualitas air yang buruk, stres, atau infeksi bakteri dan parasit.
+
+Gejala umum penyakit ikan meliputi perubahan warna, bintik-bintik putih, sirip yang rusak, atau perilaku tidak normal seperti menggosok-gosokkan tubuh ke dinding akuarium.
+
+Untuk diagnosis yang lebih akurat, disarankan untuk memeriksa kualitas air terlebih dahulu. Parameter penting meliputi suhu, pH, amonia, nitrit, dan nitrat.
+
+Pengobatan penyakit ikan biasanya melibatkan karantina ikan yang sakit, perbaikan kualitas air, dan pemberian obat yang sesuai dengan jenis penyakit.
+
+Pencegahan adalah kunci. Pastikan kualitas air tetap baik, hindari overfeeding, dan lakukan pembersihan rutin akuarium.
+
+Catatan: Layanan AI sedang tidak tersedia. Untuk informasi lebih detail, silakan konsultasi dengan ahli akuarium atau dokter hewan."""
+    
+    elif any(word in message_lower for word in ['perawatan', 'cara', 'tips', 'bagaimana']):
+        return """Tips Perawatan Ikan Hias:
+
+Perawatan ikan hias yang baik dimulai dengan menjaga kualitas air. Lakukan penggantian air secara rutin, sekitar 20-30 persen setiap minggu.
+
+Penting untuk memantau parameter air seperti suhu, pH, amonia, nitrit, dan nitrat secara berkala menggunakan test kit.
+
+Pemberian pakan harus dilakukan dengan tepat. Hindari overfeeding karena dapat menyebabkan penumpukan amonia dan masalah kualitas air.
+
+Pembersihan filter dan substrat harus dilakukan secara berkala, namun jangan terlalu sering karena dapat mengganggu ekosistem yang sudah terbentuk.
+
+Pastikan akuarium memiliki sistem filtrasi yang memadai dan sirkulasi air yang baik untuk menjaga oksigen terlarut.
+
+Catatan: Layanan AI sedang tidak tersedia. Informasi ini adalah panduan umum. Untuk informasi spesifik tentang jenis ikan tertentu, silakan cek FishPedia di menu navigasi."""
+    
+    elif any(word in message_lower for word in ['air', 'kualitas', 'ph', 'suhu', 'temperature']):
+        return """Informasi tentang Kualitas Air Akuarium:
+
+Kualitas air adalah faktor terpenting dalam perawatan ikan hias. Parameter utama yang perlu dipantau adalah suhu, pH, amonia, nitrit, dan nitrat.
+
+Suhu air harus disesuaikan dengan kebutuhan spesies ikan. Umumnya ikan tropis membutuhkan suhu antara 24-28 derajat Celsius.
+
+Nilai pH yang ideal bervariasi tergantung jenis ikan. Sebagian besar ikan hias tropis membutuhkan pH antara 6.5 hingga 7.5.
+
+Amonia dan nitrit harus selalu berada di level nol. Kedua senyawa ini sangat beracun bagi ikan.
+
+Nitrat sebaiknya dijaga di bawah 40 ppm. Nitrat yang tinggi dapat menyebabkan stres dan masalah kesehatan pada ikan.
+
+Untuk menjaga kualitas air, lakukan penggantian air rutin, hindari overfeeding, dan pastikan sistem filtrasi berfungsi dengan baik.
+
+Catatan: Layanan AI sedang tidak tersedia. Untuk informasi spesifik tentang kebutuhan air jenis ikan tertentu, silakan cek FishPedia."""
+    
+    else:
+        # Generic helpful response
+        fish_names = [f.name for f in fish_species_list[:5]]
+        return f"""Terima kasih atas pertanyaan Anda tentang: {message}
+
+Saat ini layanan AI sedang tidak tersedia karena masalah konfigurasi API. Namun, saya dapat membantu Anda dengan informasi dari database Temanikan.
+
+Beberapa jenis ikan yang tersedia di database kami antara lain: {', '.join(fish_names) if fish_names else 'tidak ada data'}.
+
+Untuk informasi lebih lengkap, silakan:
+1. Cek FishPedia di menu navigasi untuk informasi detail tentang berbagai jenis ikan
+2. Gunakan fitur deteksi penyakit jika Anda memiliki foto ikan yang bermasalah
+3. Kunjungi Forum untuk berdiskusi dengan komunitas
+
+Jika Anda memiliki pertanyaan spesifik tentang jenis ikan tertentu, silakan sebutkan nama ikannya dan saya akan mencari informasi dari database.
+
+Catatan: Layanan AI sedang tidak tersedia. Informasi ini berasal dari database Temanikan."""
 
 
 def register_routes(app):
     """Register all API routes"""
     
     UPLOAD_FOLDER = 'uploads/payment_proofs'
-    DISEASE_UPLOAD_FOLDER = 'uploads/disease_detections'
-    FISHPEDIA_UPLOAD_FOLDER = os.path.abspath('uploads/fishpedia')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
-    IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-    # Make sure upload folders exist
+    # Make sure upload folder exists
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    os.makedirs(DISEASE_UPLOAD_FOLDER, exist_ok=True)
-    os.makedirs(FISHPEDIA_UPLOAD_FOLDER, exist_ok=True)
 
     def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-    def allowed_image_file(filename):
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in IMAGE_EXTENSIONS
-
-    def save_fishpedia_image(file_storage):
-        if not file_storage or file_storage.filename == '':
-            return None
-        if not allowed_image_file(file_storage.filename):
-            return None
-
-        filename = secure_filename(file_storage.filename)
-        unique_filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}_{filename}"
-        abs_path = os.path.join(FISHPEDIA_UPLOAD_FOLDER, unique_filename)
-        file_storage.save(abs_path)
-        return unique_filename
-
-    def build_fishpedia_image_url(filename):
-        if not filename:
-            return None
-        return f"/api/fishpedia/images/{filename}"
-
-    def delete_fishpedia_image(image_url):
-        if not image_url:
-            return
-        prefix = '/api/fishpedia/images/'
-        if not image_url.startswith(prefix):
-            return
-        filename = image_url.replace(prefix, '', 1)
-        file_path = os.path.join(FISHPEDIA_UPLOAD_FOLDER, filename)
-        if os.path.exists(file_path):
-            try:
-                os.remove(file_path)
-            except Exception as remove_err:
-                print(f"⚠️ Unable to delete fishpedia image {file_path}: {remove_err}")
-
-    def parse_range(min_value, max_value, suffix=''):
-        if min_value and max_value:
-            base = f"{min_value}-{max_value}"
-        else:
-            base = min_value or max_value
-        if not base:
-            return None
-        if suffix and suffix not in base:
-            return f"{base}{suffix}"
-        return base
-
-    def get_request_data():
-        if request.content_type and 'application/json' in request.content_type:
-            return request.get_json() or {}
-        return request.form.to_dict()
-
-    def extract_fishpedia_payload(form_data):
-        payload = {}
-        payload['name'] = form_data.get('name')
-        payload['scientific_name'] = form_data.get('scientific_name') or form_data.get('scientificName')
-        payload['category'] = form_data.get('category')
-        payload['description'] = form_data.get('description')
-        payload['family'] = form_data.get('family')
-        payload['habitat'] = form_data.get('habitat')
-        payload['care_level'] = form_data.get('difficulty') or form_data.get('care_level')
-        payload['temperament'] = form_data.get('temperament')
-        payload['diet'] = form_data.get('diet')
-        payload['max_size'] = form_data.get('max_size') or form_data.get('size')
-        payload['min_tank_size'] = form_data.get('min_tank_size') or form_data.get('tank_size')
-
-        temp_min = form_data.get('temp_min') or form_data.get('temperature_min')
-        temp_max = form_data.get('temp_max') or form_data.get('temperature_max')
-        payload['water_temp'] = form_data.get('water_temp') or form_data.get('temperature_range') or parse_range(temp_min, temp_max, '°C')
-
-        ph_min = form_data.get('ph_min') or form_data.get('phMin')
-        ph_max = form_data.get('ph_max') or form_data.get('phMax')
-        payload['ph_range'] = form_data.get('ph_range') or parse_range(ph_min, ph_max)
-
-        payload['status'] = form_data.get('status') or 'draft'
-        payload['image_url'] = form_data.get('image_url') or form_data.get('image')
-        return payload
-
-    def apply_fishpedia_fields(instance, payload):
-        for field, value in payload.items():
-            if value is not None and hasattr(instance, field):
-                setattr(instance, field, value)
-
-    def queue_notification(user_id, title, message, notif_type='info', device_id=None):
-        """Queue a notification without committing the session."""
-        if not user_id or not title or not message:
-            return None
-
-        notification = Notification(
-            user_id=user_id,
-            device_id=device_id,
-            type=notif_type or 'info',
-            title=title[:200],
-            message=message
-        )
-        db.session.add(notification)
-        return notification
-
-    def notify_admins(title, message, notif_type='info'):
-        """Broadcast a notification to every active admin account."""
-        admins = User.query.filter_by(role='admin').all()
-        created = 0
-        for admin in admins:
-            if admin.is_active is False:
-                continue
-            if queue_notification(admin.id, title, message, notif_type):
-                created += 1
-        return created
 
 
     # Authentication Routes
@@ -582,24 +506,54 @@ def register_routes(app):
     @app.route('/api/devices/<int:device_id>/dashboard/disease-latest', methods=['GET'])
     @jwt_required()
     def get_device_disease_latest(device_id):
-        """Return most recent disease detection stored for the device."""
+        """Get latest disease detection for device dashboard (dummy data)"""
         try:
             user_id_str = get_jwt_identity()
-            user_id = int(user_id_str)
+            user_id = int(user_id_str)  # Convert string to int
             device = Device.query.get(device_id)
-
+            
             if not device:
                 return jsonify({'error': 'Device not found'}), 404
-
+            
             user = User.query.get(user_id)
             if device.user_id != user_id and user.role != 'admin':
                 return jsonify({'error': 'Unauthorized access'}), 403
-
-            detection = DiseaseDetection.query.filter_by(device_id=device_id) \
-                .order_by(DiseaseDetection.detected_at.desc()) \
-                .first()
-
-            if not detection:
+            
+            import random
+            
+            # 70% chance no disease, 30% chance disease detected
+            has_disease = random.random() < 0.3
+            
+            if has_disease:
+                diseases = [
+                    {'name': 'White Spot', 'severity': 'medium', 'fish': 'Ikan Koi'},
+                    {'name': 'Fin Rot', 'severity': 'low', 'fish': 'Ikan Mas'},
+                    {'name': 'Ich', 'severity': 'medium', 'fish': 'Ikan Koi'},
+                    {'name': 'Fungal Infection', 'severity': 'high', 'fish': 'Ikan Nila'}
+                ]
+                disease = random.choice(diseases)
+                
+                detection_time = datetime.utcnow() - timedelta(hours=random.randint(1, 5))
+                
+                return jsonify({
+                    'success': True,
+                    'has_detection': True,
+                    'data': {
+                        'fish_type': disease['fish'],
+                        'disease_name': disease['name'],
+                        'severity': disease['severity'],
+                        'severity_text': {
+                            'low': 'Ringan',
+                            'medium': 'Sedang',
+                            'high': 'Tinggi'
+                        }.get(disease['severity'], 'Sedang'),
+                        'confidence': round(random.uniform(0.75, 0.95), 2),
+                        'detected_at': detection_time.isoformat(),
+                        'detected_at_text': format_last_active(detection_time),
+                        'image_url': 'https://images.unsplash.com/photo-1718632496269-6c0fd71dc29c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80'
+                    }
+                }), 200
+            else:
                 return jsonify({
                     'success': True,
                     'has_detection': False,
@@ -608,48 +562,7 @@ def register_routes(app):
                         'last_check': datetime.utcnow().isoformat()
                     }
                 }), 200
-
-            detection_dict = detection.to_dict()
-            severity = (detection_dict.get('severity') or 'medium').lower()
-            severity_text = {
-                'low': 'Ringan',
-                'medium': 'Sedang',
-                'high': 'Tinggi',
-                'critical': 'Darurat'
-            }.get(severity, 'Sedang')
-
-            confidence_value = detection_dict.get('confidence_percent') or detection_dict.get('confidence') or 0
-            image_url = detection_dict.get('image_url') or 'https://images.unsplash.com/photo-1718632496269-6c0fd71dc29c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80'
-            symptoms = detection_dict.get('symptoms_list') or []
-            if isinstance(symptoms, str):
-                symptoms = [symptoms]
-
-            response_data = {
-                'id': detection_dict.get('id'),
-                'fish_type': detection_dict.get('fish_type') or 'Ikan Hias',
-                'disease_name': detection_dict.get('disease_name') or 'Tidak diketahui',
-                'severity': severity,
-                'severity_text': severity_text,
-                'confidence': confidence_value,
-                'detected_at': detection_dict.get('detected_at'),
-                'detected_at_text': format_last_active(detection.detected_at),
-                'image_url': image_url,
-                'symptoms': symptoms,
-                'recommendation': detection_dict.get('recommended_treatment') or detection_dict.get('notes'),
-                'status_label': detection_dict.get('status_label'),
-                'status_color': detection_dict.get('status_color'),
-                'status_bg': detection_dict.get('status_bg'),
-                'status': detection_dict.get('status'),
-                'location': detection_dict.get('location'),
-                'confidence_raw': detection_dict.get('confidence')
-            }
-
-            return jsonify({
-                'success': True,
-                'has_detection': True,
-                'data': response_data
-            }), 200
-
+                
         except Exception as e:
             print(f"❌ Error fetching disease detection: {e}")
             return jsonify({'success': False, 'error': 'Failed to fetch disease detection'}), 500
@@ -847,45 +760,6 @@ def register_routes(app):
         }), 200
     
     # Disease Detection Routes
-    @app.route('/api/disease-detections', methods=['GET'])
-    @jwt_required()
-    def get_all_disease_detections():
-        """Return recent detections across all user's devices."""
-        user_id = get_jwt_identity()
-        user = User.query.get(user_id)
-
-        if not user:
-            return jsonify({'success': False, 'message': 'User not found'}), 404
-
-        limit = request.args.get('limit', default=50, type=int)
-        device_filter = request.args.get('device_id', type=int)
-
-        query = DiseaseDetection.query.join(Device, DiseaseDetection.device_id == Device.id)
-
-        if user.role != 'admin':
-            query = query.filter(Device.user_id == user_id)
-
-        if device_filter:
-            query = query.filter(DiseaseDetection.device_id == device_filter)
-
-        detections = query.order_by(DiseaseDetection.detected_at.desc()).limit(limit).all()
-
-        payload = []
-        for detection in detections:
-            data = detection.to_dict()
-            if detection.device:
-                data['device'] = {
-                    'id': detection.device.id,
-                    'name': detection.device.name
-                }
-            payload.append(data)
-
-        return jsonify({
-            'success': True,
-            'detections': payload,
-            'count': len(payload)
-        }), 200
-
     @app.route('/api/devices/<int:device_id>/disease-detections', methods=['GET'])
     @jwt_required()
     def get_disease_detections(device_id):
@@ -904,152 +778,9 @@ def register_routes(app):
             .order_by(DiseaseDetection.detected_at.desc()).limit(limit).all()
         
         return jsonify({
-            'success': True,
             'detections': [d.to_dict() for d in detections],
             'count': len(detections)
         }), 200
-
-    @app.route('/api/devices/<int:device_id>/disease-detections', methods=['POST'])
-    @jwt_required()
-    def create_disease_detection(device_id):
-        user_id = get_jwt_identity()
-        device = Device.query.get(device_id)
-
-        if not device:
-            return jsonify({'success': False, 'message': 'Device not found'}), 404
-
-        user = User.query.get(user_id)
-        if device.user_id != user_id and user.role != 'admin':
-            return jsonify({'success': False, 'message': 'Unauthorized access'}), 403
-
-        if 'image' not in request.files:
-            return jsonify({'success': False, 'message': 'Image is required'}), 400
-
-        image = request.files['image']
-
-        if image.filename == '':
-            return jsonify({'success': False, 'message': 'Invalid image filename'}), 400
-
-        if not allowed_image_file(image.filename):
-            return jsonify({'success': False, 'message': 'Unsupported image format'}), 400
-
-        filename = secure_filename(image.filename)
-        unique_filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}_{filename}"
-        filepath = os.path.abspath(os.path.join(DISEASE_UPLOAD_FOLDER, unique_filename))
-
-        try:
-            image.save(filepath)
-        except Exception as e:
-            print(f"❌ Error saving detection image: {e}")
-            return jsonify({'success': False, 'message': 'Failed to save image'}), 500
-
-        def parse_float(value, default=0.0):
-            try:
-                return float(value)
-            except (TypeError, ValueError):
-                return default
-
-        def parse_detected_at(raw_value):
-            if not raw_value:
-                return None
-            try:
-                return datetime.fromisoformat(raw_value)
-            except ValueError:
-                return None
-
-        def prepare_symptoms(raw_value):
-            if not raw_value:
-                return None
-            cleaned = raw_value.strip()
-            if not cleaned:
-                return None
-            try:
-                parsed = json.loads(cleaned)
-                if isinstance(parsed, list):
-                    return json.dumps(parsed)
-            except json.JSONDecodeError:
-                pass
-            # fallback: split by comma
-            parts = [part.strip() for part in cleaned.split(',') if part.strip()]
-            return json.dumps(parts if parts else [cleaned])
-
-        metadata = {}
-        metadata_payload = request.form.get('metadata')
-        if metadata_payload:
-            try:
-                decoded = json.loads(metadata_payload)
-                if isinstance(decoded, dict):
-                    metadata.update(decoded)
-            except json.JSONDecodeError:
-                pass
-
-        metadata_fields = ['fish_type', 'location', 'status_label', 'status_color', 'status_bg', 'source']
-        for field in metadata_fields:
-            value = request.form.get(field)
-            if value:
-                metadata[field] = value
-
-        notes_value = request.form.get('notes')
-        if notes_value:
-            metadata.setdefault('notes', notes_value)
-
-        stored_notes = json.dumps(metadata) if metadata else notes_value
-
-        detection = DiseaseDetection(
-            device_id=device_id,
-            disease_name=request.form.get('disease_name', 'Unknown'),
-            confidence=parse_float(request.form.get('confidence'), 0.0),
-            severity=request.form.get('severity', 'low'),
-            image_url=filepath,
-            symptoms=prepare_symptoms(request.form.get('symptoms')),
-            recommended_treatment=request.form.get('recommended_treatment'),
-            status=request.form.get('status', 'detected'),
-            notes=stored_notes,
-            detected_at=parse_detected_at(request.form.get('detected_at')) or datetime.utcnow()
-        )
-
-        try:
-            db.session.add(detection)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"❌ Error saving detection record: {e}")
-            return jsonify({'success': False, 'message': 'Failed to save detection data'}), 500
-
-        detection_data = detection.to_dict()
-
-        return jsonify({
-            'success': True,
-            'message': 'Detection saved successfully',
-            'detection': detection_data
-        }), 201
-
-    @app.route('/api/disease-detections/<int:detection_id>/image', methods=['GET'])
-    @jwt_required()
-    def get_disease_detection_image(detection_id):
-        user_id = get_jwt_identity()
-        detection = DiseaseDetection.query.get(detection_id)
-
-        if not detection:
-            return jsonify({'error': 'Detection not found'}), 404
-
-        device = Device.query.get(detection.device_id)
-        user = User.query.get(user_id)
-
-        if device.user_id != user_id and user.role != 'admin':
-            return jsonify({'error': 'Unauthorized access'}), 403
-
-        if not detection.image_url or not os.path.exists(detection.image_url):
-            return jsonify({'error': 'Image not found'}), 404
-
-        try:
-            mime_type = 'image/jpeg'
-            if detection.image_url.lower().endswith('.png'):
-                mime_type = 'image/png'
-            return send_file(detection.image_url, mimetype=mime_type)
-        except Exception as e:
-            print(f"❌ Error serving detection image: {e}")
-            return jsonify({'error': 'Failed to load image'}), 500
     
     @app.route('/api/disease-detections/<int:detection_id>', methods=['PUT'])
     @jwt_required()
@@ -2510,29 +2241,6 @@ def register_routes(app):
             'unread_count': Notification.query.filter_by(user_id=user_id, is_read=False).count()
         }), 200
     
-    @app.route('/api/notifications/<int:notification_id>', methods=['GET'])
-    @jwt_required()
-    def get_notification_detail(notification_id):
-        user_id = get_jwt_identity()
-        notification = Notification.query.get(notification_id)
-        
-        if not notification:
-            return jsonify({'success': False, 'message': 'Notification not found'}), 404
-        
-        # Ensure comparison works for both string/int
-        if int(notification.user_id) != int(user_id):
-            return jsonify({'success': False, 'message': 'Unauthorized access'}), 403
-        
-        # Mark as read when viewed
-        if not notification.is_read:
-            notification.is_read = True
-            db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'data': notification.to_dict()
-        }), 200
-    
     @app.route('/api/notifications/<int:notification_id>/read', methods=['PUT'])
     @jwt_required()
     def mark_notification_read(notification_id):
@@ -2816,13 +2524,13 @@ Setiap paragraf harus jelas, informatif, dan mudah dipahami. Jangan gunakan form
             full_prompt = f"{system_prompt}\n\nPertanyaan pengguna: {message}"
             
             # Use Gemini REST API directly
-            # Use gemini-2.5-flash (fast and free tier) or gemini-pro-latest
-            model_name = "gemini-2.5-flash"  # Fast and supports both text and images
+            # Use gemini-2.0-flash (latest model)
+            model_name = "gemini-2.0-flash"  # Latest fast model that supports both text and images
             if image_base64:
-                model_name = "gemini-2.5-flash"  # Flash supports vision
+                model_name = "gemini-2.0-flash"  # Flash supports vision
             
-            # Use v1beta endpoint (standard for Gemini API)
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+            # Use v1beta endpoint with API key in header (recommended method)
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
             
             payload = {
                 "contents": [{
@@ -2844,7 +2552,8 @@ Setiap paragraf harus jelas, informatif, dan mudah dipahami. Jangan gunakan form
                 })
             
             headers = {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-goog-api-key': api_key
             }
             
             try:
@@ -2871,32 +2580,86 @@ Setiap paragraf harus jelas, informatif, dan mudah dipahami. Jangan gunakan form
             except requests.exceptions.RequestException as req_error:
                 print(f"Error calling Gemini API: {req_error}")
                 error_msg = str(req_error)
+                status_code = None
+                error_detail = None
+                
                 if hasattr(req_error, 'response') and req_error.response is not None:
-                    error_detail = req_error.response.text
+                    status_code = req_error.response.status_code
+                    try:
+                        error_detail = req_error.response.json()
+                    except:
+                        error_detail = req_error.response.text
+                    print(f"Response status: {status_code}")
                     print(f"Response: {error_detail}")
-                    # Try fallback to gemini-pro-latest if flash fails with 404
-                    if '404' in str(req_error):
-                        try:
-                            print("Trying fallback to gemini-pro-latest...")
-                            fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-latest:generateContent?key={api_key}"
-                            fallback_response = requests.post(fallback_url, headers=headers, json=payload, timeout=30)
-                            fallback_response.raise_for_status()
-                            result = fallback_response.json()
-                            if 'candidates' in result and len(result['candidates']) > 0:
-                                if 'content' in result['candidates'][0] and 'parts' in result['candidates'][0]['content']:
-                                    ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
-                                    if not ai_response:
-                                        return jsonify({'error': 'AI service error: Empty response from fallback model'}), 500
+                
+                # Handle specific error codes
+                if status_code == 403:
+                    # API key issue - try fallback model first, then provide fallback response from database
+                    try:
+                        print("403 Forbidden - Trying fallback to gemini-2.0-flash with header auth...")
+                        fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+                        fallback_headers = {
+                            'Content-Type': 'application/json',
+                            'X-goog-api-key': api_key
+                        }
+                        fallback_response = requests.post(fallback_url, headers=fallback_headers, json=payload, timeout=30)
+                        fallback_response.raise_for_status()
+                        result = fallback_response.json()
+                        if 'candidates' in result and len(result['candidates']) > 0:
+                            if 'content' in result['candidates'][0] and 'parts' in result['candidates'][0]['content']:
+                                ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
+                                if ai_response:
+                                    # Success with fallback, continue normally
+                                    pass
                                 else:
-                                    return jsonify({'error': 'AI service error: Invalid response format from fallback'}), 500
+                                    # Provide fallback response from database
+                                    ai_response = generate_fallback_response(message, fish_species)
                             else:
-                                return jsonify({'error': 'AI service error: No candidates in fallback response'}), 500
-                        except Exception as fallback_error:
-                            return jsonify({'error': f'AI service error: {error_msg} (fallback also failed: {str(fallback_error)})'}), 500
-                    else:
-                        return jsonify({'error': f'AI service error: {error_msg}'}), 500
+                                # Provide fallback response from database
+                                ai_response = generate_fallback_response(message, fish_species)
+                        else:
+                            # Provide fallback response from database
+                            ai_response = generate_fallback_response(message, fish_species)
+                    except Exception as fallback_error:
+                        print(f"Fallback model also failed: {fallback_error}")
+                        # Provide fallback response from database
+                        ai_response = generate_fallback_response(message, fish_species)
+                elif status_code == 404:
+                    # Model not found - try fallback, then use database fallback
+                    try:
+                        print("404 Not Found - Trying fallback to gemini-2.0-flash...")
+                        fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+                        fallback_headers = {
+                            'Content-Type': 'application/json',
+                            'X-goog-api-key': api_key
+                        }
+                        fallback_response = requests.post(fallback_url, headers=fallback_headers, json=payload, timeout=30)
+                        fallback_response.raise_for_status()
+                        result = fallback_response.json()
+                        if 'candidates' in result and len(result['candidates']) > 0:
+                            if 'content' in result['candidates'][0] and 'parts' in result['candidates'][0]['content']:
+                                ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
+                                if not ai_response:
+                                    # Use database fallback
+                                    ai_response = generate_fallback_response(message, fish_species)
+                            else:
+                                # Use database fallback
+                                ai_response = generate_fallback_response(message, fish_species)
+                        else:
+                            # Use database fallback
+                            ai_response = generate_fallback_response(message, fish_species)
+                    except Exception as fallback_error:
+                        print(f"Fallback model also failed: {fallback_error}")
+                        # Use database fallback
+                        ai_response = generate_fallback_response(message, fish_species)
+                elif status_code == 429:
+                    # Quota exceeded - use database fallback instead of error
+                    print("429 Quota exceeded - Using database fallback response")
+                    ai_response = generate_fallback_response(message, fish_species)
                 else:
-                    return jsonify({'error': f'AI service error: {error_msg}'}), 500
+                    # Generic error - use database fallback instead of returning error
+                    print(f"Error {status_code} - Using database fallback response")
+                    ai_response = generate_fallback_response(message, fish_species)
             except Exception as api_error:
                 print(f"Error processing API response: {api_error}")
                 import traceback

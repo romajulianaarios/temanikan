@@ -284,29 +284,66 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F5F6FA' }}>
+    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ 
+      background: 'linear-gradient(to bottom, #87CEEB 0%, #4A90E2 15%, #357ABD 30%, #2E5C8A 50%, #1E3A5F 70%, #0F2027 100%)',
+      position: 'relative'
+    }}>
+      {/* Background Bubbles */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
+        <div className="absolute top-20 right-10 w-96 h-96 bg-[#0F5BE5] rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-[#FFD6D6] rounded-full blur-3xl"></div>
+      </div>
+
       {/* Global Navbar */}
-      <Navbar onAuthClick={onAuthClick} onSmartNavigate={onSmartNavigate} />
+      <div className="relative z-10">
+        <Navbar onAuthClick={onAuthClick} onSmartNavigate={onSmartNavigate} />
+      </div>
 
       {/* Main Content */}
-      <main className="flex-1 py-8">
+      <main className="flex-1 py-8 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {loading && (
             <div className="text-center py-8">
-              <p className="text-gray-600">Memuat data ikan...</p>
+              <p className="text-white font-semibold" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Memuat data ikan...</p>
             </div>
           )}
           
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-              {error}
+            <div 
+              className="px-6 py-4 rounded-full mb-6 transition-all duration-300"
+              style={{
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                border: '2px solid rgba(239, 68, 68, 0.3)',
+                boxShadow: '0 8px 32px rgba(239, 68, 68, 0.2)',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+            >
+              <p className="text-red-700 font-semibold">{error}</p>
             </div>
           )}
 
           {/* Page Header */}
           <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl mb-3" style={{ color: '#2D3436' }}>Fishpedia</h1>
-            <p className="text-lg" style={{ color: '#636E72' }}>
+            <h1 
+              className="text-4xl md:text-5xl mb-4 font-extrabold" 
+              style={{ 
+                color: '#FFFFFF',
+                textShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                letterSpacing: '-0.02em',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+            >
+              Fishpedia
+            </h1>
+            <p 
+              className="text-lg md:text-xl font-semibold" 
+              style={{ 
+                color: '#FFFFFF',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+            >
               Jelajahi database lengkap ikan hias dengan informasi detail tentang perawatan, habitat, dan karakteristik setiap spesies
             </p>
           </div>
@@ -315,28 +352,73 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
           <div className="mb-8 space-y-4">
             {/* Search Bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 z-10" style={{ color: '#608BC1' }} />
+              <input
+                type="text"
                 placeholder="Cari nama ikan atau nama ilmiah..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-6 text-base"
-                style={{ backgroundColor: 'white' }}
+                className="pl-12 py-6 text-base transition-all duration-300 w-full outline-none"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: '2px solid rgba(15, 91, 229, 0.3)',
+                  borderRadius: '9999px',
+                  boxShadow: '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  paddingLeft: '3rem',
+                  paddingRight: '1.5rem',
+                  paddingTop: '1.5rem',
+                  paddingBottom: '1.5rem'
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.5)';
+                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(15, 91, 229, 0.25), 0 0 0 1px rgba(15, 91, 229, 0.3) inset';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.3)';
+                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
               />
             </div>
 
             {/* Difficulty Filter */}
-            <div className="flex flex-wrap gap-2">
-              <span className="text-sm self-center mr-2" style={{ color: '#636E72' }}>Tingkat Kesulitan:</span>
+            <div className="flex flex-wrap gap-3 items-center">
+              <span className="text-sm font-semibold mr-2" style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif' }}>Tingkat Kesulitan:</span>
               {difficultyLevels.map((difficulty) => (
                 <button
                   key={difficulty}
                   onClick={() => setSelectedDifficulty(difficulty)}
-                  className={`px-4 py-2 rounded-full text-sm transition-colors`}
+                  className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 bubble-button"
                   style={{
-                    backgroundColor: selectedDifficulty === difficulty ? '#4880FF' : 'white',
-                    color: selectedDifficulty === difficulty ? 'white' : '#2D3436',
-                    border: selectedDifficulty === difficulty ? 'none' : '1px solid #CBDCEB'
+                    backgroundColor: selectedDifficulty === difficulty 
+                      ? 'rgba(15, 91, 229, 0.95)' 
+                      : 'rgba(255, 255, 255, 0.95)',
+                    color: selectedDifficulty === difficulty ? '#FFFFFF' : '#133E87',
+                    border: selectedDifficulty === difficulty 
+                      ? '2px solid rgba(15, 91, 229, 0.5)' 
+                      : '2px solid rgba(15, 91, 229, 0.3)',
+                    boxShadow: selectedDifficulty === difficulty
+                      ? '0 8px 24px rgba(15, 91, 229, 0.4)'
+                      : '0 4px 16px rgba(15, 91, 229, 0.15)',
+                    backdropFilter: 'blur(10px)',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedDifficulty !== difficulty) {
+                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(15, 91, 229, 0.25)';
+                      e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.4)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedDifficulty !== difficulty) {
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(15, 91, 229, 0.15)';
+                      e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.3)';
+                    }
                   }}
                 >
                   {difficulty}
@@ -347,8 +429,8 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
 
           {/* Results Count */}
           <div className="mb-6">
-            <p style={{ color: '#636E72' }}>
-              Menampilkan <span style={{ color: '#4880FF' }}>{filteredFish.length}</span> dari <span style={{ color: '#4880FF' }}>{fishSpecies.length}</span> spesies ikan
+            <p style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>
+              Menampilkan <span style={{ color: '#FFFFFF', fontWeight: 800 }}>{filteredFish.length}</span> dari <span style={{ color: '#FFFFFF', fontWeight: 800 }}>{fishSpecies.length}</span> spesies ikan
             </p>
           </div>
 
@@ -357,40 +439,91 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
             {filteredFish.map((fish) => (
               <Card 
                 key={fish.id} 
-                className="overflow-hidden hover:shadow-xl transition-shadow cursor-pointer bg-white"
+                className="overflow-hidden transition-all duration-300 cursor-pointer relative"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: '2px solid rgba(15, 91, 229, 0.3)',
+                  borderRadius: '32px',
+                  boxShadow: '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
                 onClick={() => setSelectedFish(fish)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 16px 48px rgba(15, 91, 229, 0.3), 0 0 0 1px rgba(15, 91, 229, 0.4) inset';
+                  e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.3)';
+                }}
               >
-                <div className="relative h-48 bg-gradient-to-br from-blue-100 to-blue-200">
+                {/* Bubble glow effect */}
+                <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+                    filter: 'blur(15px)'
+                  }}
+                ></div>
+                
+                <div className="relative h-48 bg-gradient-to-br from-blue-100 to-blue-200 rounded-t-[30px] overflow-hidden">
                   <ImageWithFallback
                     src={fish.imageUrl}
                     alt={fish.name}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-3 right-3">
-                    <Badge className={getDifficultyColor(fish.difficulty)}>
+                    <Badge 
+                      className={getDifficultyColor(fish.difficulty)}
+                      style={{ 
+                        borderRadius: '12px',
+                        fontFamily: 'Nunito Sans, sans-serif',
+                        fontWeight: 600,
+                        padding: '6px 12px'
+                      }}
+                    >
                       {fish.difficulty}
                     </Badge>
                   </div>
                 </div>
-                <div className="p-5">
-                  <h3 className="text-xl mb-1">{fish.name}</h3>
-                  <p className="text-sm text-gray-500 italic mb-3">{fish.scientificName}</p>
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">{fish.description}</p>
+                <div className="p-6 relative z-10">
+                  <h3 className="text-xl mb-1 font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.name}</h3>
+                  <p className="text-sm italic mb-3" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.scientificName}</p>
+                  <p className="text-sm mb-4 line-clamp-2" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.description}</p>
                   
-                  <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="grid grid-cols-2 gap-2 text-sm mb-4">
                     <div>
-                      <span className="text-gray-500">Temperamen:</span>
-                      <p className="font-medium">{fish.temperament}</p>
+                      <span className="text-gray-500" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Temperamen:</span>
+                      <p className="font-semibold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.temperament}</p>
                     </div>
                     <div>
-                      <span className="text-gray-500">Ukuran:</span>
-                      <p className="font-medium">{fish.size}</p>
+                      <span className="text-gray-500" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Ukuran:</span>
+                      <p className="font-semibold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.size}</p>
                     </div>
                   </div>
 
-                  <button className="mt-4 text-[#608BC1] hover:text-[#133E87] flex items-center gap-2 group w-full justify-center">
+                  <button 
+                    className="w-full py-3 rounded-full font-semibold transition-all duration-300 bubble-button flex items-center justify-center gap-2"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
+                      color: '#FFFFFF',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      boxShadow: '0 6px 20px rgba(15, 91, 229, 0.3)',
+                      fontFamily: 'Nunito Sans, sans-serif'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(15, 91, 229, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(15, 91, 229, 0.3)';
+                    }}
+                  >
                     Lihat Detail
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               </Card>
@@ -400,9 +533,9 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
           {/* No Results */}
           {filteredFish.length === 0 && (
             <div className="text-center py-12">
-              <Fish className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">Tidak ada ikan yang ditemukan</p>
-              <p className="text-gray-400 text-sm mt-2">Coba ubah kata kunci pencarian atau filter kategori</p>
+              <Fish className="w-16 h-16 mx-auto mb-4" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+              <p className="text-lg font-semibold mb-2" style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif' }}>Tidak ada ikan yang ditemukan</p>
+              <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)', fontFamily: 'Nunito Sans, sans-serif' }}>Coba ubah kata kunci pencarian atau filter kategori</p>
             </div>
           )}
         </div>
@@ -485,97 +618,189 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
       {/* Fish Detail Dialog */}
       <Dialog open={selectedFish !== null} onOpenChange={() => setSelectedFish(null)}>
         <DialogContent
-          className="max-w-4xl max-h-[90vh] overflow-y-auto"
-          style={{ backgroundColor: '#F3F3E0', border: 'none' }}
-          overlayStyle={modalOverlayStyle}
+          className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-[40px] relative overflow-hidden"
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
+            backdropFilter: 'blur(20px)',
+            border: '3px solid rgba(15, 91, 229, 0.3)',
+            boxShadow: '0 20px 60px rgba(15, 91, 229, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.8) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          overlayStyle={{
+            backdropFilter: 'blur(8px)',
+            background: 'rgba(19, 62, 135, 0.6)'
+          }}
         >
-          <DialogHeader className="border-b pb-4" style={{ borderColor: '#CBDCEB' }}>
-            <DialogTitle className="text-2xl font-bold" style={{ color: '#133E87' }}>{selectedFish?.name}</DialogTitle>
-            <p className="text-sm italic text-gray-600 mt-1">{selectedFish?.scientificName}</p>
+          {/* Decorative bubbles */}
+          <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-20 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(72, 128, 255, 0.6), transparent 70%)', filter: 'blur(40px)' }}></div>
+          <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full opacity-15 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255, 182, 193, 0.5), transparent 70%)', filter: 'blur(35px)' }}></div>
+          
+          <DialogHeader className="border-b pb-4 relative z-10" style={{ borderColor: 'rgba(15, 91, 229, 0.2)' }}>
+            <DialogTitle className="text-3xl font-extrabold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish?.name}</DialogTitle>
+            <p className="text-sm italic mt-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish?.scientificName}</p>
           </DialogHeader>
           
           {selectedFish && (
-            <div className="space-y-4 pt-4">
+            <div className="space-y-4 pt-4 relative z-10">
               {/* Image */}
-              <div className="relative h-72 rounded-xl overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 shadow-lg">
+              <div className="relative h-72 rounded-[30px] overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 shadow-xl" style={{ border: '2px solid rgba(15, 91, 229, 0.2)' }}>
                 <ImageWithFallback
                   src={selectedFish.imageUrl}
                   alt={selectedFish.name}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-4 right-4">
-                  <Badge className={getDifficultyColor(selectedFish.difficulty) + ' text-sm px-3 py-1 shadow-md'}>
+                  <Badge 
+                    className={getDifficultyColor(selectedFish.difficulty) + ' text-sm px-4 py-2 shadow-lg'}
+                    style={{ 
+                      borderRadius: '16px',
+                      fontFamily: 'Nunito Sans, sans-serif',
+                      fontWeight: 600
+                    }}
+                  >
                     {selectedFish.difficulty}
                   </Badge>
                 </div>
               </div>
 
               {/* Basic Info Cards */}
-              <div className="grid md:grid-cols-3 gap-3">
-                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Kategori</span>
-                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.category}</p>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div 
+                  className="p-5 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(15, 91, 229, 0.2)',
+                    boxShadow: '0 8px 24px rgba(15, 91, 229, 0.1)',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <span className="text-xs font-semibold" style={{ color: '#608BC1' }}>Kategori</span>
+                  <p className="font-bold mt-2 text-lg" style={{ color: '#133E87' }}>{selectedFish.category}</p>
                 </div>
-                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Famili</span>
-                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.family || 'N/A'}</p>
+                <div 
+                  className="p-5 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(15, 91, 229, 0.2)',
+                    boxShadow: '0 8px 24px rgba(15, 91, 229, 0.1)',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <span className="text-xs font-semibold" style={{ color: '#608BC1' }}>Famili</span>
+                  <p className="font-bold mt-2 text-lg" style={{ color: '#133E87' }}>{selectedFish.family || 'N/A'}</p>
                 </div>
-                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Temperamen</span>
-                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.temperament || 'Damai'}</p>
+                <div 
+                  className="p-5 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(15, 91, 229, 0.2)',
+                    boxShadow: '0 8px 24px rgba(15, 91, 229, 0.1)',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <span className="text-xs font-semibold" style={{ color: '#608BC1' }}>Temperamen</span>
+                  <p className="font-bold mt-2 text-lg" style={{ color: '#133E87' }}>{selectedFish.temperament || 'Damai'}</p>
                 </div>
               </div>
 
               {/* Description */}
-              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>📝 Deskripsi</h3>
+              <div 
+                className="p-6 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  border: '2px solid rgba(15, 91, 229, 0.2)',
+                  boxShadow: '0 8px 24px rgba(15, 91, 229, 0.1)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+              >
+                <h3 className="text-lg font-bold mb-3" style={{ color: '#133E87' }}>📝 Deskripsi</h3>
                 <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.detailedDescription || selectedFish.description}</p>
               </div>
 
               {/* Parameters Grid */}
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>💧 Parameter Air</h3>
+                <div 
+                  className="p-6 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(15, 91, 229, 0.2)',
+                    boxShadow: '0 8px 24px rgba(15, 91, 229, 0.1)',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <h3 className="text-lg font-bold mb-4" style={{ color: '#133E87' }}>💧 Parameter Air</h3>
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Suhu</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.temperature}</span>
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: 'rgba(15, 91, 229, 0.1)' }}>
+                      <span className="text-sm font-semibold" style={{ color: '#608BC1' }}>Suhu</span>
+                      <span className="font-bold text-sm" style={{ color: '#133E87' }}>{selectedFish.temperature}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>pH</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.ph}</span>
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: 'rgba(15, 91, 229, 0.1)' }}>
+                      <span className="text-sm font-semibold" style={{ color: '#608BC1' }}>pH</span>
+                      <span className="font-bold text-sm" style={{ color: '#133E87' }}>{selectedFish.ph}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Ukuran Maksimal</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.size}</span>
+                      <span className="text-sm font-semibold" style={{ color: '#608BC1' }}>Ukuran Maksimal</span>
+                      <span className="font-bold text-sm" style={{ color: '#133E87' }}>{selectedFish.size}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>ℹ️ Informasi Lainnya</h3>
+                <div 
+                  className="p-6 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(15, 91, 229, 0.2)',
+                    boxShadow: '0 8px 24px rgba(15, 91, 229, 0.1)',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <h3 className="text-lg font-bold mb-4" style={{ color: '#133E87' }}>ℹ️ Informasi Lainnya</h3>
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Temperamen</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.temperament}</span>
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: 'rgba(15, 91, 229, 0.1)' }}>
+                      <span className="text-sm font-semibold" style={{ color: '#608BC1' }}>Temperamen</span>
+                      <span className="font-bold text-sm" style={{ color: '#133E87' }}>{selectedFish.temperament}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Lama Hidup</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.lifespan}</span>
+                      <span className="text-sm font-semibold" style={{ color: '#608BC1' }}>Lama Hidup</span>
+                      <span className="font-bold text-sm" style={{ color: '#133E87' }}>{selectedFish.lifespan}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Habitat */}
-              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>🌍 Habitat Alami</h3>
+              <div 
+                className="p-6 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  border: '2px solid rgba(15, 91, 229, 0.2)',
+                  boxShadow: '0 8px 24px rgba(15, 91, 229, 0.1)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+              >
+                <h3 className="text-lg font-bold mb-3" style={{ color: '#133E87' }}>🌍 Habitat Alami</h3>
                 <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.habitat || 'Informasi habitat tidak tersedia'}</p>
               </div>
 
               {/* Diet */}
-              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>🍽️ Makanan & Diet</h3>
+              <div 
+                className="p-6 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  border: '2px solid rgba(15, 91, 229, 0.2)',
+                  boxShadow: '0 8px 24px rgba(15, 91, 229, 0.1)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+              >
+                <h3 className="text-lg font-bold mb-3" style={{ color: '#133E87' }}>🍽️ Makanan & Diet</h3>
                 <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.diet || 'Informasi diet tidak tersedia'}</p>
               </div>
             </div>

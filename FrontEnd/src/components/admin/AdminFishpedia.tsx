@@ -308,23 +308,146 @@ export default function AdminFishpedia() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
-          <p className="text-sm text-gray-600 mb-1">Total Entri</p>
-          <p className="text-3xl" style={{ color: '#133E87' }}>{totalEntries}</p>
+        <Card 
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
+        >
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <p className="text-sm font-semibold mb-1 relative z-10" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Total Entri</p>
+          <p className="text-3xl font-bold relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{totalEntries}</p>
         </Card>
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
-          <p className="text-sm text-gray-600 mb-1">Dipublikasi</p>
-          <p className="text-3xl" style={{ color: '#133E87' }}>{publishedCount}</p>
+        <Card 
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
+        >
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <p className="text-sm font-semibold mb-1 relative z-10" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Dipublikasi</p>
+          <p className="text-3xl font-bold relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{publishedCount}</p>
         </Card>
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
-          <p className="text-sm text-gray-600 mb-1">Draft</p>
-          <p className="text-3xl" style={{ color: '#133E87' }}>{draftCount}</p>
+        <Card 
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
+        >
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <p className="text-sm font-semibold mb-1 relative z-10" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Draft</p>
+          <p className="text-3xl font-bold relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{draftCount}</p>
         </Card>
       </div>
 
+      {/* Header Section */}
+      <div className="mb-4">
+        <h2 
+          className="text-2xl font-bold"
+          style={{ 
+            color: '#FFFFFF', 
+            fontFamily: 'Nunito Sans, sans-serif',
+            fontWeight: 800
+          }}
+        >
+          Kelola Entri Fishpedia
+        </h2>
+        <p 
+          className="text-sm mt-1"
+          style={{ 
+            color: '#FFFFFF', 
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+        >
+          Cari, tambah, atau edit entri ikan di database Fishpedia
+        </p>
+      </div>
+
       {/* Search and Actions */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <div className="flex flex-col md:flex-row gap-4">
+      <Card 
+        className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="flex flex-col md:flex-row gap-4 relative z-10">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input 
@@ -357,8 +480,34 @@ export default function AdminFishpedia() {
       </Card>
 
       {/* Entries Table */}
-      <Card className="overflow-hidden" style={{ backgroundColor: 'white' }}>
-        <Table>
+      <Card 
+        className="bubble-card overflow-hidden transition-all duration-300 relative"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="relative z-10">
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
@@ -438,6 +587,7 @@ export default function AdminFishpedia() {
             )}
           </TableBody>
         </Table>
+        </div>
       </Card>
 
       {/* Add Fish Modal */}
@@ -883,70 +1033,134 @@ export default function AdminFishpedia() {
             <div className="space-y-4 pt-4">
               {/* Basic Info Cards */}
               <div className="grid md:grid-cols-4 gap-3">
-                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Nama Ikan</span>
-                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.name}</p>
+                <div 
+                  className="p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: '#FFFFFF',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 20px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <span className="text-xs font-semibold relative z-10" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Nama Ikan</span>
+                  <p className="font-bold mt-1 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.name}</p>
                 </div>
-                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Famili</span>
-                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.family || 'N/A'}</p>
+                <div 
+                  className="p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: '#FFFFFF',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 20px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <span className="text-xs font-semibold relative z-10" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Famili</span>
+                  <p className="font-bold mt-1 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.family || 'N/A'}</p>
                 </div>
-                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Kategori</span>
-                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.category}</p>
+                <div 
+                  className="p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: '#FFFFFF',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 20px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <span className="text-xs font-semibold relative z-10" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Kategori</span>
+                  <p className="font-bold mt-1 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.category}</p>
                 </div>
-                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Kesulitan</span>
-                  <div className="mt-1">
+                <div 
+                  className="p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: '#FFFFFF',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 20px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <span className="text-xs font-semibold relative z-10" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Kesulitan</span>
+                  <div className="mt-1 relative z-10">
                     {selectedFish.difficulty === 'Mudah' ? (
-                      <Badge className="bg-green-100 text-green-800">Mudah</Badge>
+                      <Badge className="bg-green-100 text-green-800 font-semibold" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Mudah</Badge>
                     ) : selectedFish.difficulty === 'Menengah' ? (
-                      <Badge className="bg-yellow-100 text-yellow-800">Menengah</Badge>
+                      <Badge className="bg-yellow-100 text-yellow-800 font-semibold" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Menengah</Badge>
                     ) : (
-                      <Badge className="bg-red-100 text-red-800">Sulit</Badge>
+                      <Badge className="bg-red-100 text-red-800 font-semibold" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Sulit</Badge>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Description */}
-              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>📝 Deskripsi</h3>
-                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.description || 'Tidak ada deskripsi'}</p>
+              <div 
+                className="p-5 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                style={{ 
+                  backgroundColor: '#FFFFFF',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 4px 20px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+              >
+                <h3 className="text-base font-bold mb-3 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>📝 Deskripsi</h3>
+                <p className="leading-relaxed text-sm relative z-10" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.description || 'Tidak ada deskripsi'}</p>
               </div>
 
               {/* Habitat */}
-              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>🌍 Habitat</h3>
-                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.habitat || 'Tidak ada informasi habitat'}</p>
+              <div 
+                className="p-5 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                style={{ 
+                  backgroundColor: '#FFFFFF',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 4px 20px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+              >
+                <h3 className="text-base font-bold mb-3 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>🌍 Habitat</h3>
+                <p className="leading-relaxed text-sm relative z-10" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.habitat || 'Tidak ada informasi habitat'}</p>
               </div>
 
               {/* Parameters */}
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>💧 Parameter Air</h3>
-                  <div className="space-y-3">
+                <div 
+                  className="p-5 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: '#FFFFFF',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 20px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <h3 className="text-base font-bold mb-4 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>💧 Parameter Air</h3>
+                  <div className="space-y-3 relative z-10">
                     <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>pH Range</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.phMin} - {selectedFish.phMax}</span>
+                      <span className="text-sm font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>pH Range</span>
+                      <span className="font-bold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.phMin} - {selectedFish.phMax}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Suhu</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.tempMin}°C - {selectedFish.tempMax}°C</span>
+                      <span className="text-sm font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Suhu</span>
+                      <span className="font-bold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.tempMin}°C - {selectedFish.tempMax}°C</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>📊 Statistik</h3>
-                  <div className="space-y-3">
+                <div 
+                  className="p-5 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: '#FFFFFF',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 20px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <h3 className="text-base font-bold mb-4 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>📊 Statistik</h3>
+                  <div className="space-y-3 relative z-10">
                     <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Views</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.views}</span>
+                      <span className="text-sm font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Views</span>
+                      <span className="font-bold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.views}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Last Updated</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.lastUpdated}</span>
+                      <span className="text-sm font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Last Updated</span>
+                      <span className="font-bold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.lastUpdated}</span>
                     </div>
                   </div>
                 </div>

@@ -170,55 +170,215 @@ export default function RobotStatus() {
     <div className="space-y-6">
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
-          <div className="flex items-center gap-3">
+        <Card 
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
+        >
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center gap-3 relative z-10">
             <div 
-              className="p-3 rounded-lg"
-              style={{ backgroundColor: '#CBDCEB' }}
+              className="p-3 rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(72, 128, 255, 0.3)',
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+              }}
             >
               <Bot className="w-6 h-6" style={{ color: '#608BC1' }} />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Total Robot</p>
-              <p className="text-2xl" style={{ color: '#133E87' }}>{totalRobots}</p>
+              <p className="text-sm font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Total Robot</p>
+              <p className="text-2xl font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{totalRobots}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-10 h-10 text-green-600" />
+        <Card 
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
+        >
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center gap-3 relative z-10">
+            <div 
+              className="p-3 rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)'
+              }}
+            >
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
             <div>
-              <p className="text-sm text-gray-600">Aktif</p>
-              <p className="text-2xl" style={{ color: '#133E87' }}>{activeCount}</p>
+              <p className="text-sm font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Aktif</p>
+              <p className="text-2xl font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{activeCount}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
-          <div className="flex items-center gap-3">
-            <Battery className="w-10 h-10 text-blue-600" />
+        <Card 
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
+        >
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center gap-3 relative z-10">
+            <div 
+              className="p-3 rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                boxShadow: '0 4px 15px rgba(59, 130, 246, 0.2)'
+              }}
+            >
+              <Battery className="w-6 h-6 text-blue-600" />
+            </div>
             <div>
-              <p className="text-sm text-gray-600">Charging</p>
-              <p className="text-2xl" style={{ color: '#133E87' }}>{chargingCount}</p>
+              <p className="text-sm font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Charging</p>
+              <p className="text-2xl font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{chargingCount}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6" style={{ backgroundColor: 'white' }}>
-          <div className="flex items-center gap-3">
-            <XCircle className="w-10 h-10 text-red-600" />
+        <Card 
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
+        >
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center gap-3 relative z-10">
+            <div 
+              className="p-3 rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.2)'
+              }}
+            >
+              <XCircle className="w-6 h-6 text-red-600" />
+            </div>
             <div>
-              <p className="text-sm text-gray-600">Error</p>
-              <p className="text-2xl" style={{ color: '#133E87' }}>{errorCount}</p>
+              <p className="text-sm font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Error</p>
+              <p className="text-2xl font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{errorCount}</p>
             </div>
           </div>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <div className="flex flex-col md:flex-row gap-4">
+      <Card 
+        className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="flex flex-col md:flex-row gap-4 relative z-10">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input 
@@ -258,40 +418,93 @@ export default function RobotStatus() {
 
       {/* Robot List */}
       {filteredRobots.length === 0 ? (
-        <Card className="p-12 text-center" style={{ backgroundColor: 'white' }}>
-          <Bot className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-gray-500">Tidak ada robot ditemukan</p>
+        <Card 
+          className="bubble-card p-12 text-center transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+        >
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-20 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <Bot className="w-16 h-16 mx-auto mb-4 text-gray-300 relative z-10" />
+          <p className="text-gray-500 relative z-10" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Tidak ada robot ditemukan</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredRobots.map((robot) => (
-            <Card key={robot.id} className="p-6" style={{ backgroundColor: 'white' }}>
-              <div className="flex items-start justify-between mb-4">
+            <Card 
+              key={robot.id} 
+              className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+              style={{ 
+                backgroundColor: '#FFFFFF',
+                border: '2px solid rgba(72, 128, 255, 0.2)',
+                borderRadius: '32px',
+                boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.25), 0 0 0 2px rgba(72, 128, 255, 0.3) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+              }}
+            >
+              {/* Bubble glow effect */}
+              <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-30 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+                  filter: 'blur(18px)'
+                }}
+              ></div>
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255, 214, 214, 0.3), transparent 70%)',
+                  filter: 'blur(15px)'
+                }}
+              ></div>
+              <div className="flex items-start justify-between mb-4 relative z-10">
                 <div className="flex items-center gap-3">
                   <div 
-                    className="p-3 rounded-lg"
-                    style={{ backgroundColor: '#CBDCEB' }}
+                    className="p-3 rounded-full transition-all duration-300"
+                    style={{ 
+                      background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(72, 128, 255, 0.3)',
+                      boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+                    }}
                   >
                     {getStatusIcon(robot.status)}
                   </div>
                   <div>
-                    <h4 style={{ color: '#133E87' }}>{robot.id}</h4>
-                    <p className="text-sm text-gray-600">{robot.owner}</p>
+                    <h4 style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>{robot.id}</h4>
+                    <p className="text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{robot.owner}</p>
                   </div>
                 </div>
                 {getStatusBadge(robot.status)}
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 relative z-10">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Lokasi</span>
-                  <span style={{ color: '#133E87' }}>{robot.location}</span>
+                  <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Lokasi</span>
+                  <span style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>{robot.location}</span>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-gray-600">Baterai</span>
-                    <span style={{ color: getBatteryColor(robot.battery) }}>
+                    <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Baterai</span>
+                    <span style={{ color: getBatteryColor(robot.battery), fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>
                       {robot.battery}%
                     </span>
                   </div>
@@ -299,24 +512,25 @@ export default function RobotStatus() {
                     value={robot.battery} 
                     className="h-2"
                     style={{ 
-                      backgroundColor: '#CBDCEB'
+                      backgroundColor: '#CBDCEB',
+                      borderRadius: '9999px'
                     }}
                   />
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Aktivitas Terakhir</span>
-                  <span style={{ color: '#133E87' }}>{robot.lastActivity}</span>
+                  <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Aktivitas Terakhir</span>
+                  <span style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>{robot.lastActivity}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Total Pembersihan</span>
-                  <span style={{ color: '#133E87' }}>{robot.totalCleanings}x</span>
+                  <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Total Pembersihan</span>
+                  <span style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>{robot.totalCleanings}x</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Versi Firmware</span>
-                  <span style={{ color: '#133E87' }}>{robot.firmwareVersion}</span>
+                  <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Versi Firmware</span>
+                  <span style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>{robot.firmwareVersion}</span>
                 </div>
               </div>
 

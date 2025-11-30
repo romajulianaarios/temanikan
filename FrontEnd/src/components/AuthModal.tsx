@@ -274,22 +274,31 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login', r
       console.log('Login result:', result);
 
       if (result && result.success) {
-        // Login successful - prepare for redirect
-        console.log('Login successful, setting pending redirect');
-        setPendingRedirect(true);
+        // Login successful - redirect immediately based on user role from response
+        console.log('Login successful, redirecting...');
         setIsLoading(false);
-        // Wait a bit for user state to update
-        setTimeout(() => {
-          if (user) {
-            if (user.role === 'admin') {
-              navigate('/admin');
-            } else {
-              navigate('/member');
-            }
-            onOpenChange(false);
-            resetModal();
+        
+        // Get user from result (login function now returns user)
+        const loggedInUser = (result as any).user;
+        
+        if (loggedInUser && loggedInUser.role) {
+          // Close modal first
+          onOpenChange(false);
+          resetModal();
+          
+          // Navigate based on role
+          if (loggedInUser.role === 'admin') {
+            console.log('Redirecting to /admin');
+            navigate('/admin');
+          } else {
+            console.log('Redirecting to /member');
+            navigate('/member');
           }
-        }, 100);
+        } else {
+          // Fallback: wait for user state to update via useEffect
+          console.log('User data not in result, waiting for state update...');
+          setPendingRedirect(true);
+        }
       } else {
         // Login failed - show error and stay in form
         console.log('Login failed');

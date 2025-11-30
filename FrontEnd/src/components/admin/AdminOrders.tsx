@@ -380,8 +380,8 @@ export default function AdminOrders() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h2 style={{ color: '#1F2937' }}>Kelola Pesanan</h2>
-          <p className="text-gray-600 mt-1">Kelola dan pantau semua pesanan pelanggan Robot Temanikan</p>
+          <h2 style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>Kelola Pesanan</h2>
+          <p className="mt-1" style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif' }}>Kelola dan pantau semua pesanan pelanggan Robot Temanikan</p>
         </div>
         <Button
           className="text-white flex items-center gap-2"
@@ -396,92 +396,222 @@ export default function AdminOrders() {
       {/* Statistics Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card
-          className="p-6 rounded-xl shadow-sm border-l-4"
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
           style={{
-            backgroundColor: 'white',
-            borderLeftColor: '#4880FF'
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
           }}
         >
-          <div className="flex items-center justify-between">
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Pesanan</p>
-              <p className="text-3xl" style={{ color: '#4880FF' }}>{stats?.total_orders || getStatusCount('all')}</p>
+              <p className="text-sm font-semibold mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Total Pesanan</p>
+              <p className="text-3xl font-bold" style={{ color: '#4880FF', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{stats?.total_orders || getStatusCount('all')}</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#E0EAFF' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(72, 128, 255, 0.3)',
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+              }}
+            >
               <ShoppingBag className="w-6 h-6" style={{ color: '#4880FF' }} />
             </div>
           </div>
         </Card>
 
         <Card
-          className="p-6 rounded-xl shadow-sm border-l-4"
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
           style={{
-            backgroundColor: 'white',
-            borderLeftColor: '#F59E0B'
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
           }}
         >
-          <div className="flex items-center justify-between">
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Menunggu Pembayaran</p>
-              <p className="text-3xl" style={{ color: '#F59E0B' }}>{getStatusCount('pending_payment')}</p>
+              <p className="text-sm font-semibold mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Menunggu Pembayaran</p>
+              <p className="text-3xl font-bold" style={{ color: '#F59E0B', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{getStatusCount('pending_payment')}</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FEF3C7' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                boxShadow: '0 4px 15px rgba(245, 158, 11, 0.2)'
+              }}
+            >
               <Clock className="w-6 h-6" style={{ color: '#F59E0B' }} />
             </div>
           </div>
         </Card>
 
         <Card
-          className="p-6 rounded-xl shadow-sm border-l-4"
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
           style={{
-            backgroundColor: 'white',
-            borderLeftColor: '#3B82F6'
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
           }}
         >
-          <div className="flex items-center justify-between">
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Diproses</p>
-              <p className="text-3xl" style={{ color: '#3B82F6' }}>{getStatusCount('processing')}</p>
+              <p className="text-sm font-semibold mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Diproses</p>
+              <p className="text-3xl font-bold" style={{ color: '#3B82F6', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{getStatusCount('processing')}</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#DBEAFE' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                boxShadow: '0 4px 15px rgba(59, 130, 246, 0.2)'
+              }}
+            >
               <Package className="w-6 h-6" style={{ color: '#3B82F6' }} />
             </div>
           </div>
         </Card>
 
         <Card
-          className="p-6 rounded-xl shadow-sm border-l-4"
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
           style={{
-            backgroundColor: 'white',
-            borderLeftColor: '#10B981'
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
           }}
         >
-          <div className="flex items-center justify-between">
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Selesai</p>
-              <p className="text-3xl" style={{ color: '#10B981' }}>{getStatusCount('completed')}</p>
+              <p className="text-sm font-semibold mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Selesai</p>
+              <p className="text-3xl font-bold" style={{ color: '#10B981', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{getStatusCount('completed')}</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#D1FAE5' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)'
+              }}
+            >
               <CheckCircle className="w-6 h-6" style={{ color: '#10B981' }} />
             </div>
           </div>
         </Card>
 
         <Card
-          className="p-6 rounded-xl shadow-sm border-l-4"
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
           style={{
-            backgroundColor: 'white',
-            borderLeftColor: '#8B5CF6'
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
           }}
         >
-          <div className="flex items-center justify-between">
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
-              <p className="text-xl" style={{ color: '#8B5CF6' }}>
+              <p className="text-sm font-semibold mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Total Revenue</p>
+              <p className="text-xl font-bold" style={{ color: '#8B5CF6', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>
                 {formatCurrency(stats?.total_revenue || getTotalRevenue()).replace('Rp', 'Rp ')}
               </p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#EDE9FE' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(139, 92, 246, 0.3)',
+                boxShadow: '0 4px 15px rgba(139, 92, 246, 0.2)'
+              }}
+            >
               <DollarSign className="w-6 h-6" style={{ color: '#8B5CF6' }} />
             </div>
           </div>
@@ -524,8 +654,33 @@ export default function AdminOrders() {
 
         <TabsContent value="orders" className="space-y-6 mt-6">
           {/* Search and Filter Bar */}
-          <Card className="p-4 rounded-xl shadow-sm" style={{ backgroundColor: 'white' }}>
-            <div className="flex flex-col md:flex-row gap-4">
+          <Card 
+            className="bubble-card p-4 transition-all duration-300 relative overflow-hidden"
+            style={{ 
+              backgroundColor: '#FFFFFF',
+              border: '2px solid rgba(72, 128, 255, 0.2)',
+              borderRadius: '32px',
+              boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+              e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+            }}
+          >
+            <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                filter: 'blur(15px)'
+              }}
+            ></div>
+            <div className="flex flex-col md:flex-row gap-4 relative z-10">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
@@ -577,17 +732,32 @@ export default function AdminOrders() {
           </Card>
 
           {error && (
-            <Card className="p-6 bg-red-50 border-red-200">
-              <div className="flex items-center gap-3 text-red-800">
+            <Card 
+              className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+              style={{ 
+                backgroundColor: '#FFFFFF',
+                border: '2px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '32px',
+                boxShadow: '0 10px 50px rgba(239, 68, 68, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+            >
+              <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(239, 68, 68, 0.3), transparent 70%)',
+                  filter: 'blur(15px)'
+                }}
+              ></div>
+              <div className="flex items-center gap-3 text-red-800 relative z-10">
                 <Package className="w-5 h-5" />
                 <div>
-                  <p className="font-semibold">Gagal Memuat Pesanan</p>
-                  <p className="text-sm">{error}</p>
+                  <p className="font-semibold" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Gagal Memuat Pesanan</p>
+                  <p className="text-sm" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>{error}</p>
                 </div>
               </div>
               <Button
                 onClick={fetchOrders}
-                className="mt-4"
+                className="mt-4 relative z-10"
                 variant="outline"
               >
                 Coba Lagi
@@ -596,8 +766,33 @@ export default function AdminOrders() {
           )}
 
           {/* Orders Table */}
-          <Card className="rounded-xl shadow-sm" style={{ backgroundColor: 'white' }}>
-            <div className="overflow-x-auto">
+          <Card 
+            className="bubble-card rounded-xl transition-all duration-300 relative overflow-hidden"
+            style={{ 
+              backgroundColor: '#FFFFFF',
+              border: '2px solid rgba(72, 128, 255, 0.2)',
+              borderRadius: '32px',
+              boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+              e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+            }}
+          >
+            <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                filter: 'blur(15px)'
+              }}
+            ></div>
+            <div className="overflow-x-auto relative z-10">
               <table className="w-full">
                 <thead>
                   <tr className="border-b" style={{ borderColor: '#E5E7EB' }}>
@@ -705,12 +900,38 @@ export default function AdminOrders() {
         <TabsContent value="analytics" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Tren Pesanan Mingguan */}
-            <Card className="p-6 rounded-xl shadow-sm" style={{ backgroundColor: 'white' }}>
-              <div className="flex items-center gap-2 mb-4">
+            <Card 
+              className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+              style={{ 
+                backgroundColor: '#FFFFFF',
+                border: '2px solid rgba(72, 128, 255, 0.2)',
+                borderRadius: '32px',
+                boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+                e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+              }}
+            >
+              <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                  filter: 'blur(15px)'
+                }}
+              ></div>
+              <div className="flex items-center gap-2 mb-4 relative z-10">
                 <TrendingUp className="w-5 h-5" style={{ color: '#4880FF' }} />
-                <h3 style={{ color: '#1F2937' }}>Tren Pesanan Mingguan</h3>
+                <h3 style={{ color: '#1F2937', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Tren Pesanan Mingguan</h3>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
+              <div className="relative z-10">
+                <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={weeklyTrend}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                   <XAxis dataKey="day" stroke="#6B7280" />
@@ -726,12 +947,39 @@ export default function AdminOrders() {
                   />
                 </LineChart>
               </ResponsiveContainer>
+              </div>
             </Card>
 
             {/* Distribusi Status */}
-            <Card className="p-6 rounded-xl shadow-sm" style={{ backgroundColor: 'white' }}>
-              <h3 className="mb-4" style={{ color: '#1F2937' }}>Distribusi Status Pesanan</h3>
-              <ResponsiveContainer width="100%" height={300}>
+            <Card 
+              className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+              style={{ 
+                backgroundColor: '#FFFFFF',
+                border: '2px solid rgba(72, 128, 255, 0.2)',
+                borderRadius: '32px',
+                boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+                e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+              }}
+            >
+              <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                  filter: 'blur(15px)'
+                }}
+              ></div>
+              <h3 className="mb-4 relative z-10" style={{ color: '#1F2937', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Distribusi Status Pesanan</h3>
+              <div className="relative z-10">
+                <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
                     data={getStatusDistribution()}
@@ -750,15 +998,42 @@ export default function AdminOrders() {
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
+              </div>
             </Card>
 
             {/* Revenue Mingguan */}
-            <Card className="p-6 rounded-xl shadow-sm lg:col-span-2" style={{ backgroundColor: 'white' }}>
-              <div className="flex items-center gap-2 mb-4">
+            <Card 
+              className="bubble-card p-6 transition-all duration-300 relative overflow-hidden lg:col-span-2"
+              style={{ 
+                backgroundColor: '#FFFFFF',
+                border: '2px solid rgba(72, 128, 255, 0.2)',
+                borderRadius: '32px',
+                boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+                e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+              }}
+            >
+              <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                  filter: 'blur(15px)'
+                }}
+              ></div>
+              <div className="flex items-center gap-2 mb-4 relative z-10">
                 <DollarSign className="w-5 h-5" style={{ color: '#8B5CF6' }} />
-                <h3 style={{ color: '#1F2937' }}>Revenue Mingguan</h3>
+                <h3 style={{ color: '#1F2937', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Revenue Mingguan</h3>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
+              <div className="relative z-10">
+                <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={weeklyRevenue}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                   <XAxis dataKey="day" stroke="#6B7280" />
@@ -766,9 +1041,10 @@ export default function AdminOrders() {
                   <Tooltip
                     formatter={(value: any) => formatCurrency(value)}
                   />
-                  <Bar dataKey="revenue" fill="#8B5CF6" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="revenue" fill="#8B5CF6" radius={[8, 8, 0, 0]}                   />
                 </BarChart>
               </ResponsiveContainer>
+              </div>
             </Card>
           </div>
         </TabsContent>
