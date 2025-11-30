@@ -134,12 +134,13 @@ export default function MemberDevices() {
         {devices.length === 0 ? (
           // Empty State - Kondisi Awal untuk Member Baru
           <div
-            className="bubble-card p-16 rounded-[32px] text-center mt-12 relative overflow-hidden transition-all duration-300"
+            className="bubble-card p-16 text-center mt-12 relative overflow-hidden transition-all duration-300"
             style={{ 
               backgroundColor: '#FFFFFF',
               border: '2px solid rgba(72, 128, 255, 0.2)',
               boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-              fontFamily: 'Nunito Sans, sans-serif'
+              fontFamily: 'Nunito Sans, sans-serif',
+              borderRadius: '48px'
             }}
           >
             {/* Bubble glow effect */}

@@ -4,7 +4,6 @@ import { useAuth } from './AuthContext';
 import { notificationAPI } from '../services/api';
 import { formatNotificationTime } from '../utils/dateFormat';
 import {
-    Fish,
     Home as LayoutDashboard,
     Droplets,
     Bot,
@@ -21,6 +20,7 @@ import {
     ChevronDown,
     ShoppingCart
 } from './icons';
+import logo from '../assets/logo_temanikan.png';
 import { Button } from './ui/button';
 import {
     DropdownMenu,
@@ -79,7 +79,8 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
 
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        // Force reload to home page to ensure clean state
+        window.location.href = '/';
     };
 
     useEffect(() => {
@@ -153,7 +154,7 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
                                     boxShadow: '0 4px 12px rgba(15, 91, 229, 0.15)'
                                 }}
                             >
-                                <Fish className="w-6 h-6" style={{ color: '#0F5BE5' }} />
+                                <img src={logo} alt="Temanikan Logo" className="w-6 h-6 object-contain" />
                             </div>
                             <span 
                                 className="text-xl hidden sm:block tracking-tight" 

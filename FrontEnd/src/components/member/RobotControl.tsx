@@ -324,10 +324,10 @@ export default function RobotControl() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h2 className="text-3xl mb-2" style={{ color: '#1F2937', fontWeight: 700 }}>
-          Kontrol <span style={{ color: '#4880FF' }}>Robot</span>
+        <h2 className="text-3xl mb-2" style={{ color: '#FFFFFF', fontWeight: 700 }}>
+          Kontrol <span style={{ color: '#FFFFFF' }}>Robot</span>
         </h2>
-        <p className="text-sm" style={{ color: '#6B7280' }}>
+        <p className="text-sm" style={{ color: '#FFFFFF' }}>
           Kelola robot pembersih akuarium Anda
         </p>
       </div>

@@ -648,10 +648,10 @@ export default function DiseaseDetection() {
     <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
       <div>
-        <h2 className="text-3xl mb-2" style={{ color: '#1F2937', fontWeight: 700 }}>
-          Deteksi <span style={{ color: '#4880FF' }}>Penyakit Ikan</span>
+        <h2 className="text-3xl mb-2" style={{ color: '#FFFFFF', fontWeight: 700 }}>
+          Deteksi <span style={{ color: '#FFFFFF' }}>Penyakit Ikan</span>
         </h2>
-        <p className="text-sm" style={{ color: '#6B7280' }}>
+        <p className="text-sm" style={{ color: '#FFFFFF' }}>
           Monitoring kesehatan ikan dengan teknologi AI
         </p>
       </div>
@@ -841,17 +841,36 @@ export default function DiseaseDetection() {
                   </Card>
                 </DialogTrigger>
                 <DialogContent
-                  className="w-[92vw] sm:max-w-lg text-[12px] md:text-[13px] max-h-[85vh] overflow-y-auto"
-                  style={{ backgroundColor: 'white', fontFamily: '"Nunito Sans", sans-serif', borderRadius: '12px' }}
-                  overlayStyle={modalOverlayStyle}
+                  className="text-[12px] md:text-[13px]"
+                  style={{ 
+                    backgroundColor: 'white', 
+                    fontFamily: '"Nunito Sans", sans-serif', 
+                    borderRadius: '12px',
+                    position: 'fixed',
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    margin: 0,
+                    maxHeight: '75vh',
+                    overflowY: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '92vw',
+                    maxWidth: '32rem',
+                    padding: '1.25rem'
+                  }}
+                  overlayStyle={{
+                    backdropFilter: 'blur(8px)',
+                    background: 'rgba(0, 0, 0, 0.5)'
+                  }}
                 >
-                  <DialogHeader>
+                  <DialogHeader className="flex-shrink-0">
                     <DialogTitle className="text-base font-semibold" style={{ color: '#1F2937', fontFamily: 'inherit' }}>
                       Detail Deteksi Penyakit
                     </DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="w-full h-48 rounded-lg overflow-hidden">
+                  <div className="space-y-3 flex-1 overflow-y-auto">
+                    <div className="w-full h-40 rounded-lg overflow-hidden">
                       <ImageWithFallback
                         src={detection.imageUrl}
                         alt={detection.fishType}
@@ -889,7 +908,7 @@ export default function DiseaseDetection() {
                       }}
                     >
                       <h4 className="mb-2 text-sm" style={{ color: detection.statusColor, fontWeight: 600 }}>Diagnosis</h4>
-                      <p className="text-sm" style={{ color: '#1F2937' }}>{detection.disease}</p>
+                      <p className="text-sm" style={{ color: '#1F2937', wordWrap: 'break-word', overflowWrap: 'break-word' }}>{detection.disease}</p>
                     </div>
 
                     {detection.symptoms.length > 0 && (
@@ -906,7 +925,7 @@ export default function DiseaseDetection() {
                                 className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
                                 style={{ backgroundColor: detection.statusColor }}
                               />
-                              <p className="text-sm" style={{ color: '#1F2937' }}>{symptom}</p>
+                              <p className="text-sm" style={{ color: '#1F2937', wordWrap: 'break-word', overflowWrap: 'break-word' }}>{symptom}</p>
                             </div>
                           ))}
                         </div>
@@ -924,7 +943,7 @@ export default function DiseaseDetection() {
                         <AlertTriangle className="w-5 h-5" />
                         Rekomendasi Penanganan
                       </h4>
-                      <p className="text-sm" style={{ color: '#1F2937' }}>{detection.recommendation}</p>
+                      <p className="text-sm" style={{ color: '#1F2937', wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}>{detection.recommendation}</p>
                     </div>
                   </div>
                 </DialogContent>

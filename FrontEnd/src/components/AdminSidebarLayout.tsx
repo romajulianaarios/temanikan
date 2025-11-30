@@ -1,8 +1,9 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from './Router';
 import { useAuth } from './AuthContext';
+import { notificationAPI } from '../services/api';
+import { formatNotificationTime } from '../utils/dateFormat';
 import { 
-  Fish, 
   Home as LayoutDashboard, 
   Bot, 
   Camera, 
@@ -19,6 +20,7 @@ import {
   ChevronLeft,
   ShoppingCart
 } from './icons';
+import logo from '../assets/logo_temanikan.png';
 import { Button } from './ui/button';
 import { 
   DropdownMenu, 
@@ -48,6 +50,8 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // User data from auth context
   const currentUser = {
@@ -56,30 +60,47 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
     role: 'Administrator'
   };
 
-  // Mock unread notifications
-  const unreadNotifications = [
-    {
-      id: 1,
-      title: 'Pesanan baru masuk',
-      message: 'Roma Juliana melakukan pemesanan Robot Temanikan',
-      time: '5 menit yang lalu',
-      type: 'info'
-    },
-    {
-      id: 2,
-      title: 'Laporan deteksi penyakit',
-      message: 'Terdeteksi peningkatan kasus white spot 15%',
-      time: '1 jam yang lalu',
-      type: 'warning'
-    },
-    {
-      id: 3,
-      title: 'Pengguna baru terdaftar',
-      message: '3 pengguna baru mendaftar hari ini',
-      time: '2 jam yang lalu',
-      type: 'info'
+  // Fetch notifications from API
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await notificationAPI.getNotifications(10, false);
+        console.log('🔔 Notification API Response:', response);
+        
+        // Handle different response formats
+        let notifs = [];
+        let count = 0;
+        
+        if (response.success || response.notifications) {
+          notifs = response.notifications || (response.data && response.data.notifications) || [];
+          count = response.unread_count !== undefined ? response.unread_count : (response.data && response.data.unread_count) || 0;
+        } else if (Array.isArray(response)) {
+          // If response is directly an array
+          notifs = response;
+          count = response.filter((n: any) => !n.is_read).length;
+        }
+
+        console.log('📬 Notifications:', notifs);
+        console.log('🔴 Unread Count:', count);
+
+        setNotifications(notifs);
+        setUnreadCount(count);
+      } catch (error) {
+        console.error('❌ Failed to fetch notifications', error);
+        setNotifications([]);
+        setUnreadCount(0);
+      }
+    };
+
+    if (user) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    } else {
+      setNotifications([]);
+      setUnreadCount(0);
     }
-  ];
+  }, [user]);
 
   const adminMenuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
@@ -93,7 +114,8 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    // Force reload to home page to ensure clean state
+    window.location.href = '/';
   };
 
   const isActivePath = (path: string) => {
@@ -135,7 +157,7 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
         }}>
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2">
-              <Fish className="w-7 h-7" style={{ color: '#4880FF' }} />
+              <img src={logo} alt="Temanikan Logo" className="w-7 h-7 object-contain" />
               <span className="text-lg font-bold" style={{ 
                 color: '#133E87',
                 fontFamily: 'Nunito Sans, sans-serif',
@@ -144,7 +166,7 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
             </div>
           )}
           {sidebarCollapsed && (
-            <Fish className="w-7 h-7 mx-auto" style={{ color: '#4880FF' }} />
+            <img src={logo} alt="Temanikan Logo" className="w-7 h-7 mx-auto object-contain" />
           )}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -283,7 +305,7 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
           backdropFilter: 'blur(10px)'
         }}>
           <div className="flex items-center gap-2">
-            <Fish className="w-7 h-7" style={{ color: '#4880FF' }} />
+            <img src={logo} alt="Temanikan Logo" className="w-7 h-7 object-contain" />
             <span className="text-lg font-bold" style={{ 
               color: '#133E87',
               fontFamily: 'Nunito Sans, sans-serif',
@@ -481,7 +503,10 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
 
                 {/* Notification Dropdown */}
                 <div className="relative">
-                  <DropdownMenu open={notificationOpen} onOpenChange={setNotificationOpen}>
+                  <DropdownMenu open={notificationOpen} onOpenChange={(open) => {
+                    console.log('🔔 Dropdown open state changed:', open);
+                    setNotificationOpen(open);
+                  }}>
                     <DropdownMenuTrigger asChild>
                       <button className="bubble-button p-2 rounded-full transition-all duration-300"
                         style={{
@@ -499,54 +524,104 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
                       }}
                     >
                       <Bell className="w-5 h-5" style={{ color: '#4880FF' }} />
-                      <span 
-                        className="absolute top-1 right-1 w-4 h-4 rounded-full text-xs flex items-center justify-center text-white font-bold"
-                        style={{ backgroundColor: '#EF4444', fontSize: '10px' }}
-                      >
-                        {unreadNotifications.length}
-                      </span>
+                      {unreadCount > 0 && (
+                        <span 
+                          className="absolute top-1 right-1 w-4 h-4 rounded-full text-xs flex items-center justify-center text-white font-bold"
+                          style={{ backgroundColor: '#EF4444', fontSize: '10px' }}
+                        >
+                          {unreadCount}
+                        </span>
+                      )}
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={4} className="w-80" style={{ backgroundColor: 'white' }}>
-                    <DropdownMenuLabel style={{ color: '#1F2937' }}>
-                      Notifikasi Belum Dibaca
+                  <DropdownMenuContent 
+                    align="end" 
+                    sideOffset={4} 
+                    className="w-80" 
+                    style={{ 
+                      backgroundColor: 'white',
+                      zIndex: 9999999,
+                      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+                      border: '1px solid rgba(229, 231, 235, 0.8)',
+                      borderRadius: '16px',
+                      padding: '8px',
+                      display: 'block',
+                      visibility: 'visible',
+                      opacity: 1,
+                      pointerEvents: 'auto',
+                      minWidth: '320px',
+                      maxWidth: '400px'
+                    }}
+                  >
+                    <DropdownMenuLabel style={{ color: '#1F2937', fontWeight: 600, padding: '8px 12px' }}>
+                      Notifikasi {unreadCount > 0 ? `(${unreadCount} belum dibaca)` : ''}
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <div className="max-h-96 overflow-y-auto">
-                      {unreadNotifications.map((notification) => (
-                        <DropdownMenuItem 
-                          key={notification.id}
-                          className="flex flex-col items-start p-3 cursor-pointer"
-                        >
-                          <div className="flex items-start gap-2 w-full">
-                            <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                              notification.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
-                            }`} />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm" style={{ color: '#1F2937' }}>
-                                {notification.title}
-                              </p>
-                              <p className="text-xs text-gray-600 mt-1">
-                                {notification.message}
-                              </p>
-                              <p className="text-xs text-gray-400 mt-1">
-                                {notification.time}
-                              </p>
-                            </div>
+                    <div className="max-h-96 overflow-y-auto" style={{ minHeight: '100px' }}>
+                      {(() => {
+                        console.log('🔔 Rendering notifications. Count:', notifications.length);
+                        console.log('🔔 Notifications data:', notifications);
+                        return null;
+                      })()}
+                      {notifications.length === 0 ? (
+                        <div className="p-8 text-center text-sm text-gray-500">
+                          <div className="bg-gray-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Bell className="w-6 h-6 text-gray-400" />
                           </div>
-                        </DropdownMenuItem>
-                      ))}
+                          Tidak ada notifikasi baru
+                        </div>
+                      ) : (
+                        notifications.slice(0, 5).map((notification) => {
+                          console.log('🔔 Rendering notification:', notification);
+                          return (
+                          <DropdownMenuItem 
+                            key={notification.id}
+                            className="flex flex-col items-start p-3 cursor-pointer hover:bg-gray-50"
+                            onClick={() => {
+                              setNotificationOpen(false);
+                              navigate(`/admin/notifications/${notification.id}`);
+                            }}
+                            style={{ 
+                              borderRadius: '8px',
+                              marginBottom: '4px'
+                            }}
+                          >
+                            <div className="flex items-start gap-2 w-full">
+                              <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                                notification.type === 'warning' || notification.type === 'alert' ? 'bg-yellow-500' : 
+                                notification.type === 'success' ? 'bg-green-500' : 'bg-blue-500'
+                              }`} />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold" style={{ color: !notification.is_read ? '#1F2937' : '#6B7280' }}>
+                                  {notification.title || 'Notifikasi'}
+                                </p>
+                                <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                  {notification.message || 'Tidak ada pesan'}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  {notification.created_at ? formatNotificationTime(notification.created_at) : 'Baru saja'}
+                                </p>
+                              </div>
+                              {!notification.is_read && (
+                                <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5"></span>
+                              )}
+                            </div>
+                          </DropdownMenuItem>
+                          );
+                        })
+                      )}
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
-                      className="text-center cursor-pointer"
+                      className="text-center cursor-pointer hover:bg-gray-50"
                       onClick={() => navigate('/admin/notifications')}
+                      style={{ borderRadius: '8px', padding: '8px' }}
                     >
-                      <span className="w-full" style={{ color: '#4880FF' }}>
+                      <span className="w-full" style={{ color: '#4880FF', fontWeight: 600 }}>
                         Lihat Semua Notifikasi
                       </span>
                     </DropdownMenuItem>
-                    </DropdownMenuContent>
+                  </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
                 

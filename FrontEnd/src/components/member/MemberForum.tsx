@@ -399,12 +399,13 @@ export default function MemberForum() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Categories Sidebar */}
         <div
-          className="bubble-card lg:col-span-1 p-6 h-fit rounded-[32px] transition-all duration-300 relative overflow-hidden"
+          className="bubble-card lg:col-span-1 p-6 h-fit transition-all duration-300 relative overflow-hidden"
           style={{ 
             backgroundColor: '#FFFFFF',
             border: '2px solid rgba(72, 128, 255, 0.2)',
             boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-            fontFamily: 'Nunito Sans, sans-serif'
+            fontFamily: 'Nunito Sans, sans-serif',
+            borderRadius: '48px'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
@@ -432,29 +433,52 @@ export default function MemberForum() {
               <button
                 key={index}
                 onClick={() => setSelectedCategory(category.name)}
-                className="w-full flex items-center justify-between p-3 rounded-lg transition-all text-left hover:bg-gray-50 hover:shadow-md cursor-pointer"
+                className="w-full flex items-center justify-between p-3 transition-all duration-300 text-left cursor-pointer relative z-10"
                 style={{
                   backgroundColor:
                     selectedCategory === category.name
-                      ? 'rgba(72, 128, 255, 0.1)'
-                      : 'transparent',
-                  color: selectedCategory === category.name ? '#4880FF' : '#1F2937',
-                  fontWeight: selectedCategory === category.name ? 600 : 400,
+                      ? 'rgba(72, 128, 255, 0.15)'
+                      : 'rgba(255, 255, 255, 0.5)',
+                  color: selectedCategory === category.name ? '#4880FF' : '#133E87',
+                  fontWeight: selectedCategory === category.name ? 700 : 600,
                   border:
                     selectedCategory === category.name
-                      ? '1px solid rgba(72, 128, 255, 0.2)'
-                      : '1px solid transparent',
+                      ? '2px solid rgba(72, 128, 255, 0.4)'
+                      : '2px solid rgba(72, 128, 255, 0.1)',
+                  boxShadow: selectedCategory === category.name
+                    ? '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                    : '0 2px 8px rgba(72, 128, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.3) inset',
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  borderRadius: '24px'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedCategory !== category.name) {
+                    e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                    e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.4) inset';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedCategory !== category.name) {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                    e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.1)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(72, 128, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.3) inset';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }
                 }}
               >
-                <span className="text-sm">{category.name}</span>
+                <span className="text-sm" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>{category.name}</span>
                 <span
-                  className="text-xs px-2 py-1 rounded"
+                  className="text-xs px-2 py-1 rounded-full"
                   style={{
                     backgroundColor:
                       selectedCategory === category.name
-                        ? 'rgba(72, 128, 255, 0.2)'
-                        : 'rgba(107, 114, 128, 0.1)',
-                    color: selectedCategory === category.name ? '#4880FF' : '#6B7280',
+                        ? 'rgba(72, 128, 255, 0.3)'
+                        : 'rgba(107, 114, 128, 0.15)',
+                    color: selectedCategory === category.name ? '#FFFFFF' : '#6B7280',
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    fontWeight: 600
                   }}
                 >
                   {category.count}
@@ -485,12 +509,13 @@ export default function MemberForum() {
             getFilteredTopics().map((topic) => (
               <div
                 key={topic.id}
-                className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+                className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
                 style={{ 
                   backgroundColor: '#FFFFFF',
                   border: '2px solid rgba(72, 128, 255, 0.2)',
                   boxShadow: '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8) inset',
-                  fontFamily: 'Nunito Sans, sans-serif'
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  borderRadius: '48px'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
@@ -600,13 +625,30 @@ export default function MemberForum() {
 
       {/* Replies Modal */}
       {showReplies && selectedTopic && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div 
+          className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          style={{
+            background: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 99999998
+          }}
+          onClick={() => setShowReplies(false)}
+        >
           <div
-            className="max-w-2xl w-full max-h-[80vh] rounded-xl overflow-hidden"
-            style={{ backgroundColor: '#F3F3E0' }}
+            className="max-w-2xl w-full max-h-[80vh] rounded-3xl overflow-hidden relative"
+            style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(15px)',
+              border: '2px solid rgba(72, 128, 255, 0.2)',
+              boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              fontFamily: 'Nunito Sans, sans-serif',
+              zIndex: 99999999
+            }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 border-b" style={{ borderColor: '#CBDCEB' }}>
-              <h3 className="text-xl font-bold" style={{ color: '#133E87' }}>
+            <div className="relative px-6 py-5 border-b" style={{ borderColor: 'rgba(72, 128, 255, 0.2)' }}>
+              <div className="pointer-events-none absolute -top-12 -right-8 h-32 w-32 rounded-full bg-[#608BC1]/20 blur-2xl" />
+              <h3 className="text-xl font-bold relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>
                 {selectedTopic.replies_count} Balasan - {selectedTopic.title}
               </h3>
             </div>
@@ -617,28 +659,53 @@ export default function MemberForum() {
                   selectedTopic.replies.map((reply) => (
                     <div
                       key={reply.id}
-                      className="p-4 rounded-lg"
-                      style={{ backgroundColor: 'white' }}
+                      className="p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                      style={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        border: '2px solid rgba(72, 128, 255, 0.2)',
+                        boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                        fontFamily: 'Nunito Sans, sans-serif'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                        e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                        e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+                      }}
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-10 pointer-events-none"
+                        style={{
+                          background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                          filter: 'blur(10px)'
+                        }}
+                      ></div>
+                      <div className="flex items-start gap-3 relative z-10">
                         <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center"
-                          style={{ backgroundColor: '#CBDCEB' }}
+                          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ 
+                            backgroundColor: 'rgba(72, 128, 255, 0.15)',
+                            border: '2px solid rgba(72, 128, 255, 0.3)',
+                            boxShadow: '0 2px 8px rgba(72, 128, 255, 0.2)'
+                          }}
                         >
-                          <User className="w-5 h-5" style={{ color: '#608BC1' }} />
+                          <User className="w-5 h-5" style={{ color: '#4880FF' }} />
                         </div>
 
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-semibold" style={{ color: '#133E87' }}>
+                            <span className="text-sm font-semibold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
                               {reply.author_name}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
                               {formatTimeAgo(reply.created_at)}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-700 mb-3">{reply.content}</p>
-                          <div className="flex items-center gap-1 text-xs text-gray-600">
+                          <p className="text-sm mb-3" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{reply.content}</p>
+                          <div className="flex items-center gap-1 text-xs" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
                             <ThumbsUp className="w-3 h-3" />
                             <span>{reply.likes} suka</span>
                           </div>
@@ -647,26 +714,59 @@ export default function MemberForum() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-gray-500">Belum ada balasan</div>
+                  <div className="text-center py-8" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Belum ada balasan</div>
                 )}
               </div>
             </div>
 
-            <div className="p-4 border-t" style={{ borderColor: '#CBDCEB' }}>
+            <div className="p-4 border-t" style={{ borderColor: 'rgba(72, 128, 255, 0.2)' }}>
               <div className="flex gap-3">
                 <Link to={`/member/forum/topic/${selectedTopic.id}`} className="flex-1">
                   <button
-                    className="w-full py-2 rounded-lg text-white font-semibold"
-                    style={{ backgroundColor: '#133E87' }}
+                    className="w-full py-2 rounded-full text-white font-semibold transition-all duration-300 bubble-button"
+                    style={{ 
+                      backgroundColor: '#4880FF',
+                      border: '2px solid rgba(72, 128, 255, 0.4)',
+                      boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3) inset',
+                      fontFamily: 'Nunito Sans, sans-serif',
+                      fontWeight: 600
+                    }}
                     onClick={() => setShowReplies(false)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                      e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.5) inset';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3) inset';
+                    }}
                   >
                     Lihat Detail & Balas Topik
                   </button>
                 </Link>
                 <button
                   onClick={() => setShowReplies(false)}
-                  className="px-4 py-2 rounded-lg border"
-                  style={{ borderColor: '#133E87', color: '#133E87' }}
+                  className="px-4 py-2 rounded-full border transition-all duration-300 bubble-button"
+                  style={{ 
+                    borderColor: 'rgba(72, 128, 255, 0.3)',
+                    color: '#133E87',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    fontWeight: 600
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#F0F5FF';
+                    e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                    e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  }}
                 >
                   Tutup
                 </button>
@@ -678,62 +778,150 @@ export default function MemberForum() {
 
       {/* Report Modal */}
       <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
-        <DialogContent className="sm:max-w-md">
-          <div className="p-6">
-            <h3 className="text-xl font-bold mb-4" style={{ color: '#133E87' }}>
-              Laporkan Topik
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#133E87' }}>
-                  Alasan Laporan <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={reportReason}
-                  onChange={(e) => setReportReason(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  style={{ borderColor: '#E5E7EB' }}
-                >
-                  <option value="">Pilih alasan</option>
-                  <option value="spam">Spam atau iklan</option>
-                  <option value="inappropriate">Konten tidak pantas</option>
-                  <option value="misleading">Informasi menyesatkan</option>
-                  <option value="harassment">Pelecehan atau bullying</option>
-                  <option value="other">Lainnya</option>
-                </select>
-              </div>
+        <DialogContent 
+          className="sm:max-w-md p-0"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          overlayStyle={{
+            backdropFilter: 'blur(8px)',
+            background: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 99999998
+          }}
+        >
+          <div className="relative px-6 py-5">
+            <div className="pointer-events-none absolute -top-12 -right-8 h-32 w-32 rounded-full bg-[#608BC1]/20 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-16 -left-4 h-40 w-40 rounded-full bg-[#133E87]/10 blur-3xl" />
+            <div className="relative z-10">
+              <h3 className="text-xl font-bold mb-4" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>
+                Laporkan Topik
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
+                    Alasan Laporan <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl transition-all duration-300 focus:outline-none"
+                    style={{ 
+                      borderColor: 'rgba(72, 128, 255, 0.3)',
+                      border: '2px solid rgba(72, 128, 255, 0.3)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                      fontFamily: 'Nunito Sans, sans-serif',
+                      color: '#133E87'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.5)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                    }}
+                  >
+                    <option value="">Pilih alasan</option>
+                    <option value="spam">Spam atau iklan</option>
+                    <option value="inappropriate">Konten tidak pantas</option>
+                    <option value="misleading">Informasi menyesatkan</option>
+                    <option value="harassment">Pelecehan atau bullying</option>
+                    <option value="other">Lainnya</option>
+                  </select>
+                </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#133E87' }}>
-                  Deskripsi (Opsional)
-                </label>
-                <textarea
-                  value={reportDescription}
-                  onChange={(e) => setReportDescription(e.target.value)}
-                  placeholder="Jelaskan lebih detail tentang laporan Anda..."
-                  rows={4}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  style={{ borderColor: '#E5E7EB' }}
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
+                    Deskripsi (Opsional)
+                  </label>
+                  <textarea
+                    value={reportDescription}
+                    onChange={(e) => setReportDescription(e.target.value)}
+                    placeholder="Jelaskan lebih detail tentang laporan Anda..."
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-2xl transition-all duration-300 focus:outline-none resize-none"
+                    style={{ 
+                      borderColor: 'rgba(72, 128, 255, 0.3)',
+                      border: '2px solid rgba(72, 128, 255, 0.3)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                      fontFamily: 'Nunito Sans, sans-serif',
+                      color: '#133E87'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.5)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                    }}
+                  />
+                </div>
 
-              <div className="flex gap-3 pt-4">
-                <Button
-                  onClick={handleSubmitReport}
-                  disabled={!reportReason || submittingReport}
-                  className="flex-1 text-white"
-                  style={{ backgroundColor: '#EF4444' }}
-                >
-                  {submittingReport ? 'Mengirim...' : 'Kirim Laporan'}
-                </Button>
-                <Button
-                  onClick={() => setShowReportModal(false)}
-                  variant="outline"
-                  disabled={submittingReport}
-                >
-                  Batal
-                </Button>
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    onClick={handleSubmitReport}
+                    disabled={!reportReason || submittingReport}
+                    className="flex-1 text-white rounded-full transition-all duration-300 bubble-button"
+                    style={{ 
+                      backgroundColor: '#EF4444',
+                      border: '2px solid rgba(239, 68, 68, 0.4)',
+                      boxShadow: '0 4px 15px rgba(239, 68, 68, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3) inset',
+                      fontFamily: 'Nunito Sans, sans-serif',
+                      fontWeight: 600
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!submittingReport && reportReason) {
+                        e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                        e.currentTarget.style.boxShadow = '0 6px 25px rgba(239, 68, 68, 0.3), 0 0 0 1px rgba(239, 68, 68, 0.5) inset';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3) inset';
+                    }}
+                  >
+                    {submittingReport ? 'Mengirim...' : 'Kirim Laporan'}
+                  </Button>
+                  <Button
+                    onClick={() => setShowReportModal(false)}
+                    variant="outline"
+                    disabled={submittingReport}
+                    className="rounded-full transition-all duration-300 bubble-button"
+                    style={{
+                      borderColor: 'rgba(72, 128, 255, 0.3)',
+                      color: '#133E87',
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                      fontFamily: 'Nunito Sans, sans-serif',
+                      fontWeight: 600
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!submittingReport) {
+                        e.currentTarget.style.backgroundColor = '#F0F5FF';
+                        e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                      e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                    }}
+                  >
+                    Batal
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -742,84 +930,158 @@ export default function MemberForum() {
 
       {/* Success Modal */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="sm:max-w-md">
-          <div className="flex flex-col items-center justify-center text-center p-6">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-              style={{ backgroundColor: '#CBFFA9' }}
-            >
-              <svg
-                className="w-8 h-8"
-                style={{ color: '#133E87' }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+        <DialogContent 
+          className="sm:max-w-md p-0"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          overlayStyle={{
+            backdropFilter: 'blur(8px)',
+            background: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 99999998
+          }}
+        >
+          <div className="relative px-6 py-5">
+            <div className="pointer-events-none absolute -top-12 -right-8 h-32 w-32 rounded-full bg-[#608BC1]/20 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-16 -left-4 h-40 w-40 rounded-full bg-[#133E87]/10 blur-3xl" />
+            <div className="flex flex-col items-center justify-center text-center relative z-10">
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-all duration-300"
+                style={{ 
+                  backgroundColor: 'rgba(203, 255, 169, 0.3)',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+                <svg
+                  className="w-8 h-8"
+                  style={{ color: '#133E87' }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+
+              <h3 className="text-xl font-bold mb-2" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>
+                Laporan Berhasil Dikirim
+              </h3>
+              <p className="mb-6" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
+                Terima kasih atas laporan Anda. Admin akan meninjau dan mengambil tindakan yang sesuai.
+              </p>
+
+              <Button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full text-white font-semibold rounded-full transition-all duration-300 bubble-button"
+                style={{ 
+                  backgroundColor: '#4880FF',
+                  border: '2px solid rgba(72, 128, 255, 0.4)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3) inset',
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  fontWeight: 600
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.5) inset';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3) inset';
+                }}
+              >
+                OK
+              </Button>
             </div>
-
-            <h3 className="text-xl font-bold mb-2" style={{ color: '#133E87' }}>
-              Laporan Berhasil Dikirim
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Terima kasih atas laporan Anda. Admin akan meninjau dan mengambil tindakan yang sesuai.
-            </p>
-
-            <Button
-              onClick={() => setShowSuccessModal(false)}
-              className="w-full text-white font-semibold"
-              style={{ backgroundColor: '#4880FF' }}
-            >
-              OK
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Already Reported Modal */}
       <Dialog open={showAlreadyReportedModal} onOpenChange={setShowAlreadyReportedModal}>
-        <DialogContent className="sm:max-w-md">
-          <div className="flex flex-col items-center justify-center text-center p-6">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-              style={{ backgroundColor: '#FEF3C7' }}
-            >
-              <svg
-                className="w-8 h-8"
-                style={{ color: '#F59E0B' }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+        <DialogContent 
+          className="sm:max-w-md p-0"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          overlayStyle={{
+            backdropFilter: 'blur(8px)',
+            background: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 99999998
+          }}
+        >
+          <div className="relative px-6 py-5">
+            <div className="pointer-events-none absolute -top-12 -right-8 h-32 w-32 rounded-full bg-[#608BC1]/20 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-16 -left-4 h-40 w-40 rounded-full bg-[#133E87]/10 blur-3xl" />
+            <div className="flex flex-col items-center justify-center text-center relative z-10">
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-all duration-300"
+                style={{ 
+                  backgroundColor: 'rgba(254, 243, 199, 0.3)',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
+                <svg
+                  className="w-8 h-8"
+                  style={{ color: '#F59E0B' }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+
+              <h3 className="text-xl font-bold mb-2" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>
+                Topik Sudah Dilaporkan
+              </h3>
+              <p className="mb-6" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
+                Anda sudah pernah melaporkan topik ini sebelumnya. Laporan Anda sedang ditinjau oleh admin.
+              </p>
+
+              <Button
+                onClick={() => setShowAlreadyReportedModal(false)}
+                className="w-full text-white font-semibold rounded-full transition-all duration-300 bubble-button"
+                style={{ 
+                  backgroundColor: '#4880FF',
+                  border: '2px solid rgba(72, 128, 255, 0.4)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3) inset',
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  fontWeight: 600
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.5) inset';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3) inset';
+                }}
+              >
+                OK
+              </Button>
             </div>
-
-            <h3 className="text-xl font-bold mb-2" style={{ color: '#133E87' }}>
-              Topik Sudah Dilaporkan
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Anda sudah pernah melaporkan topik ini sebelumnya. Laporan Anda sedang ditinjau oleh admin.
-            </p>
-
-            <Button
-              onClick={() => setShowAlreadyReportedModal(false)}
-              className="w-full text-white font-semibold"
-              style={{ backgroundColor: '#4880FF' }}
-            >
-              OK
-            </Button>
           </div>
         </DialogContent>
       </Dialog>

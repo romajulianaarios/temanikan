@@ -199,12 +199,13 @@ export default function MyTopics() {
       <div className="space-y-4">
         {getSortedTopics().length === 0 ? (
           <div
-            className="bubble-card p-12 rounded-[32px] text-center transition-all duration-300 relative overflow-hidden"
+            className="bubble-card p-12 text-center transition-all duration-300 relative overflow-hidden"
             style={{ 
               backgroundColor: '#FFFFFF',
               border: '2px solid rgba(72, 128, 255, 0.2)',
               boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-              fontFamily: 'Nunito Sans, sans-serif'
+              fontFamily: 'Nunito Sans, sans-serif',
+              borderRadius: '48px'
             }}
           >
             <User className="w-12 h-12 mx-auto mb-4 relative z-10" style={{ color: 'rgba(72, 128, 255, 0.3)' }} />
@@ -235,12 +236,13 @@ export default function MyTopics() {
           getSortedTopics().map((topic) => (
             <div
               key={topic.id}
-              className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+              className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
               style={{ 
                 backgroundColor: '#FFFFFF',
                 border: '2px solid rgba(72, 128, 255, 0.2)',
                 boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-                fontFamily: 'Nunito Sans, sans-serif'
+                fontFamily: 'Nunito Sans, sans-serif',
+                borderRadius: '48px'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
@@ -299,22 +301,22 @@ export default function MyTopics() {
 
                   <div className="flex items-center gap-6 text-sm">
                     <div
-                      className="flex items-center gap-2"
-                      style={{ color: '#4880FF', fontWeight: 500 }}
+                      className="flex items-center gap-2 transition-all duration-300 hover:scale-110"
+                      style={{ color: '#3B82F6', fontWeight: 600 }}
                     >
                       <MessageSquare className="w-4 h-4" />
                       <span>{topic.replies_count}</span>
                     </div>
                     <div
-                      className="flex items-center gap-2"
-                      style={{ color: '#8280FF', fontWeight: 500 }}
+                      className="flex items-center gap-2 transition-all duration-300 hover:scale-110"
+                      style={{ color: '#EC4899', fontWeight: 600 }}
                     >
                       <ThumbsUp className="w-4 h-4" />
                       <span>{topic.likes}</span>
                     </div>
                     <div
-                      className="flex items-center gap-2"
-                      style={{ color: '#6B7280', fontWeight: 500 }}
+                      className="flex items-center gap-2 transition-all duration-300 hover:scale-110"
+                      style={{ color: '#10B981', fontWeight: 600 }}
                     >
                       <Eye className="w-4 h-4" />
                       <span>{topic.views}</span>

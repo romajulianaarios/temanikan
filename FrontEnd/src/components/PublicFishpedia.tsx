@@ -3,10 +3,12 @@ import { Card } from './ui/card';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Search, Fish, ChevronRight, Menu, X } from './icons';
+import { Search, ChevronRight, Menu, X } from './icons';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import Navbar from './Navbar';
+import Fish3DBackground from './Fish3DBackground';
 import { fishpediaAPI, buildAssetUrl } from '../services/api';
+import logo from '../assets/logo_temanikan.png';
 
 interface PublicFishpediaProps {
   onAuthClick?: (mode: 'login' | 'register') => void;
@@ -104,6 +106,14 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
   const handleNavigateHome = () => {
     if (onNavigateHome) {
       onNavigateHome();
+    } else if (onSmartNavigate) {
+      onSmartNavigate('/');
+    }
+  };
+
+  const handleNavigateToFishpedia = () => {
+    if (onSmartNavigate) {
+      onSmartNavigate('/fishpedia');
     }
   };
 
@@ -286,19 +296,52 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
       background: 'linear-gradient(to bottom, #87CEEB 0%, #4A90E2 15%, #357ABD 30%, #2E5C8A 50%, #1E3A5F 70%, #0F2027 100%)',
       position: 'relative'
     }}>
+      {/* Background Ikan 3D Animasi */}
+      <Fish3DBackground />
+      
       {/* Background Bubbles */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
         <div className="absolute top-20 right-10 w-96 h-96 bg-[#0F5BE5] rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 left-10 w-96 h-96 bg-[#FFD6D6] rounded-full blur-3xl"></div>
       </div>
 
+      {/* Konten */}
+      <div className="relative" style={{ zIndex: 1 }}>
+      <style>{`
+        /* Global Bubble Button Style dengan Hover Interaktif */
+        .bubble-button {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          cursor: pointer;
+          will-change: transform, background-color, box-shadow;
+        }
+        .bubble-button:hover {
+          transform: translateY(-4px) scale(1.05) !important;
+        }
+        .bubble-button:active {
+          transform: translateY(-2px) scale(1.02) !important;
+        }
+        
+        /* Style untuk semua button yang belum menggunakan class bubble-button */
+        button:not(.bubble-button):not([class*="navbar"]):not([class*="mobile"]) {
+          border-radius: 9999px !important;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        button:not(.bubble-button):not([class*="navbar"]):not([class*="mobile"]):hover {
+          transform: translateY(-3px) scale(1.03) !important;
+          box-shadow: 0 8px 25px rgba(72, 128, 255, 0.4) !important;
+        }
+      `}</style>
+
       {/* Global Navbar */}
-      <div className="relative z-10">
+      <div className="relative" style={{ zIndex: 9999999 }}>
         <Navbar onAuthClick={onAuthClick} onSmartNavigate={onSmartNavigate} />
       </div>
 
+      {/* Spacer untuk fixed navbar */}
+      <div style={{ height: '76px' }}></div>
+
       {/* Main Content */}
-      <main className="flex-1 py-8 relative z-10">
+      <main className="flex-1 py-8 relative" style={{ zIndex: 1 }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {loading && (
             <div className="text-center py-8">
@@ -437,16 +480,17 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
             {filteredFish.map((fish) => (
               <Card 
                 key={fish.id} 
-                className="overflow-hidden transition-all duration-300 cursor-pointer relative"
+                className="overflow-hidden transition-all duration-300 relative"
                 style={{
                   background: 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(10px)',
                   border: '2px solid rgba(15, 91, 229, 0.3)',
                   borderRadius: '32px',
                   boxShadow: '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-                  fontFamily: 'Nunito Sans, sans-serif'
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  zIndex: 1,
+                  position: 'relative'
                 }}
-                onClick={() => setSelectedFish(fish)}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
                   e.currentTarget.style.boxShadow = '0 16px 48px rgba(15, 91, 229, 0.3), 0 0 0 1px rgba(15, 91, 229, 0.4) inset';
@@ -486,7 +530,7 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
                     </Badge>
                   </div>
                 </div>
-                <div className="p-6 relative z-10">
+                <div className="p-6 relative" style={{ zIndex: 1 }}>
                   <h3 className="text-xl mb-1 font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.name}</h3>
                   <p className="text-sm italic mb-3" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.scientificName}</p>
                   <p className="text-sm mb-4 line-clamp-2" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.description}</p>
@@ -503,6 +547,12 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
                   </div>
 
                   <button 
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent event from bubbling to Card
+                      if (onAuthClick) {
+                        onAuthClick('login');
+                      }
+                    }}
                     className="w-full py-3 rounded-full font-semibold transition-all duration-300 bubble-button flex items-center justify-center gap-2"
                     style={{
                       background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
@@ -531,7 +581,7 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
           {/* No Results */}
           {filteredFish.length === 0 && (
             <div className="text-center py-12">
-              <Fish className="w-16 h-16 mx-auto mb-4" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+              <img src={logo} alt="Temanikan Logo" className="w-16 h-16 mx-auto mb-4 object-contain opacity-50" />
               <p className="text-lg font-semibold mb-2" style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif' }}>Tidak ada ikan yang ditemukan</p>
               <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)', fontFamily: 'Nunito Sans, sans-serif' }}>Coba ubah kata kunci pencarian atau filter kategori</p>
             </div>
@@ -539,75 +589,285 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
         </div>
       </main>
 
-      {/* Landing Page Footer */}
-      <footer className="bg-[#133E87] text-white py-12 border-t border-[#608BC1] mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Footer - Bubble Style */}
+      <footer className="relative overflow-hidden mt-12">
+        {/* Decorative Bubbles Background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-10 w-40 h-40 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, rgba(15, 91, 229, 0.3), rgba(72, 128, 255, 0.2))', filter: 'blur(50px)' }}></div>
+          <div className="absolute bottom-0 right-10 w-36 h-36 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, rgba(255, 182, 193, 0.3), rgba(255, 215, 0, 0.2))', filter: 'blur(45px)' }}></div>
+        </div>
+
+        <div 
+          className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-12 relative"
+          style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '40px 40px 0 0',
+            boxShadow: '0 -10px 40px rgba(15, 91, 229, 0.1), inset 0 2px 10px rgba(255, 255, 255, 0.5)',
+            zIndex: 1
+          }}
+        >
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             {/* Column 1 - Brand */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Fish className="w-8 h-8" />
-                <span className="text-2xl" style={{ fontFamily: 'Allura, cursive' }}>Temanikan</span>
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.2), rgba(72, 128, 255, 0.15))',
+                    border: '2px solid rgba(15, 91, 229, 0.3)',
+                    boxShadow: '0 4px 12px rgba(15, 91, 229, 0.15)'
+                  }}
+                >
+                  <img src={logo} alt="Temanikan Logo" className="w-6 h-6 object-contain" />
+                </div>
+                <span 
+                  className="text-2xl font-bold" 
+                  style={{ 
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    color: '#0F5BE5',
+                    textShadow: '0 2px 8px rgba(15, 91, 229, 0.2)'
+                  }}
+                >
+                  temanikan
+                </span>
               </div>
-              <p className="text-sm text-[#CBDCEB]">
+              <p className="text-sm font-medium" style={{ color: '#374151', lineHeight: '1.6' }}>
                 Platform edukasi, komunitas, dan monitoring ikan hias berbasis Machine Learning
               </p>
             </div>
 
             {/* Column 2 - Navigation */}
             <div>
-              <h3 className="mb-4">Navigasi Cepat</h3>
+              <h3 className="mb-4 font-bold text-lg" style={{ color: '#0F5BE5' }}>Navigasi Cepat</h3>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={handleNavigateHome} className="text-[#CBDCEB] hover:text-white transition-colors">Beranda</button></li>
-                <li><a href="#tentang" className="text-[#CBDCEB] hover:text-white transition-colors">Tentang Kami</a></li>
-                <li><a href="#fishpedia" className="text-[#CBDCEB] hover:text-white transition-colors">Fishpedia</a></li>
-                <li><a href="#fitur" className="text-[#CBDCEB] hover:text-white transition-colors">Fitur</a></li>
-                <li><a href="#produk" className="text-[#CBDCEB] hover:text-white transition-colors">Produk</a></li>
+                <li>
+                  <button 
+                    onClick={handleNavigateHome} 
+                    className="bubble-button px-4 py-2 rounded-full font-medium transition-all duration-300 text-left"
+                    style={{
+                      color: '#374151',
+                      background: 'transparent',
+                      border: 'none'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(15, 91, 229, 0.1)';
+                      e.currentTarget.style.color = '#0F5BE5';
+                      e.currentTarget.style.transform = 'translateX(4px)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 91, 229, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#374151';
+                      e.currentTarget.style.transform = 'translateX(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    Beranda
+                  </button>
+                </li>
+                <li>
+                  <a 
+                    href="/#tentang" 
+                    className="inline-block px-4 py-2 rounded-full font-medium transition-all duration-300"
+                    style={{
+                      color: '#374151',
+                      background: 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(15, 91, 229, 0.1)';
+                      e.currentTarget.style.color = '#0F5BE5';
+                      e.currentTarget.style.transform = 'translateX(4px)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 91, 229, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#374151';
+                      e.currentTarget.style.transform = 'translateX(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    Tentang Kami
+                  </a>
+                </li>
+                <li>
+                  <button 
+                    onClick={handleNavigateToFishpedia} 
+                    className="bubble-button px-4 py-2 rounded-full font-medium transition-all duration-300 text-left"
+                    style={{
+                      color: '#374151',
+                      background: 'transparent',
+                      border: 'none'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(15, 91, 229, 0.1)';
+                      e.currentTarget.style.color = '#0F5BE5';
+                      e.currentTarget.style.transform = 'translateX(4px)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 91, 229, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#374151';
+                      e.currentTarget.style.transform = 'translateX(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    Fishpedia
+                  </button>
+                </li>
+                <li>
+                  <a 
+                    href="/#fitur" 
+                    className="inline-block px-4 py-2 rounded-full font-medium transition-all duration-300"
+                    style={{
+                      color: '#374151',
+                      background: 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(15, 91, 229, 0.1)';
+                      e.currentTarget.style.color = '#0F5BE5';
+                      e.currentTarget.style.transform = 'translateX(4px)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 91, 229, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#374151';
+                      e.currentTarget.style.transform = 'translateX(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    Fitur
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="/produk" 
+                    className="inline-block px-4 py-2 rounded-full font-medium transition-all duration-300"
+                    style={{
+                      color: '#374151',
+                      background: 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(15, 91, 229, 0.1)';
+                      e.currentTarget.style.color = '#0F5BE5';
+                      e.currentTarget.style.transform = 'translateX(4px)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 91, 229, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#374151';
+                      e.currentTarget.style.transform = 'translateX(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    Produk
+                  </a>
+                </li>
               </ul>
             </div>
 
             {/* Column 3 - Support */}
             <div>
-              <h3 className="mb-4">Dukungan</h3>
+              <h3 className="mb-4 font-bold text-lg" style={{ color: '#0F5BE5' }}>Dukungan</h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">FAQ</a></li>
-                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">Kontak</a></li>
-                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">Bantuan</a></li>
-                <li><a href="#" className="text-[#CBDCEB] hover:text-white transition-colors">Dokumentasi</a></li>
+                {['FAQ', 'Kontak', 'Bantuan', 'Dokumentasi'].map((item) => (
+                  <li key={item}>
+                    <a 
+                      href="#" 
+                      className="inline-block px-4 py-2 rounded-full font-medium transition-all duration-300"
+                      style={{
+                        color: '#374151',
+                        background: 'transparent'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(15, 91, 229, 0.1)';
+                        e.currentTarget.style.color = '#0F5BE5';
+                        e.currentTarget.style.transform = 'translateX(4px)';
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 91, 229, 0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = '#374151';
+                        e.currentTarget.style.transform = 'translateX(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 
             {/* Column 4 - Social Media */}
             <div>
-              <h3 className="mb-4">Ikuti Kami</h3>
+              <h3 className="mb-4 font-bold text-lg" style={{ color: '#0F5BE5' }}>Ikuti Kami</h3>
               <div className="flex gap-3">
-                <a href="#" className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center hover:bg-[#CBDCEB] transition-colors">
-                  <span className="sr-only">Facebook</span>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                </a>
-                <a href="#" className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center hover:bg-[#CBDCEB] transition-colors">
-                  <span className="sr-only">Instagram</span>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                  </svg>
-                </a>
-                <a href="#" className="w-10 h-10 bg-[#608BC1] rounded-full flex items-center justify-center hover:bg-[#CBDCEB] transition-colors">
-                  <span className="sr-only">Twitter</span>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                  </svg>
-                </a>
+                {[
+                  { name: 'Facebook', path: 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z' },
+                  { name: 'Instagram', path: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z' },
+                  { name: 'Twitter', path: 'M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z' }
+                ].map((social, index) => (
+                  <a 
+                    key={index}
+                    href="#" 
+                    className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      border: '2px solid rgba(15, 91, 229, 0.3)',
+                      boxShadow: '0 4px 12px rgba(15, 91, 229, 0.15)',
+                      color: '#0F5BE5'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(15, 91, 229, 0.2), rgba(72, 128, 255, 0.15))';
+                      e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.5)';
+                      e.currentTarget.style.transform = 'translateY(-4px) scale(1.1)';
+                      e.currentTarget.style.boxShadow = '0 8px 20px rgba(15, 91, 229, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
+                      e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.3)';
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(15, 91, 229, 0.15)';
+                    }}
+                  >
+                    <span className="sr-only">{social.name}</span>
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d={social.path}/>
+                    </svg>
+                  </a>
+                ))}
               </div>
             </div>
           </div>
 
-          <div className="pt-8 border-t border-[#608BC1] flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#CBDCEB]">
-            <p>© 2025 Temanikan. All rights reserved.</p>
+          <div 
+            className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm"
+          >
+            <p className="font-medium" style={{ color: '#6B7280' }}>© 2025 Temanikan. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms & Conditions</a>
+              {['Privacy Policy', 'Terms & Conditions'].map((link, index) => (
+                <a 
+                  key={index}
+                  href="#" 
+                  className="px-4 py-2 rounded-full font-medium transition-all duration-300"
+                  style={{
+                    color: '#6B7280'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#0F5BE5';
+                    e.currentTarget.style.background = 'rgba(15, 91, 229, 0.1)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#6B7280';
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  {link}
+                </a>
+              ))}
             </div>
           </div>
         </div>
@@ -805,6 +1065,7 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
           )}
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

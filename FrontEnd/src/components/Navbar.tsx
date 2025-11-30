@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Fish, Menu, X, ChevronDown } from './icons';
+import { Menu, X, ChevronDown } from './icons';
 import { useLocation, useNavigate } from './Router';
+import logo from '../assets/logo_temanikan.png';
 
 interface NavbarProps {
   onAuthClick?: (mode: 'login' | 'register') => void;
@@ -144,19 +145,28 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
   };
 
   return (
-    <header className="relative" style={{ background: 'transparent', zIndex: 50 }}>
+    <header className="relative" style={{ background: 'transparent', zIndex: 9999999, position: 'relative' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div 
-          className="flex items-center justify-between sticky top-3"
+          className="flex items-center justify-between"
           style={{
+            position: 'fixed',
+            top: '8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 9999999,
             minHeight: '60px',
-            background: 'rgba(255, 255, 255, 0.15)',
-            backdropFilter: 'blur(10px)',
+            width: '95%',
+            maxWidth: '1280px',
+            background: 'rgba(255, 255, 255, 0.25)',
+            backdropFilter: 'blur(15px)',
             borderRadius: '30px',
             padding: '10px 20px',
-            margin: '8px auto',
-            boxShadow: 'rgba(72, 128, 255, 0.15) 0px 4px 20px, rgba(255, 255, 255, 0.2) 0px 0px 0px 1px inset',
-            maxWidth: '95%'
+            boxShadow: 'rgba(72, 128, 255, 0.2) 0px 6px 24px, rgba(255, 255, 255, 0.3) 0px 0px 0px 1px inset',
+            border: '1px solid rgba(255, 255, 255, 0.25)',
+            isolation: 'isolate',
+            pointerEvents: 'auto',
+            willChange: 'transform'
           }}
         >
           {/* Logo */}
@@ -168,7 +178,7 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
               backdropFilter: 'blur(5px)'
             }}
           >
-            <Fish className="w-7 h-7" style={{ color: '#FFFFFF' }} />
+            <img src={logo} alt="Temanikan Logo" className="w-7 h-7 object-contain" />
             <span className="text-lg font-bold" style={{ color: '#FFFFFF' }}>temanikan</span>
           </button>
 
@@ -585,7 +595,9 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleSmartNavigate(e, 'fitur', true);
+                      if (onAuthClick) {
+                        onAuthClick('login');
+                      }
                     }}
                     onMouseDown={(e) => {
                       e.stopPropagation();
@@ -685,11 +697,26 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                     Semua Produk
                   </a>
                   <a
-                    href="/produk"
+                    href="/produk#beli-sekarang"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleSmartNavigate(e, '/produk', false);
+                      // Navigate to produk page and scroll to CTA section
+                      if (location.pathname === '/produk') {
+                        const element = document.getElementById('beli-sekarang');
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                      } else {
+                        handleSmartNavigate(e, '/produk', false);
+                        // Wait for navigation then scroll
+                        setTimeout(() => {
+                          const element = document.getElementById('beli-sekarang');
+                          if (element) {
+                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
+                        }, 100);
+                      }
                     }}
                     onMouseDown={(e) => {
                       e.stopPropagation();
@@ -697,7 +724,7 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
                   >
-                    Kategori Produk
+                    Beli Sekarang
                   </a>
                 </div>
               )}

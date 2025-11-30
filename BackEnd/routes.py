@@ -436,6 +436,65 @@ def register_routes(app):
         
         return jsonify({'devices': [d.to_dict() for d in devices]}), 200
     
+    @app.route('/api/devices', methods=['POST'])
+    @jwt_required()
+    def add_device():
+        """Add a new device for the current user"""
+        try:
+            user_id_str = get_jwt_identity()
+            user_id = int(user_id_str)  # Convert string to int
+            user = User.query.get(user_id)
+            
+            if not user:
+                return jsonify({'error': 'User not found'}), 404
+            
+            data = request.get_json() or {}
+            
+            # Validate required fields
+            if not data.get('name'):
+                return jsonify({'error': 'Device name is required'}), 400
+            
+            device_code = data.get('device_code')
+            if not device_code:
+                return jsonify({'error': 'Device code is required'}), 400
+            
+            # Check if device_code already exists
+            existing_device = Device.query.filter_by(device_code=device_code).first()
+            if existing_device:
+                return jsonify({'error': 'Device code already exists'}), 400
+            
+            # Create new device
+            new_device = Device(
+                name=data['name'],
+                device_code=device_code,
+                user_id=user_id,
+                status='active',
+                robot_status='idle',
+                battery_level=100,
+                last_online=datetime.utcnow()
+            )
+            
+            db.session.add(new_device)
+            db.session.commit()
+            
+            print(f"✅ Device added successfully!")
+            print(f"   User: {user.name} ({user.email})")
+            print(f"   Device Name: {data['name']}")
+            print(f"   Device Code: {device_code}")
+            print(f"   Device ID: {new_device.id}")
+            
+            return jsonify({
+                'message': 'Device added successfully',
+                'device': new_device.to_dict()
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error adding device: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': 'Failed to add device'}), 500
+    
     @app.route('/api/devices/<int:device_id>', methods=['GET'])
     @jwt_required()
     def get_device(device_id):
@@ -2370,6 +2429,7 @@ def register_routes(app):
         notifications = query.order_by(Notification.created_at.desc()).limit(limit).all()
         
         return jsonify({
+            'success': True,
             'notifications': [n.to_dict() for n in notifications],
             'count': len(notifications),
             'unread_count': Notification.query.filter_by(user_id=user_id, is_read=False).count()
