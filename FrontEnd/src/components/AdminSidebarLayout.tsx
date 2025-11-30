@@ -604,25 +604,25 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
                     <DropdownMenuSeparator />
                     
                     {/* Profil Saya */}
-                    <DropdownMenuItem asChild>
-                      <Link 
-                        to="/admin/profile"
-                        className="cursor-pointer flex items-center"
-                      >
-                        <User className="w-4 h-4 mr-2" style={{ color: '#4880FF' }} />
-                        Profil Saya
-                      </Link>
+                    <DropdownMenuItem 
+                      className="cursor-pointer flex items-center"
+                      onClick={() => {
+                        navigate('/admin/profile');
+                      }}
+                    >
+                      <User className="w-4 h-4 mr-2" style={{ color: '#4880FF' }} />
+                      Profil Saya
                     </DropdownMenuItem>
 
                     {/* Pengaturan */}
-                    <DropdownMenuItem asChild>
-                      <Link 
-                        to="/admin/settings"
-                        className="cursor-pointer flex items-center"
-                      >
-                        <Settings className="w-4 h-4 mr-2" style={{ color: '#4880FF' }} />
-                        Pengaturan
-                      </Link>
+                    <DropdownMenuItem 
+                      className="cursor-pointer flex items-center"
+                      onClick={() => {
+                        navigate('/admin/settings');
+                      }}
+                    >
+                      <Settings className="w-4 h-4 mr-2" style={{ color: '#4880FF' }} />
+                      Pengaturan
                     </DropdownMenuItem>
 
                     <DropdownMenuSeparator />
