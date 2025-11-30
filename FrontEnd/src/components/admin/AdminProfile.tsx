@@ -47,8 +47,8 @@ export default function AdminProfile() {
             <User className="w-8 h-8" style={{ color: '#608BC1' }} />
           </div>
           <div>
-            <h2 style={{ color: '#133E87' }}>Profil Admin</h2>
-            <p className="text-sm text-gray-600">Kelola informasi profil administrator</p>
+            <h2 style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Profil Admin</h2>
+            <p className="text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Kelola informasi profil administrator</p>
           </div>
         </div>
         {!isEditing ? (
@@ -82,19 +82,48 @@ export default function AdminProfile() {
       </div>
 
       {/* Profile Information Card */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <h3 className="mb-6" style={{ color: '#133E87' }}>Informasi Personal</h3>
+      <Card 
+        className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <h3 className="mb-6 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Informasi Personal</h3>
         
-        <div className="space-y-6">
+        <div className="space-y-6 relative z-10">
           {/* Nama Lengkap */}
           <div>
-            <Label htmlFor="namaLengkap">Nama Lengkap</Label>
+            <Label htmlFor="namaLengkap" style={{ fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600, color: '#133E87' }}>Nama Lengkap</Label>
             {!isEditing ? (
               <div 
-                className="mt-2 p-3 rounded-lg"
-                style={{ backgroundColor: '#F3F3E0' }}
+                className="mt-2 p-3 rounded-xl transition-all duration-300"
+                style={{ 
+                  backgroundColor: 'rgba(72, 128, 255, 0.08)',
+                  border: '1px solid rgba(72, 128, 255, 0.2)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.namaLengkap}</p>
+                <p style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 500 }}>{profileData.namaLengkap}</p>
               </div>
             ) : (
               <Input 
@@ -102,19 +131,24 @@ export default function AdminProfile() {
                 value={editData.namaLengkap}
                 onChange={(e) => handleInputChange('namaLengkap', e.target.value)}
                 className="mt-2"
+                style={{ fontFamily: 'Nunito Sans, sans-serif' }}
               />
             )}
           </div>
 
           {/* Email */}
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" style={{ fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600, color: '#133E87' }}>Email</Label>
             {!isEditing ? (
               <div 
-                className="mt-2 p-3 rounded-lg"
-                style={{ backgroundColor: '#F3F3E0' }}
+                className="mt-2 p-3 rounded-xl transition-all duration-300"
+                style={{ 
+                  backgroundColor: 'rgba(72, 128, 255, 0.08)',
+                  border: '1px solid rgba(72, 128, 255, 0.2)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.email}</p>
+                <p style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 500 }}>{profileData.email}</p>
               </div>
             ) : (
               <Input 
@@ -123,19 +157,24 @@ export default function AdminProfile() {
                 value={editData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 className="mt-2"
+                style={{ fontFamily: 'Nunito Sans, sans-serif' }}
               />
             )}
           </div>
 
           {/* Nomor HP */}
           <div>
-            <Label htmlFor="nomorHP">Nomor HP</Label>
+            <Label htmlFor="nomorHP" style={{ fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600, color: '#133E87' }}>Nomor HP</Label>
             {!isEditing ? (
               <div 
-                className="mt-2 p-3 rounded-lg"
-                style={{ backgroundColor: '#F3F3E0' }}
+                className="mt-2 p-3 rounded-xl transition-all duration-300"
+                style={{ 
+                  backgroundColor: 'rgba(72, 128, 255, 0.08)',
+                  border: '1px solid rgba(72, 128, 255, 0.2)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.nomorHP}</p>
+                <p style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 500 }}>{profileData.nomorHP}</p>
               </div>
             ) : (
               <Input 
@@ -144,19 +183,24 @@ export default function AdminProfile() {
                 value={editData.nomorHP}
                 onChange={(e) => handleInputChange('nomorHP', e.target.value)}
                 className="mt-2"
+                style={{ fontFamily: 'Nunito Sans, sans-serif' }}
               />
             )}
           </div>
 
           {/* Jabatan */}
           <div>
-            <Label htmlFor="jabatan">Jabatan</Label>
+            <Label htmlFor="jabatan" style={{ fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600, color: '#133E87' }}>Jabatan</Label>
             {!isEditing ? (
               <div 
-                className="mt-2 p-3 rounded-lg"
-                style={{ backgroundColor: '#F3F3E0' }}
+                className="mt-2 p-3 rounded-xl transition-all duration-300"
+                style={{ 
+                  backgroundColor: 'rgba(72, 128, 255, 0.08)',
+                  border: '1px solid rgba(72, 128, 255, 0.2)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.jabatan}</p>
+                <p style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 500 }}>{profileData.jabatan}</p>
               </div>
             ) : (
               <Input 
@@ -164,6 +208,7 @@ export default function AdminProfile() {
                 value={editData.jabatan}
                 onChange={(e) => handleInputChange('jabatan', e.target.value)}
                 className="mt-2"
+                style={{ fontFamily: 'Nunito Sans, sans-serif' }}
               />
             )}
           </div>
@@ -171,20 +216,45 @@ export default function AdminProfile() {
       </Card>
 
       {/* Additional Info */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <h3 className="mb-4" style={{ color: '#133E87' }}>Informasi Akun</h3>
-        <div className="space-y-3">
+      <Card 
+        className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <h3 className="mb-4 relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Informasi Akun</h3>
+        <div className="space-y-3 relative z-10">
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Role</span>
-            <span style={{ color: '#133E87' }}>Administrator</span>
+            <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 500 }}>Role</span>
+            <span style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Administrator</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Status</span>
-            <span className="text-green-600">Aktif</span>
+            <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 500 }}>Status</span>
+            <span style={{ color: '#16a34a', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Aktif</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Level Akses</span>
-            <span style={{ color: '#133E87' }}>Full Access</span>
+            <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 500 }}>Level Akses</span>
+            <span style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Full Access</span>
           </div>
         </div>
       </Card>
