@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from '../Router';  // ✅ DIPERBAIKI: Custom Router
 import { forumAPI } from '../../services/api';
 import { useAuth } from '../AuthContext';  // ✅ DIPERBAIKI: Path relatif
+import { formatTimeAgo } from '../../utils/dateFormat';
 
 // Lucide Icons
 import { MessageSquare, ThumbsUp, User, Plus, Flag, Search } from 'lucide-react';
@@ -179,17 +180,6 @@ export default function MemberForum() {
     return filtered;
   };
 
-  // Format waktu relatif
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return 'Baru saja';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit yang lalu`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
-    return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
-  };
 
   // Handle Report Topic
   const handleReportClick = (topicId: number) => {
@@ -308,18 +298,32 @@ export default function MemberForum() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl mb-2" style={{ color: '#1F2937', fontWeight: 700 }}>
-            Forum <span style={{ color: '#4880FF' }}>Komunitas</span>
+          <h2 className="text-3xl mb-2" style={{ color: '#FFFFFF', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>
+            Forum <span style={{ color: '#FFFFFF' }}>Komunitas</span>
           </h2>
-          <p className="text-sm" style={{ color: '#6B7280' }}>
+          <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif' }}>
             Berbagi pengalaman dan tips dengan komunitas
           </p>
         </div>
         <div className="flex gap-3">
           <Link to="/member/forum/new">
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-white hover:shadow-lg transition-all"
-              style={{ backgroundColor: '#4880FF' }}
+              className="bubble-button flex items-center gap-2 px-4 py-2 rounded-full text-white transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                boxShadow: '0 8px 24px rgba(15, 91, 229, 0.3)',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 700
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 12px 35px rgba(15, 91, 229, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(15, 91, 229, 0.3)';
+              }}
             >
               <Plus className="w-4 h-4" />
               Topik Baru
@@ -327,8 +331,25 @@ export default function MemberForum() {
           </Link>
           <Link to="/member/forum/my-topics">
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all"
-              style={{ color: '#4880FF', border: '1px solid #4880FF' }}
+              className="bubble-button flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300"
+              style={{ 
+                color: '#133E87',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                border: '2px solid rgba(72, 128, 255, 0.2)',
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 600
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#F0F5FF';
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              }}
             >
               Lihat Topik Saya
             </button>
@@ -338,16 +359,30 @@ export default function MemberForum() {
 
       {/* Search Box */}
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <Search className="w-5 h-5" style={{ color: '#9CA3AF' }} />
-        </div>
         <input
           type="text"
           placeholder="Cari topik berdasarkan judul atau nama penulis..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
-          style={{ backgroundColor: 'white' }}
+          className="w-full pl-4 pr-4 py-3 rounded-full transition-all duration-300"
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '2px solid rgba(15, 91, 229, 0.3)',
+            boxShadow: '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
+            outline: 'none'
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.5)';
+            e.currentTarget.style.boxShadow = '0 12px 40px rgba(15, 91, 229, 0.25), 0 0 0 1px rgba(15, 91, 229, 0.4) inset';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.3)';
+            e.currentTarget.style.boxShadow = '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
         />
         {searchQuery && (
           <button
@@ -364,10 +399,32 @@ export default function MemberForum() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Categories Sidebar */}
         <div
-          className="lg:col-span-1 p-6 h-fit rounded-xl shadow-md border"
-          style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}
+          className="bubble-card lg:col-span-1 p-6 h-fit rounded-[32px] transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+            e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
         >
-          <h3 className="mb-4 text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>
+          {/* Bubble glow effect */}
+          <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+              filter: 'blur(15px)'
+            }}
+          ></div>
+          <h3 className="mb-4 text-lg relative z-10" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
             Kategori
           </h3>
           <div className="space-y-2">
@@ -428,9 +485,31 @@ export default function MemberForum() {
             getFilteredTopics().map((topic) => (
               <div
                 key={topic.id}
-                className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all"
-                style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}
+                className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+                style={{ 
+                  backgroundColor: '#FFFFFF',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 16px 48px rgba(15, 91, 229, 0.3), 0 0 0 1px rgba(15, 91, 229, 0.4) inset';
+                  e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8) inset';
+                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+                }}
               >
+                {/* Bubble glow effect */}
+                <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                    filter: 'blur(15px)'
+                  }}
+                ></div>
                 <div className="flex gap-4">
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"

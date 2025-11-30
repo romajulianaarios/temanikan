@@ -332,15 +332,48 @@ export default function RobotControl() {
         </p>
       </div>
 
-      <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-        <div className="flex items-center justify-between mb-6">
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="flex items-center justify-between mb-6 relative z-10">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(35, 154, 246, 0.1)' }}>
+            <div 
+              className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(35, 154, 246, 0.3), rgba(72, 128, 255, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(35, 154, 246, 0.3)',
+                boxShadow: '0 4px 15px rgba(35, 154, 246, 0.2)'
+              }}
+            >
               <Bot className="w-7 h-7" style={{ color: '#239AF6' }} />
             </div>
             <div>
-              <h3 className="text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>Status Robot Terkini</h3>
-              <p className="text-sm" style={{ color: '#6B7280' }}>{device?.name || 'Perangkat'}</p>
+              <h3 className="text-lg" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Status Robot Terkini</h3>
+              <p className="text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{device?.name || 'Perangkat'}</p>
             </div>
           </div>
           {statusLoading && (
@@ -383,9 +416,34 @@ export default function RobotControl() {
         </div>
       </Card>
 
-      <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>Jadwal Pembersihan Otomatis</h3>
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="flex items-center justify-between mb-6 relative z-10">
+          <h3 className="text-lg" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Jadwal Pembersihan Otomatis</h3>
           <div className="flex items-center gap-3">
             <span className="text-sm" style={{ color: '#6B7280', fontWeight: 600 }}>
               {autoSchedule.enabled ? 'Aktif' : 'Nonaktif'}
@@ -459,8 +517,33 @@ export default function RobotControl() {
         )}
       </Card>
 
-      <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-        <h3 className="mb-6 text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>Operasi Manual</h3>
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <h3 className="mb-6 text-lg relative z-10" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Operasi Manual</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Button
@@ -529,9 +612,34 @@ export default function RobotControl() {
         )}
       </Card>
 
-      <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>Riwayat Pembersihan</h3>
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="flex items-center justify-between mb-4 relative z-10">
+          <h3 className="text-lg" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Riwayat Pembersihan</h3>
           <Link
             to={deviceId ? `/member/device/${deviceId}/cleaning-history` : `/member/cleaning-history`}
             className="text-sm hover:underline"

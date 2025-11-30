@@ -182,21 +182,40 @@ export default function DetectionHistory() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(206, 57, 57, 0.1)' }}
+            className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, rgba(206, 57, 57, 0.3), rgba(220, 38, 38, 0.2))',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(206, 57, 57, 0.3)',
+              boxShadow: '0 4px 15px rgba(206, 57, 57, 0.2)'
+            }}
           >
             <Eye className="w-7 h-7" style={{ color: '#CE3939' }} />
           </div>
           <div>
-            <h2 className="text-3xl" style={{ color: '#1F2937', fontWeight: 700 }}>Riwayat Deteksi Penyakit</h2>
-            <p className="text-sm" style={{ color: '#6B7280' }}>
+            <h2 className="text-3xl" style={{ color: '#FFFFFF', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>Riwayat Deteksi Penyakit</h2>
+            <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif' }}>
               {detectionRecords.length} total deteksi
             </p>
           </div>
         </div>
         <Button
-          className="text-white hover:shadow-lg transition-all"
-          style={{ backgroundColor: '#4880FF' }}
+          className="bubble-button text-white rounded-full transition-all duration-300"
+          style={{ 
+            background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
+            border: '2px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: '0 8px 24px rgba(15, 91, 229, 0.3)',
+            fontFamily: 'Nunito Sans, sans-serif',
+            fontWeight: 700
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+            e.currentTarget.style.boxShadow = '0 12px 35px rgba(15, 91, 229, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 8px 24px rgba(15, 91, 229, 0.3)';
+          }}
         >
           <Download className="w-4 h-4 mr-2" />
           Export Data
@@ -205,48 +224,138 @@ export default function DetectionHistory() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-          <div className="flex items-center gap-3">
+        <Card 
+          className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(16, 185, 129, 0.2)',
+            boxShadow: '0 10px 50px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(16, 185, 129, 0.3), 0 0 0 1px rgba(16, 185, 129, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          {/* Bubble glow effect */}
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(16, 185, 129, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center gap-3 relative z-10">
             <div
-              className="p-3 rounded-full"
-              style={{ backgroundColor: 'rgba(74, 217, 145, 0.1)' }}
+              className="p-3 rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)'
+              }}
             >
               <CheckCircle className="w-6 h-6" style={{ color: '#4AD991' }} />
             </div>
             <div>
-              <p className="text-sm" style={{ color: '#6B7280' }}>Sehat</p>
-              <p className="text-3xl" style={{ color: '#1F2937', fontWeight: 700 }}>{healthyCount}</p>
+              <p className="text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Sehat</p>
+              <p className="text-3xl" style={{ color: '#133E87', fontWeight: 800, fontFamily: 'Nunito Sans, sans-serif' }}>{healthyCount}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-          <div className="flex items-center gap-3">
+        <Card 
+          className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(254, 197, 61, 0.2)',
+            boxShadow: '0 10px 50px rgba(254, 197, 61, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(254, 197, 61, 0.3), 0 0 0 1px rgba(254, 197, 61, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(254, 197, 61, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(254, 197, 61, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(254, 197, 61, 0.2)';
+          }}
+        >
+          {/* Bubble glow effect */}
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(254, 197, 61, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center gap-3 relative z-10">
             <div
-              className="p-3 rounded-full"
-              style={{ backgroundColor: 'rgba(254, 197, 61, 0.1)' }}
+              className="p-3 rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(254, 197, 61, 0.3), rgba(245, 158, 11, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(254, 197, 61, 0.3)',
+                boxShadow: '0 4px 15px rgba(254, 197, 61, 0.2)'
+              }}
             >
               <AlertCircle className="w-6 h-6" style={{ color: '#FEC53D' }} />
             </div>
             <div>
-              <p className="text-sm" style={{ color: '#6B7280' }}>Perhatian/Kritis</p>
-              <p className="text-3xl" style={{ color: '#1F2937', fontWeight: 700 }}>{warningCount}</p>
+              <p className="text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Perhatian/Kritis</p>
+              <p className="text-3xl" style={{ color: '#133E87', fontWeight: 800, fontFamily: 'Nunito Sans, sans-serif' }}>{warningCount}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-          <div className="flex items-center gap-3">
+        <Card 
+          className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
+        >
+          {/* Bubble glow effect */}
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center gap-3 relative z-10">
             <div
-              className="p-3 rounded-full"
-              style={{ backgroundColor: 'rgba(130, 128, 255, 0.1)' }}
+              className="p-3 rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(72, 128, 255, 0.3)',
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+              }}
             >
               <Calendar className="w-6 h-6" style={{ color: '#8280FF' }} />
             </div>
             <div>
-              <p className="text-sm" style={{ color: '#6B7280' }}>Periode</p>
+              <p className="text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Periode</p>
               <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="border-0 p-0 h-auto" style={{ fontWeight: 600 }}>
+                <SelectTrigger className="border-0 p-0 h-auto" style={{ fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', color: '#133E87' }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -261,28 +370,53 @@ export default function DetectionHistory() {
       </div>
 
       {/* Tabs and Table */}
-      <Card className="rounded-xl shadow-md border" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-        <Tabs defaultValue="semua" onValueChange={setActiveTab}>
-          <div className="border-b px-6 pt-6" style={{ borderColor: '#E5E7EB' }}>
-            <TabsList className="w-full justify-start" style={{ backgroundColor: 'rgba(72, 128, 255, 0.05)' }}>
+      <Card 
+        className="bubble-card rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <Tabs defaultValue="semua" onValueChange={setActiveTab} className="relative z-10">
+          <div className="border-b px-6 pt-6" style={{ borderColor: 'rgba(72, 128, 255, 0.1)' }}>
+            <TabsList className="w-full justify-start rounded-full p-1" style={{ backgroundColor: 'rgba(72, 128, 255, 0.05)', border: '1px solid rgba(72, 128, 255, 0.1)' }}>
               <TabsTrigger
                 value="semua"
-                className="data-[state=active]:bg-white"
-                style={{ fontWeight: 600 }}
+                className="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#133E87] data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-blue-200"
+                style={{ fontFamily: 'Nunito Sans, sans-serif', color: '#608BC1' }}
               >
                 Semua ({detectionRecords.length})
               </TabsTrigger>
               <TabsTrigger
                 value="sehat"
-                className="data-[state=active]:bg-white"
-                style={{ fontWeight: 600 }}
+                className="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#133E87] data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-blue-200"
+                style={{ fontFamily: 'Nunito Sans, sans-serif', color: '#608BC1' }}
               >
                 Sehat ({healthyCount})
               </TabsTrigger>
               <TabsTrigger
                 value="perhatian"
-                className="data-[state=active]:bg-white"
-                style={{ fontWeight: 600 }}
+                className="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#133E87] data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-blue-200"
+                style={{ fontFamily: 'Nunito Sans, sans-serif', color: '#608BC1' }}
               >
                 Perhatian/Kritis ({warningCount})
               </TabsTrigger>

@@ -6,6 +6,7 @@ import { Bell, AlertTriangle, Info, CheckCircle, ArrowLeft, Package, User } from
 import { Button } from '../ui/button';
 import { Link } from '../Router';
 import { notificationAPI } from '../../services/api';
+import { formatNotificationTime } from '../../utils/dateFormat';
 
 interface Notification {
   id: number;
@@ -36,9 +37,7 @@ export default function AllNotifications() {
           id: n.id,
           title: n.title,
           message: n.message,
-          time: new Date(n.created_at).toLocaleString('id-ID', {
-            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-          }),
+          time: formatNotificationTime(n.created_at),
           type: n.type,
           read: n.is_read,
           created_at: n.created_at

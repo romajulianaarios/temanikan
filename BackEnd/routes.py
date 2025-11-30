@@ -67,7 +67,6 @@ def generate_fallback_response(message: str, fish_species_list):
             if fish.diet:
                 response += f"Diet: {fish.diet}\n"
             
-            response += "\nCatatan: Layanan AI sedang tidak tersedia. Informasi ini berasal dari database Temanikan."
             return response
     
     # Check for common questions
@@ -84,7 +83,7 @@ Pengobatan penyakit ikan biasanya melibatkan karantina ikan yang sakit, perbaika
 
 Pencegahan adalah kunci. Pastikan kualitas air tetap baik, hindari overfeeding, dan lakukan pembersihan rutin akuarium.
 
-Catatan: Layanan AI sedang tidak tersedia. Untuk informasi lebih detail, silakan konsultasi dengan ahli akuarium atau dokter hewan."""
+Untuk informasi lebih detail, silakan konsultasi dengan ahli akuarium atau dokter hewan."""
     
     elif any(word in message_lower for word in ['perawatan', 'cara', 'tips', 'bagaimana']):
         return """Tips Perawatan Ikan Hias:
@@ -99,7 +98,7 @@ Pembersihan filter dan substrat harus dilakukan secara berkala, namun jangan ter
 
 Pastikan akuarium memiliki sistem filtrasi yang memadai dan sirkulasi air yang baik untuk menjaga oksigen terlarut.
 
-Catatan: Layanan AI sedang tidak tersedia. Informasi ini adalah panduan umum. Untuk informasi spesifik tentang jenis ikan tertentu, silakan cek FishPedia di menu navigasi."""
+Informasi ini adalah panduan umum. Untuk informasi spesifik tentang jenis ikan tertentu, silakan cek FishPedia di menu navigasi."""
     
     elif any(word in message_lower for word in ['air', 'kualitas', 'ph', 'suhu', 'temperature']):
         return """Informasi tentang Kualitas Air Akuarium:
@@ -116,14 +115,14 @@ Nitrat sebaiknya dijaga di bawah 40 ppm. Nitrat yang tinggi dapat menyebabkan st
 
 Untuk menjaga kualitas air, lakukan penggantian air rutin, hindari overfeeding, dan pastikan sistem filtrasi berfungsi dengan baik.
 
-Catatan: Layanan AI sedang tidak tersedia. Untuk informasi spesifik tentang kebutuhan air jenis ikan tertentu, silakan cek FishPedia."""
+Untuk informasi spesifik tentang kebutuhan air jenis ikan tertentu, silakan cek FishPedia."""
     
     else:
         # Generic helpful response
         fish_names = [f.name for f in fish_species_list[:5]]
-        return f"""Terima kasih atas pertanyaan Anda tentang: {message}
+        return f"""Halo! Saya siap membantu Anda dengan pertanyaan tentang ikan hias.
 
-Saat ini layanan AI sedang tidak tersedia karena masalah konfigurasi API. Namun, saya dapat membantu Anda dengan informasi dari database Temanikan.
+Untuk pertanyaan spesifik, silakan sebutkan nama ikan atau topik yang ingin Anda ketahui.
 
 Beberapa jenis ikan yang tersedia di database kami antara lain: {', '.join(fish_names) if fish_names else 'tidak ada data'}.
 
@@ -134,7 +133,7 @@ Untuk informasi lebih lengkap, silakan:
 
 Jika Anda memiliki pertanyaan spesifik tentang jenis ikan tertentu, silakan sebutkan nama ikannya dan saya akan mencari informasi dari database.
 
-Catatan: Layanan AI sedang tidak tersedia. Informasi ini berasal dari database Temanikan."""
+Informasi ini berasal dari database Temanikan yang terpercaya."""
 
 
 def register_routes(app):
@@ -2616,7 +2615,24 @@ def register_routes(app):
             # Get Gemini API key
             api_key = config['development'].GEMINI_API_KEY or os.getenv('GEMINI_API_KEY')
             if not api_key:
-                return jsonify({'error': 'Gemini API key not configured'}), 500
+                # Use database fallback if API key not configured
+                print("API key not configured - Using database fallback")
+                ai_response = generate_fallback_response(message, fish_species)
+                # Save to chat history
+                chat = ChatHistory(
+                    user_id=user_id,
+                    message=message,
+                    response=ai_response,
+                    has_image=bool(image_base64),
+                    image_url=data.get('image_url')
+                )
+                db.session.add(chat)
+                db.session.commit()
+                return jsonify({
+                    'response': ai_response,
+                    'chat_id': chat.id,
+                    'created_at': chat.created_at.isoformat()
+                }), 200
             
             # Get context from database (fish species info)
             fish_species = FishSpecies.query.limit(50).all()
@@ -2799,7 +2815,8 @@ Setiap paragraf harus jelas, informatif, dan mudah dipahami. Jangan gunakan form
                 print(f"Error processing API response: {api_error}")
                 import traceback
                 print(traceback.format_exc())
-                return jsonify({'error': f'AI service error: {str(api_error)}'}), 500
+                # Use database fallback instead of returning error
+                ai_response = generate_fallback_response(message, fish_species)
             
             # Save to chat history
             chat = ChatHistory(

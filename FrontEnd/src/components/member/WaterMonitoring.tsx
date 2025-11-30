@@ -209,16 +209,41 @@ export default function WaterMonitoring() {
     <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
       <div>
-        <h2 className="text-3xl mb-2" style={{ color: '#1F2937', fontWeight: 700 }}>
-          Monitoring <span style={{ color: '#4880FF' }}>Kualitas Air</span>
+        <h2 className="text-3xl mb-2" style={{ color: '#FFFFFF', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>
+          Monitoring <span style={{ color: '#FFFFFF' }}>Kualitas Air</span>
         </h2>
-        <p className="text-sm" style={{ color: '#6B7280' }}>
+        <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif' }}>
           Pantau parameter air akuarium Anda secara real-time
         </p>
       </div>
 
       {/* Filters */}
-      <Card className="p-6 rounded-xl shadow-md border" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
         <div className="flex flex-col md:flex-row gap-4 items-end">
           <div className="flex-1">
             <label className="block text-sm mb-2" style={{ color: '#1F2937', fontWeight: 600 }}>
@@ -311,8 +336,22 @@ export default function WaterMonitoring() {
           )}
 
           <Button
-            className="text-white hover:shadow-lg transition-all"
-            style={{ backgroundColor: '#4880FF' }}
+            className="bubble-button text-white rounded-full transition-all duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 24px rgba(15, 91, 229, 0.3)',
+              fontFamily: 'Nunito Sans, sans-serif',
+              fontWeight: 700
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 12px 35px rgba(15, 91, 229, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(15, 91, 229, 0.3)';
+            }}
             onClick={handleExportData}
           >
             <Download className="w-4 h-4 mr-2" />
@@ -322,20 +361,51 @@ export default function WaterMonitoring() {
       </Card>
 
       {/* pH Chart */}
-      <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-        <div className="flex items-center gap-3 mb-6">
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="flex items-center gap-3 mb-6 relative z-10">
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(130, 128, 255, 0.1)' }}
+            className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, rgba(130, 128, 255, 0.3), rgba(72, 128, 255, 0.2))',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(130, 128, 255, 0.3)',
+              boxShadow: '0 4px 15px rgba(130, 128, 255, 0.2)'
+            }}
           >
             <Activity className="w-6 h-6" style={{ color: '#8280FF' }} />
           </div>
           <div>
-            <h3 className="text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>Grafik pH</h3>
-            <p className="text-xs" style={{ color: '#6B7280' }}>Tren perubahan pH dalam waktu yang dipilih</p>
+            <h3 className="text-lg" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Grafik pH</h3>
+            <p className="text-xs" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Tren perubahan pH dalam waktu yang dipilih</p>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="relative z-10">
+          <ResponsiveContainer width="100%" height={300}>
           <AreaChart
             data={currentData.ph}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -388,13 +458,19 @@ export default function WaterMonitoring() {
             />
           </AreaChart>
         </ResponsiveContainer>
-        <div className="mt-4 p-4 rounded-lg flex items-start gap-3" style={{ backgroundColor: 'rgba(74, 217, 145, 0.05)' }}>
+        </div>
+        <div className="mt-4 p-4 rounded-xl flex items-start gap-3 relative z-10" style={{ 
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          border: '1px solid rgba(16, 185, 129, 0.2)',
+          boxShadow: '0 2px 8px rgba(16, 185, 129, 0.1)',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}>
           <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: '#4AD991' }} />
           <div>
-            <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>
+            <p className="text-sm" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
               Status: Optimal
             </p>
-            <p className="text-xs mt-1" style={{ color: '#6B7280' }}>
+            <p className="text-xs mt-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
               Rentang Ideal: 6.5 - 7.5 | Nilai Saat Ini: 7.2
             </p>
           </div>
@@ -402,20 +478,51 @@ export default function WaterMonitoring() {
       </Card>
 
       {/* Temperature Chart */}
-      <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-        <div className="flex items-center gap-3 mb-6">
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="flex items-center gap-3 mb-6 relative z-10">
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(254, 197, 61, 0.1)' }}
+            className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, rgba(254, 197, 61, 0.3), rgba(245, 158, 11, 0.2))',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(254, 197, 61, 0.3)',
+              boxShadow: '0 4px 15px rgba(254, 197, 61, 0.2)'
+            }}
           >
             <Thermometer className="w-6 h-6" style={{ color: '#FEC53D' }} />
           </div>
           <div>
-            <h3 className="text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>Grafik Suhu</h3>
-            <p className="text-xs" style={{ color: '#6B7280' }}>Tren perubahan suhu dalam waktu yang dipilih</p>
+            <h3 className="text-lg" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Grafik Suhu</h3>
+            <p className="text-xs" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Tren perubahan suhu dalam waktu yang dipilih</p>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="relative z-10">
+          <ResponsiveContainer width="100%" height={300}>
           <AreaChart
             data={currentData.temp}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -468,13 +575,19 @@ export default function WaterMonitoring() {
             />
           </AreaChart>
         </ResponsiveContainer>
-        <div className="mt-4 p-4 rounded-lg flex items-start gap-3" style={{ backgroundColor: 'rgba(74, 217, 145, 0.05)' }}>
+        </div>
+        <div className="mt-4 p-4 rounded-xl flex items-start gap-3 relative z-10" style={{ 
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          border: '1px solid rgba(16, 185, 129, 0.2)',
+          boxShadow: '0 2px 8px rgba(16, 185, 129, 0.1)',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}>
           <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: '#4AD991' }} />
           <div>
-            <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>
+            <p className="text-sm" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
               Status: Optimal
             </p>
-            <p className="text-xs mt-1" style={{ color: '#6B7280' }}>
+            <p className="text-xs mt-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
               Rentang Ideal: 24 - 28°C | Nilai Saat Ini: 26°C
             </p>
           </div>
@@ -482,20 +595,51 @@ export default function WaterMonitoring() {
       </Card>
 
       {/* Turbidity Chart */}
-      <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-        <div className="flex items-center gap-3 mb-6">
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="flex items-center gap-3 mb-6 relative z-10">
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(74, 217, 145, 0.1)' }}
+            className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.2))',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)'
+            }}
           >
             <Droplets className="w-6 h-6" style={{ color: '#4AD991' }} />
           </div>
           <div>
-            <h3 className="text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>Grafik Kekeruhan</h3>
-            <p className="text-xs" style={{ color: '#6B7280' }}>Tren perubahan kekeruhan dalam waktu yang dipilih</p>
+            <h3 className="text-lg" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Grafik Kekeruhan</h3>
+            <p className="text-xs" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Tren perubahan kekeruhan dalam waktu yang dipilih</p>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="relative z-10">
+          <ResponsiveContainer width="100%" height={300}>
           <AreaChart
             data={currentData.turbidity}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -548,13 +692,19 @@ export default function WaterMonitoring() {
             />
           </AreaChart>
         </ResponsiveContainer>
-        <div className="mt-4 p-4 rounded-lg flex items-start gap-3" style={{ backgroundColor: 'rgba(74, 217, 145, 0.05)' }}>
+        </div>
+        <div className="mt-4 p-4 rounded-xl flex items-start gap-3 relative z-10" style={{ 
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          border: '1px solid rgba(16, 185, 129, 0.2)',
+          boxShadow: '0 2px 8px rgba(16, 185, 129, 0.1)',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}>
           <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: '#4AD991' }} />
           <div>
-            <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>
+            <p className="text-sm" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
               Status: Baik
             </p>
-            <p className="text-xs mt-1" style={{ color: '#6B7280' }}>
+            <p className="text-xs mt-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
               Rentang Ideal: {'<'} 5 NTU | Nilai Saat Ini: 2.1 NTU
             </p>
           </div>

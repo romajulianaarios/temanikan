@@ -694,7 +694,32 @@ export default function DiseaseDetection() {
       </div>
 
       {/* Filters & Actions */}
-      <Card className="p-6 rounded-xl shadow-md border" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end justify-between">
           <div className="flex flex-col md:flex-row gap-4 flex-1 w-full">
             <div className="flex-1 min-w-[200px]">
@@ -919,8 +944,33 @@ export default function DiseaseDetection() {
       </div>
 
       {/* Upload New Image */}
-      <Card className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all" style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}>
-        <h3 className="mb-4 text-lg" style={{ color: '#1F2937', fontWeight: 600 }}>Upload Foto untuk Deteksi Manual</h3>
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <h3 className="mb-4 text-lg relative z-10" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Upload Foto untuk Deteksi Manual</h3>
         <div
           className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50 transition-all"
           style={{ borderColor: '#4880FF' }}

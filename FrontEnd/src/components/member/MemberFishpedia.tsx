@@ -3,7 +3,7 @@ import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Search, Fish, ChevronRight } from '../icons';
+import { Fish, ChevronRight } from '../icons';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { fishpediaAPI, buildAssetUrl } from '../../services/api';
 
@@ -278,8 +278,8 @@ export default function MemberFishpedia() {
 
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl mb-3" style={{ color: '#2D3436' }}>Fishpedia</h1>
-        <p className="text-lg" style={{ color: '#636E72' }}>
+        <h1 className="text-3xl md:text-4xl mb-3" style={{ color: '#FFFFFF', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>Fishpedia</h1>
+        <p className="text-lg" style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif' }}>
           Jelajahi database lengkap ikan hias dengan informasi detail tentang perawatan, habitat, dan karakteristik setiap spesies
         </p>
       </div>
@@ -288,28 +288,67 @@ export default function MemberFishpedia() {
       <div className="space-y-4">
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <Input
+          <input
             placeholder="Cari nama ikan atau nama ilmiah..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 py-6 text-base"
-            style={{ backgroundColor: 'white' }}
+            className="pl-6 py-6 text-base rounded-full transition-all duration-300 w-full"
+            style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(15, 91, 229, 0.3)',
+              boxShadow: '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              fontFamily: 'Nunito Sans, sans-serif',
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.5)';
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(15, 91, 229, 0.25), 0 0 0 1px rgba(15, 91, 229, 0.4) inset';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.3)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
           />
         </div>
 
         {/* Difficulty Filter */}
         <div className="flex flex-wrap gap-2">
-          <span className="text-sm self-center mr-2" style={{ color: '#636E72' }}>Tingkat Kesulitan:</span>
+          <span className="text-sm self-center mr-2" style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Tingkat Kesulitan:</span>
           {difficultyLevels.map((difficulty) => (
             <button
               key={difficulty}
               onClick={() => setSelectedDifficulty(difficulty)}
-              className="px-4 py-2 rounded-full text-sm transition-colors"
+              className="bubble-button px-4 py-2 rounded-full text-sm transition-all duration-300"
               style={{
-                backgroundColor: selectedDifficulty === difficulty ? '#4880FF' : 'white',
-                color: selectedDifficulty === difficulty ? 'white' : '#2D3436',
-                border: selectedDifficulty === difficulty ? 'none' : '1px solid #CBDCEB'
+                backgroundColor: selectedDifficulty === difficulty 
+                  ? '#4880FF' 
+                  : 'rgba(255, 255, 255, 0.9)',
+                color: selectedDifficulty === difficulty ? '#FFFFFF' : '#133E87',
+                border: selectedDifficulty === difficulty 
+                  ? '2px solid rgba(72, 128, 255, 0.5)' 
+                  : '2px solid rgba(72, 128, 255, 0.15)',
+                fontWeight: selectedDifficulty === difficulty ? 700 : 600,
+                fontFamily: 'Nunito Sans, sans-serif',
+                boxShadow: selectedDifficulty === difficulty
+                  ? '0 6px 25px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset'
+                  : '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedDifficulty !== difficulty) {
+                  e.currentTarget.style.backgroundColor = '#F0F5FF';
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedDifficulty !== difficulty) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                }
               }}
             >
               {difficulty}
@@ -320,8 +359,8 @@ export default function MemberFishpedia() {
 
       {/* Results Count */}
       <div className="mb-6">
-        <p style={{ color: '#636E72' }}>
-          Menampilkan <span style={{ color: '#4880FF' }}>{filteredFish.length}</span> dari <span style={{ color: '#4880FF' }}>{fishSpecies.length}</span> spesies ikan
+        <p style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif' }}>
+          Menampilkan <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{filteredFish.length}</span> dari <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{fishSpecies.length}</span> spesies ikan
         </p>
       </div>
 
@@ -330,9 +369,33 @@ export default function MemberFishpedia() {
         {filteredFish.map((fish) => (
           <Card 
             key={fish.id} 
-            className="overflow-hidden hover:shadow-xl transition-shadow cursor-pointer bg-white"
+            className="bubble-card overflow-hidden transition-all duration-300 cursor-pointer relative"
+            style={{
+              backgroundColor: '#FFFFFF',
+              border: '2px solid rgba(72, 128, 255, 0.2)',
+              borderRadius: '32px',
+              boxShadow: '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8) inset',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 16px 48px rgba(15, 91, 229, 0.3), 0 0 0 1px rgba(15, 91, 229, 0.4) inset';
+              e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+            }}
             onClick={() => setSelectedFish(fish)}
           >
+            {/* Bubble glow effect */}
+            <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                filter: 'blur(15px)'
+              }}
+            ></div>
             <div className="relative h-48 bg-gradient-to-br from-blue-100 to-blue-200">
               <ImageWithFallback
                 src={fish.imageUrl}
@@ -345,23 +408,41 @@ export default function MemberFishpedia() {
                 </Badge>
               </div>
             </div>
-            <div className="p-5">
-              <h3 className="text-xl mb-1">{fish.name}</h3>
-              <p className="text-sm text-gray-500 italic mb-3">{fish.scientificName}</p>
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2">{fish.description}</p>
+            <div className="p-5 relative z-10">
+              <h3 className="text-xl mb-1" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>{fish.name}</h3>
+              <p className="text-sm italic mb-3" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.scientificName}</p>
+              <p className="text-sm mb-4 line-clamp-2" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.description}</p>
               
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-gray-500">Temperamen:</span>
-                  <p className="font-medium">{fish.temperament}</p>
+                  <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Temperamen:</span>
+                  <p className="font-medium" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.temperament}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Ukuran:</span>
-                  <p className="font-medium">{fish.size}</p>
+                  <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Ukuran:</span>
+                  <p className="font-medium" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.size}</p>
                 </div>
               </div>
 
-              <button className="mt-4 flex items-center gap-2 group w-full justify-center" style={{ color: '#4880FF' }}>
+              <button 
+                className="bubble-button mt-4 flex items-center gap-2 group w-full justify-center rounded-full py-2 transition-all duration-300"
+                style={{ 
+                  background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
+                  color: '#FFFFFF',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 6px 20px rgba(15, 91, 229, 0.3)',
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  fontWeight: 600
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(15, 91, 229, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(15, 91, 229, 0.3)';
+                }}
+              >
                 Lihat Detail
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
@@ -373,9 +454,9 @@ export default function MemberFishpedia() {
       {/* No Results */}
       {filteredFish.length === 0 && (
         <div className="text-center py-12">
-          <Fish className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">Tidak ada ikan yang ditemukan</p>
-          <p className="text-gray-400 text-sm mt-2">Coba ubah kata kunci pencarian atau filter tingkat kesulitan</p>
+          <Fish className="w-16 h-16 mx-auto mb-4" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+          <p className="text-lg" style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Tidak ada ikan yang ditemukan</p>
+          <p className="text-sm mt-2" style={{ color: 'rgba(255, 255, 255, 0.8)', fontFamily: 'Nunito Sans, sans-serif' }}>Coba ubah kata kunci pencarian atau filter tingkat kesulitan</p>
         </div>
       )}
 

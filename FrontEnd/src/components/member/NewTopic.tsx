@@ -99,31 +99,50 @@ export default function NewTopic() {
       </div>
 
       {/* Form */}
-      <Card className="p-6" style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '20px',
-              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
-            }}>
-        <h2 className="mb-6" style={{ color: '#133E87' }}>Buat Topik Baru</h2>
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <h2 className="mb-6 relative z-10" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Buat Topik Baru</h2>
         
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-4 rounded-lg bg-red-50 border border-red-200">
-            <p className="text-sm text-red-600">{error}</p>
+          <div 
+            className="mb-4 p-4 rounded-xl relative z-10"
+            style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.1)',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
+          >
+            <p className="text-sm" style={{ color: '#DC2626', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>{error}</p>
           </div>
         )}
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
           {/* Title */}
           <div>
             <Label htmlFor="title" className="text-sm mb-2" style={{ color: '#133E87' }}>
@@ -182,11 +201,16 @@ export default function NewTopic() {
 
           {/* Tips */}
           <div 
-            className="p-4 rounded-lg"
-            style={{ backgroundColor: '#F3F3E0' }}
+            className="p-4 rounded-xl"
+            style={{ 
+              backgroundColor: 'rgba(72, 128, 255, 0.05)',
+              border: '1px solid rgba(72, 128, 255, 0.2)',
+              boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1)',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
           >
-            <h4 className="mb-2" style={{ color: '#133E87' }}>Tips Membuat Topik yang Baik:</h4>
-            <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+            <h4 className="mb-2" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Tips Membuat Topik yang Baik:</h4>
+            <ul className="text-sm space-y-1 list-disc list-inside" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
               <li>Gunakan judul yang jelas dan deskriptif</li>
               <li>Pilih kategori yang sesuai agar mudah ditemukan</li>
               <li>Jelaskan masalah atau pertanyaan dengan detail</li>
@@ -199,8 +223,26 @@ export default function NewTopic() {
           <div className="flex gap-4 pt-4">
             <Button
               type="submit"
-              className="text-white"
-              style={{ backgroundColor: '#133E87' }}
+              className="bubble-button text-white rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                boxShadow: '0 8px 24px rgba(15, 91, 229, 0.3)',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 700
+              }}
+              onMouseEnter={(e) => {
+                if (!(!formData.title || !formData.category || !formData.content || submitting)) {
+                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 12px 35px rgba(15, 91, 229, 0.4)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!(!formData.title || !formData.category || !formData.content || submitting)) {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(15, 91, 229, 0.3)';
+                }
+              }}
               disabled={!formData.title || !formData.category || !formData.content || submitting}
             >
               {submitting ? 'Mempublikasikan...' : 'Publikasikan Topik'}
@@ -208,6 +250,13 @@ export default function NewTopic() {
             <Button
               type="button"
               variant="outline"
+              className="rounded-full transition-all duration-300"
+              style={{
+                border: '2px solid rgba(72, 128, 255, 0.2)',
+                color: '#133E87',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 600
+              }}
               onClick={handleCancel}
               disabled={submitting}
             >

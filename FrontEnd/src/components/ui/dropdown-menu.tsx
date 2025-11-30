@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "../icons";
 import { cn } from "./utils";
 
@@ -9,15 +10,16 @@ interface DropdownMenuContextValue {
   setOpen: (open: boolean) => void;
 }
 
-const DropdownMenuContext = React.createContext<DropdownMenuContextValue | undefined>(undefined);
+const DropdownMenuContext = React.createContext<DropdownMenuContextValue & { triggerRef?: React.RefObject<HTMLElement> } | undefined>(undefined);
 
 const DropdownMenu = ({ children, open: controlledOpen, onOpenChange }: { children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) => {
   const [internalOpen, setInternalOpen] = React.useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
+  const triggerRef = React.useRef<HTMLElement | null>(null);
 
   return (
-    <DropdownMenuContext.Provider value={{ open, setOpen }}>
+    <DropdownMenuContext.Provider value={{ open, setOpen, triggerRef }}>
       {children}
     </DropdownMenuContext.Provider>
   );
@@ -28,23 +30,40 @@ const DropdownMenuTrigger = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
 >(({ className, children, asChild, ...props }, ref) => {
   const context = React.useContext(DropdownMenuContext);
-  const triggerRef = React.useRef<HTMLElement | null>(null);
+  const triggerElementRef = React.useRef<HTMLElement | null>(null);
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     context?.setOpen(!context.open);
   };
 
+  // Ensure triggerRef is set after render
   React.useEffect(() => {
-    if (triggerRef.current) {
-      triggerRef.current.setAttribute('data-dropdown-trigger', 'true');
+    if (triggerElementRef.current && context?.triggerRef) {
+      (context.triggerRef as React.MutableRefObject<HTMLElement | null>).current = triggerElementRef.current;
     }
-  }, []);
+  }, [context?.triggerRef]);
 
   if (asChild && React.isValidElement(children)) {
+    const childRef = (children as any).ref;
     return React.cloneElement(children as React.ReactElement<any>, {
-      onClick: handleClick,
+      onClick: (e: React.MouseEvent) => {
+        handleClick(e);
+        (children as any).props?.onClick?.(e);
+      },
       ref: (node: HTMLElement) => {
-        triggerRef.current = node;
+        triggerElementRef.current = node;
+        // Set triggerRef first
+        if (context?.triggerRef && node) {
+          (context.triggerRef as React.MutableRefObject<HTMLElement | null>).current = node;
+        }
+        // Handle original ref
+        if (typeof childRef === 'function') {
+          childRef(node);
+        } else if (childRef) {
+          (childRef as any).current = node;
+        }
+        // Handle forwarded ref
         if (typeof ref === 'function') {
           ref(node as any);
         } else if (ref) {
@@ -58,7 +77,10 @@ const DropdownMenuTrigger = React.forwardRef<
   return (
     <button
       ref={(node) => {
-        triggerRef.current = node;
+        triggerElementRef.current = node;
+        if (context?.triggerRef && node) {
+          (context.triggerRef as React.MutableRefObject<HTMLElement | null>).current = node;
+        }
         if (typeof ref === 'function') {
           ref(node);
         } else if (ref) {
@@ -79,14 +101,184 @@ DropdownMenuTrigger.displayName = "DropdownMenuTrigger";
 const DropdownMenuContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { sideOffset?: number; align?: "start" | "center" | "end" }
->(({ className, children, sideOffset = 4, align = "center", ...props }, ref) => {
+>(({ className, children, sideOffset = 4, align = "end", ...props }, ref) => {
   const context = React.useContext(DropdownMenuContext);
   const contentRef = React.useRef<HTMLDivElement>(null);
+
+  // Calculate position based on trigger
+  const getPositionStyle = React.useCallback(() => {
+    // Try multiple ways to find the trigger
+    let trigger: HTMLElement | null = context?.triggerRef?.current || null;
+    
+    // Fallback: find by data attribute - prioritize navbar triggers
+    if (!trigger) {
+      const allTriggers = Array.from(document.querySelectorAll('[data-dropdown-trigger]')) as HTMLElement[];
+      // Find the trigger that's in the navbar (typically between 0-100px from top)
+      for (const t of allTriggers.reverse()) {
+        const rect = t.getBoundingClientRect();
+        if (rect.top >= 0 && rect.top < 100 && rect.width > 0 && rect.height > 0) {
+          trigger = t;
+          if (context?.triggerRef) {
+            (context.triggerRef as React.MutableRefObject<HTMLElement | null>).current = t;
+          }
+          break;
+        }
+      }
+      // If still not found, use the last one
+      if (!trigger && allTriggers.length > 0) {
+        trigger = allTriggers[0];
+        if (context?.triggerRef) {
+          (context.triggerRef as React.MutableRefObject<HTMLElement | null>).current = trigger;
+        }
+      }
+    }
+    
+    if (!trigger) {
+      return {
+        position: 'fixed' as const,
+        top: '0px',
+        left: '0px',
+        zIndex: 9999,
+        visibility: 'hidden' as any
+      };
+    }
+
+    const rect = trigger.getBoundingClientRect();
+    const estimatedWidth = contentRef.current?.offsetWidth || 320;
+    
+    // Calculate left position based on alignment
+    let left = rect.left;
+    if (align === "end") {
+      left = rect.right - estimatedWidth;
+      if (left < 8) left = 8;
+    } else if (align === "center") {
+      left = rect.left + (rect.width / 2) - (estimatedWidth / 2);
+      if (left < 8) left = 8;
+    } else {
+      if (left + estimatedWidth > window.innerWidth - 8) {
+        left = window.innerWidth - estimatedWidth - 8;
+      }
+    }
+
+    // Calculate top position - MUST be below the trigger button
+    // rect.bottom gives the bottom edge of the trigger in viewport coordinates
+    const top = rect.bottom + sideOffset;
+
+    return {
+      position: 'fixed' as const,
+      top: `${top}px`,
+      left: `${left}px`,
+      zIndex: 9999
+    };
+  }, [context?.triggerRef, sideOffset, align]);
+
+  const [positionStyle, setPositionStyle] = React.useState<React.CSSProperties>(getPositionStyle());
+
+  React.useEffect(() => {
+    if (!context?.open) {
+      // Reset position when closed
+      setPositionStyle({
+        position: 'fixed' as const,
+        visibility: 'hidden' as any
+      });
+      return;
+    }
+
+    // Update position after render - use multiple attempts to ensure accuracy
+    const updatePosition = () => {
+      // First, try to find trigger from ref
+      let trigger: HTMLElement | null = context?.triggerRef?.current || null;
+      
+      // If not found, find by data attribute - prioritize the one that was just clicked
+      if (!trigger) {
+        const allTriggers = Array.from(document.querySelectorAll('[data-dropdown-trigger]')) as HTMLElement[];
+        // Find the trigger that's in the navbar (has specific parent structure)
+        for (const t of allTriggers.reverse()) {
+          const rect = t.getBoundingClientRect();
+          // Check if it's in the top navbar area (typically between 0-100px from top)
+          if (rect.top >= 0 && rect.top < 100 && rect.width > 0 && rect.height > 0) {
+            trigger = t;
+            // Update the ref
+            if (context?.triggerRef) {
+              (context.triggerRef as React.MutableRefObject<HTMLElement | null>).current = t;
+            }
+            break;
+          }
+        }
+        // If still not found, use the last one
+        if (!trigger && allTriggers.length > 0) {
+          trigger = allTriggers[0];
+          if (context?.triggerRef) {
+            (context.triggerRef as React.MutableRefObject<HTMLElement | null>).current = trigger;
+          }
+        }
+      }
+      
+      if (trigger) {
+        const rect = trigger.getBoundingClientRect();
+        const estimatedWidth = contentRef.current?.offsetWidth || 320;
+        
+        // Calculate left position
+        let left = rect.left;
+        if (align === "end") {
+          left = rect.right - estimatedWidth;
+          if (left < 8) left = 8;
+        } else if (align === "center") {
+          left = rect.left + (rect.width / 2) - (estimatedWidth / 2);
+          if (left < 8) left = 8;
+        } else {
+          if (left + estimatedWidth > window.innerWidth - 8) {
+            left = window.innerWidth - estimatedWidth - 8;
+          }
+        }
+        
+        // Calculate top - MUST be below the button
+        const top = rect.bottom + sideOffset;
+        
+        setPositionStyle({
+          position: 'fixed' as const,
+          top: `${top}px`,
+          left: `${left}px`,
+          zIndex: 9999
+        });
+      }
+    };
+    
+    // Immediate update
+    updatePosition();
+    
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      updatePosition();
+      requestAnimationFrame(() => {
+        updatePosition();
+      });
+    });
+    
+    // Multiple updates to ensure accuracy
+    const timer1 = setTimeout(updatePosition, 0);
+    const timer2 = setTimeout(updatePosition, 10);
+    const timer3 = setTimeout(updatePosition, 50);
+    const timer4 = setTimeout(updatePosition, 100);
+    
+    // Update on scroll and resize
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      clearTimeout(timer4);
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [context?.open, context?.triggerRef, align, sideOffset]);
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (contentRef.current && !contentRef.current.contains(event.target as Node)) {
-        const trigger = document.querySelector('[data-dropdown-trigger]') as HTMLElement;
+        const trigger = context?.triggerRef?.current;
         if (trigger && !trigger.contains(event.target as Node)) {
           context?.setOpen(false);
         }
@@ -102,6 +294,11 @@ const DropdownMenuContent = React.forwardRef<
     if (context?.open) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleEscape);
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleEscape);
+      };
     }
 
     return () => {
@@ -112,26 +309,29 @@ const DropdownMenuContent = React.forwardRef<
 
   if (!context?.open) return null;
 
-  const alignmentClasses = {
-    start: "left-0",
-    center: "left-1/2 -translate-x-1/2",
-    end: "right-0",
-  };
-
-  return (
+  const content = (
     <div
       ref={contentRef}
       className={cn(
-        "absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95",
-        alignmentClasses[align],
+        "min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95",
         className
       )}
-      style={{ top: `calc(100% + ${sideOffset}px)` }}
+      style={{
+        ...positionStyle,
+        ...props.style
+      }}
       {...props}
     >
       {children}
     </div>
   );
+
+  // Use portal to render outside the navbar hierarchy
+  if (typeof window !== 'undefined') {
+    return createPortal(content, document.body);
+  }
+
+  return content;
 });
 DropdownMenuContent.displayName = "DropdownMenuContent";
 

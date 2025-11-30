@@ -350,13 +350,13 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
           <div className="mb-8 space-y-4">
             {/* Search Bar */}
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 z-10" style={{ color: '#608BC1' }} />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 z-10 pointer-events-none" style={{ color: '#608BC1' }} />
               <input
                 type="text"
                 placeholder="Cari nama ikan atau nama ilmiah..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 py-6 text-base transition-all duration-300 w-full outline-none"
+                className="pl-14 py-6 text-base transition-all duration-300 w-full outline-none"
                 style={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(10px)',

@@ -114,13 +114,29 @@ export default function MemberProfile() {
     <div className="max-w-3xl space-y-6">
       {/* Success/Error Messages */}
       {success && (
-        <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-          <p className="text-green-700">{success}</p>
+        <div 
+          className="bubble-card p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+          style={{
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            border: '2px solid rgba(16, 185, 129, 0.3)',
+            boxShadow: '0 8px 32px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+        >
+          <p style={{ color: '#059669', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>{success}</p>
         </div>
       )}
       {error && (
-        <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-          <p className="text-red-700">{error}</p>
+        <div 
+          className="bubble-card p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+          style={{
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            border: '2px solid rgba(239, 68, 68, 0.3)',
+            boxShadow: '0 8px 32px rgba(239, 68, 68, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+        >
+          <p style={{ color: '#DC2626', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>{error}</p>
         </div>
       )}
 
@@ -128,20 +144,39 @@ export default function MemberProfile() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div 
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: '#CBDCEB' }}
+            className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(72, 128, 255, 0.3)',
+              boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+            }}
           >
-            <User className="w-8 h-8" style={{ color: '#608BC1' }} />
+            <User className="w-8 h-8" style={{ color: '#4880FF' }} />
           </div>
           <div>
-            <h2 style={{ color: '#133E87' }}>Profil Pengguna</h2>
-            <p className="text-sm text-gray-600">Kelola informasi profil Anda</p>
+            <h2 style={{ color: '#FFFFFF', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>Profil Pengguna</h2>
+            <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif' }}>Kelola informasi profil Anda</p>
           </div>
         </div>
         {!isEditing ? (
           <Button 
-            className="text-white"
-            style={{ backgroundColor: '#133E87' }}
+            className="bubble-button text-white rounded-full transition-all duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 24px rgba(15, 91, 229, 0.3)',
+              fontFamily: 'Nunito Sans, sans-serif',
+              fontWeight: 700
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 12px 35px rgba(15, 91, 229, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(15, 91, 229, 0.3)';
+            }}
             onClick={handleEdit}
           >
             <Edit className="w-4 h-4 mr-2" />
@@ -150,7 +185,23 @@ export default function MemberProfile() {
         ) : (
           <div className="flex gap-2">
             <Button 
+              className="bubble-button rounded-full transition-all duration-300"
               variant="outline"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                border: '2px solid rgba(72, 128, 255, 0.2)',
+                color: '#133E87',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 600
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#F0F5FF';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
               onClick={handleCancel}
               disabled={loading}
             >
@@ -158,8 +209,22 @@ export default function MemberProfile() {
               Batal
             </Button>
             <Button 
-              className="text-white"
-              style={{ backgroundColor: '#133E87' }}
+              className="bubble-button text-white rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                boxShadow: '0 8px 24px rgba(15, 91, 229, 0.3)',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 700
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 12px 35px rgba(15, 91, 229, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(15, 91, 229, 0.3)';
+              }}
               onClick={handleSave}
               disabled={loading}
             >
@@ -171,8 +236,33 @@ export default function MemberProfile() {
       </div>
 
       {/* Profile Information Card */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <h3 className="mb-6" style={{ color: '#133E87' }}>Informasi Personal</h3>
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <h3 className="mb-6 relative z-10" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Informasi Personal</h3>
         
         <div className="space-y-6">
           {/* Nama Lengkap */}
@@ -180,17 +270,30 @@ export default function MemberProfile() {
             <Label htmlFor="namaLengkap">Nama Lengkap</Label>
             {!isEditing ? (
               <div 
-                className="mt-2 p-3 rounded-lg"
-                style={{ backgroundColor: '#F3F3E0' }}
+                className="mt-2 p-3 rounded-xl transition-all duration-300 relative z-10"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid rgba(72, 128, 255, 0.1)',
+                  boxShadow: '0 2px 8px rgba(72, 128, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.namaLengkap}</p>
+                <p style={{ color: '#133E87', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>{profileData.namaLengkap}</p>
               </div>
             ) : (
               <Input 
                 id="namaLengkap"
                 value={editData.namaLengkap}
                 onChange={(e) => handleInputChange('namaLengkap', e.target.value)}
-                className="mt-2"
+                className="mt-2 rounded-xl"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               />
             )}
           </div>
@@ -200,10 +303,16 @@ export default function MemberProfile() {
             <Label htmlFor="email">Email</Label>
             {!isEditing ? (
               <div 
-                className="mt-2 p-3 rounded-lg"
-                style={{ backgroundColor: '#F3F3E0' }}
+                className="mt-2 p-3 rounded-xl transition-all duration-300 relative z-10"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid rgba(72, 128, 255, 0.1)',
+                  boxShadow: '0 2px 8px rgba(72, 128, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.email}</p>
+                <p style={{ color: '#133E87', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>{profileData.email}</p>
               </div>
             ) : (
               <Input 
@@ -211,7 +320,14 @@ export default function MemberProfile() {
                 type="email"
                 value={editData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className="mt-2"
+                className="mt-2 rounded-xl"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               />
             )}
           </div>
@@ -221,10 +337,16 @@ export default function MemberProfile() {
             <Label htmlFor="nomorHP">Nomor HP</Label>
             {!isEditing ? (
               <div 
-                className="mt-2 p-3 rounded-lg"
-                style={{ backgroundColor: '#F3F3E0' }}
+                className="mt-2 p-3 rounded-xl transition-all duration-300 relative z-10"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid rgba(72, 128, 255, 0.1)',
+                  boxShadow: '0 2px 8px rgba(72, 128, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.nomorHP || 'Belum diisi'}</p>
+                <p style={{ color: '#133E87', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>{profileData.nomorHP || 'Belum diisi'}</p>
               </div>
             ) : (
               <Input 
@@ -232,7 +354,14 @@ export default function MemberProfile() {
                 type="tel"
                 value={editData.nomorHP}
                 onChange={(e) => handleInputChange('nomorHP', e.target.value)}
-                className="mt-2"
+                className="mt-2 rounded-xl"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               />
             )}
           </div>
@@ -242,10 +371,16 @@ export default function MemberProfile() {
             <Label htmlFor="alamat">Alamat</Label>
             {!isEditing ? (
               <div 
-                className="mt-2 p-3 rounded-lg"
-                style={{ backgroundColor: '#F3F3E0' }}
+                className="mt-2 p-3 rounded-xl transition-all duration-300 relative z-10"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid rgba(72, 128, 255, 0.1)',
+                  boxShadow: '0 2px 8px rgba(72, 128, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.alamat || 'Belum diisi'}</p>
+                <p style={{ color: '#133E87', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>{profileData.alamat || 'Belum diisi'}</p>
               </div>
             ) : (
               <Input 
@@ -253,20 +388,33 @@ export default function MemberProfile() {
                 type="text"
                 value={editData.alamat}
                 onChange={(e) => handleInputChange('alamat', e.target.value)}
-                className="mt-2"
+                className="mt-2 rounded-xl"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               />
             )}
           </div>
 
           {/* Usia */}
           <div>
-            <Label htmlFor="usia">Usia</Label>
+            <Label htmlFor="usia" style={{ fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600, color: '#133E87' }}>Usia</Label>
             {!isEditing ? (
               <div 
-                className="mt-2 p-3 rounded-lg"
-                style={{ backgroundColor: '#F3F3E0' }}
+                className="mt-2 p-3 rounded-xl transition-all duration-300 relative z-10"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid rgba(72, 128, 255, 0.1)',
+                  boxShadow: '0 2px 8px rgba(72, 128, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.usia ? `${profileData.usia} tahun` : 'Belum diisi'}</p>
+                <p style={{ color: '#133E87', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>{profileData.usia ? `${profileData.usia} tahun` : 'Belum diisi'}</p>
               </div>
             ) : (
               <Input 
@@ -274,7 +422,14 @@ export default function MemberProfile() {
                 type="number"
                 value={editData.usia}
                 onChange={(e) => handleInputChange('usia', e.target.value)}
-                className="mt-2"
+                className="mt-2 rounded-xl"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
                 min="1"
                 max="150"
                 placeholder="Masukkan usia"
@@ -284,20 +439,44 @@ export default function MemberProfile() {
 
           {/* Jenis Ikan Hias Utama */}
           <div>
-            <Label htmlFor="jenisIkan">Jenis Ikan Hias Utama</Label>
+            <Label htmlFor="jenisIkan" style={{ fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600, color: '#133E87' }}>Jenis Ikan Hias Utama</Label>
             {!isEditing ? (
               <div 
-                className="mt-2 p-3 rounded-lg"
-                style={{ backgroundColor: '#F3F3E0' }}
+                className="mt-2 p-3 rounded-xl transition-all duration-300 relative z-10"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid rgba(72, 128, 255, 0.1)',
+                  boxShadow: '0 2px 8px rgba(72, 128, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
               >
-                <p style={{ color: '#133E87' }}>{profileData.jenisIkan || 'Belum diisi'}</p>
+                <p style={{ color: '#133E87', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>{profileData.jenisIkan || 'Belum diisi'}</p>
               </div>
             ) : (
               <select
                 id="jenisIkan"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+                className="flex h-10 w-full rounded-full border px-3 py-2 text-sm mt-2 transition-all duration-300"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  fontWeight: 600,
+                  color: '#133E87',
+                  outline: 'none'
+                }}
                 value={editData.jenisIkan}
                 onChange={(e) => handleInputChange('jenisIkan', e.target.value)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                }}
               >
                 <option value="">Pilih jenis ikan</option>
                 {fishTypes.map((fish) => (

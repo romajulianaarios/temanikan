@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { CheckCircle, XCircle, AlertTriangle, Bot, Calendar } from '../icons';
 import { mockCleaningRecords } from './data/robotMockData';
+import { formatDate, formatTime } from '../../utils/dateFormat';
 
 interface CleaningRecord {
   id: number;
@@ -21,11 +22,10 @@ export default function CleaningHistory() {
   const [activeTab, setActiveTab] = useState('semua');
 
   const cleaningRecords: CleaningRecord[] = mockCleaningRecords.map((record) => {
-    const startDate = new Date(record.started_at);
     return {
       id: record.id,
-      date: startDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
-      time: startDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      date: formatDate(record.started_at),
+      time: formatTime(record.started_at),
       duration: record.duration_minutes > 0 ? `${record.duration_minutes} menit` : '0 menit',
       status: record.status,
       batteryUsed: record.battery_used,
@@ -79,10 +79,20 @@ export default function CleaningHistory() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Bot className="w-8 h-8" style={{ color: '#133E87' }} />
+          <div 
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(72, 128, 255, 0.3)',
+              boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+            }}
+          >
+            <Bot className="w-6 h-6" style={{ color: '#4880FF' }} />
+          </div>
           <div>
-            <h2 style={{ color: '#133E87' }}>Riwayat Pembersihan Lengkap</h2>
-            <p className="text-sm text-gray-600">
+            <h2 style={{ color: '#FFFFFF', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>Riwayat Pembersihan Lengkap</h2>
+            <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif' }}>
               {completedCount} pembersihan berhasil dari {cleaningRecords.length} total
             </p>
           </div>
@@ -91,111 +101,191 @@ export default function CleaningHistory() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6" style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '20px',
-              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+        <Card 
+          className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(16, 185, 129, 0.2)',
+            boxShadow: '0 10px 50px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(16, 185, 129, 0.3), 0 0 0 1px rgba(16, 185, 129, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          {/* Bubble glow effect */}
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(16, 185, 129, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
-            }}>
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-green-100">
+          ></div>
+          <div className="flex items-center gap-3 relative z-10">
+            <div 
+              className="p-3 rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)'
+              }}
+            >
               <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Berhasil</p>
-              <p className="text-2xl" style={{ color: '#133E87' }}>{completedCount}</p>
+              <p className="text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Berhasil</p>
+              <p className="text-2xl" style={{ color: '#133E87', fontWeight: 800, fontFamily: 'Nunito Sans, sans-serif' }}>{completedCount}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6" style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '20px',
-              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+        <Card 
+          className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(239, 68, 68, 0.2)',
+            boxShadow: '0 10px 50px rgba(239, 68, 68, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(239, 68, 68, 0.3), 0 0 0 1px rgba(239, 68, 68, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(239, 68, 68, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+          }}
+        >
+          {/* Bubble glow effect */}
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(239, 68, 68, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
-            }}>
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-red-100">
+          ></div>
+          <div className="flex items-center gap-3 relative z-10">
+            <div 
+              className="p-3 rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.2)'
+              }}
+            >
               <XCircle className="w-6 h-6 text-red-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Gagal/Terputus</p>
-              <p className="text-2xl" style={{ color: '#133E87' }}>{failedCount}</p>
+              <p className="text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Gagal/Terputus</p>
+              <p className="text-2xl" style={{ color: '#133E87', fontWeight: 800, fontFamily: 'Nunito Sans, sans-serif' }}>{failedCount}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6" style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '20px',
-              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
+        <Card 
+          className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
+        >
+          {/* Bubble glow effect */}
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
-            }}>
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg" style={{ backgroundColor: '#CBDCEB' }}>
+          ></div>
+          <div className="flex items-center gap-3 relative z-10">
+            <div 
+              className="p-3 rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(72, 128, 255, 0.3)',
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+              }}
+            >
               <Calendar className="w-6 h-6" style={{ color: '#608BC1' }} />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Rata-rata Durasi</p>
-              <p className="text-2xl" style={{ color: '#133E87' }}>44 menit</p>
+              <p className="text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Rata-rata Durasi</p>
+              <p className="text-2xl" style={{ color: '#133E87', fontWeight: 800, fontFamily: 'Nunito Sans, sans-serif' }}>44 menit</p>
             </div>
           </div>
         </Card>
       </div>
 
       {/* Tabs and Table */}
-      <Card style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '20px',
-              boxShadow: '0 8px 32px rgba(72, 128, 255, 0.15)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.25)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15)';
-            }}>
-        <Tabs defaultValue="semua" onValueChange={setActiveTab}>
-          <div className="border-b px-6 pt-6" style={{ borderColor: '#CBDCEB' }}>
-            <TabsList className="w-full justify-start" style={{ backgroundColor: '#F3F3E0' }}>
-              <TabsTrigger value="semua" className="data-[state=active]:bg-white">
+      <Card 
+        className="bubble-card rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <Tabs defaultValue="semua" onValueChange={setActiveTab} className="relative z-10">
+          <div className="border-b px-6 pt-6" style={{ borderColor: 'rgba(72, 128, 255, 0.1)' }}>
+            <TabsList className="w-full justify-start rounded-full p-1" style={{ backgroundColor: 'rgba(72, 128, 255, 0.05)', border: '1px solid rgba(72, 128, 255, 0.1)' }}>
+              <TabsTrigger 
+                value="semua" 
+                className="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#133E87] data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-blue-200"
+                style={{ fontFamily: 'Nunito Sans, sans-serif', color: '#608BC1' }}
+              >
                 Semua ({cleaningRecords.length})
               </TabsTrigger>
-              <TabsTrigger value="berhasil" className="data-[state=active]:bg-white">
+              <TabsTrigger 
+                value="berhasil" 
+                className="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#133E87] data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-blue-200"
+                style={{ fontFamily: 'Nunito Sans, sans-serif', color: '#608BC1' }}
+              >
                 Berhasil ({completedCount})
               </TabsTrigger>
-              <TabsTrigger value="gagal" className="data-[state=active]:bg-white">
+              <TabsTrigger 
+                value="gagal" 
+                className="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#133E87] data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-blue-200"
+                style={{ fontFamily: 'Nunito Sans, sans-serif', color: '#608BC1' }}
+              >
                 Gagal/Terputus ({failedCount})
               </TabsTrigger>
             </TabsList>
@@ -252,9 +342,9 @@ export default function CleaningHistory() {
             </Table>
 
             {getFilteredRecords().length === 0 && (
-              <div className="p-12 text-center">
-                <Bot className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500">
+              <div className="p-12 text-center relative z-10">
+                <Bot className="w-16 h-16 mx-auto mb-4" style={{ color: 'rgba(72, 128, 255, 0.3)' }} />
+                <p style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>
                   Tidak ada data riwayat pembersihan
                 </p>
               </div>

@@ -6,6 +6,7 @@ import { X, Send, Image as ImageIcon, Bot, User, Trash2, History } from './icons
 import { aiChatAPI } from '../services/api';
 import { useAuth } from './AuthContext';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { formatTime } from '../utils/dateFormat';
 
 interface ChatMessage {
   id: string;
@@ -197,7 +198,7 @@ export default function AIChatWidget({ isOpen, onClose }: AIChatWidgetProps) {
       if (isTokenError) {
         formattedError = `⚠️ ${errorMessage}\n\nSilakan logout dan login kembali untuk memperbarui token Anda.`;
       } else if (isAPIKeyError) {
-        formattedError = `⚠️ Layanan AI Chat sedang tidak tersedia.\n\nKemungkinan penyebab:\n• API key tidak valid atau expired\n• API key tidak memiliki akses ke Gemini API\n• Konfigurasi backend perlu diperbarui\n\nSilakan hubungi administrator untuk memperbaiki masalah ini.`;
+        formattedError = `⚠️ API Key perlu diperbarui.\n\nUntuk menggunakan AI Chat dengan Gemini API, silakan:\n\n1. Dapatkan API Key baru di:\n   https://makersuite.google.com/app/apikey\n\n2. Update API Key di backend:\n   - Buka folder BackEnd/\n   - Edit file .env atau config.py\n   - Tambahkan: GEMINI_API_KEY=your-api-key\n   - Restart backend server\n\nAtau gunakan script:\n   python BackEnd/update_api_key.py YOUR_API_KEY\n\nSementara ini, sistem menggunakan informasi dari database.`;
       } else if (isQuotaError) {
         formattedError = `⚠️ Quota API telah habis.\n\nTerlalu banyak request ke layanan AI. Silakan tunggu beberapa saat dan coba lagi nanti.`;
       } else {
@@ -505,10 +506,7 @@ export default function AIChatWidget({ isOpen, onClose }: AIChatWidgetProps) {
                 </div>
                 
                 <p className="text-xs text-gray-400 mt-1 px-1">
-                  {new Date(msg.created_at).toLocaleTimeString('id-ID', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
+                  {formatTime(msg.created_at)}
                 </p>
               </div>
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from '../Router';  // ✅ DIPERBAIKI: Custom Router
 import { forumAPI } from '../../services/api';
 import { useAuth } from '../AuthContext';  // ✅ DIPERBAIKI: Path relatif
+import { formatTimeAgo } from '../../utils/dateFormat';
 
 import { MessageSquare, ThumbsUp, User, Edit2, Trash2, ArrowLeft, Flag, Eye } from 'lucide-react';
 import { Dialog, DialogContent } from '../ui/dialog';
@@ -121,17 +122,6 @@ export default function MyTopics() {
     }
   };
 
-  // Format waktu relatif
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return 'Baru saja';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit yang lalu`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
-    return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
-  };
 
   // Loading state
   if (loading) {
@@ -153,15 +143,21 @@ export default function MyTopics() {
           <Link to="/member/forum">
             <button
               className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-all"
-              style={{ color: '#4880FF' }}
+              style={{ color: '#FFFFFF' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#4880FF';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#FFFFFF';
+              }}
             >
               <ArrowLeft className="w-4 h-4" />
               Kembali
             </button>
           </Link>
           <div>
-            <h2 className="text-3xl font-bold" style={{ color: '#1F2937' }}>
-              Topik <span style={{ color: '#4880FF' }}>Saya</span>
+            <h2 className="text-3xl font-bold" style={{ color: '#FFFFFF' }}>
+              Topik <span style={{ color: '#FFFFFF' }}>Saya</span>
             </h2>
             <p className="text-sm text-gray-600">Total: {topics.length} topik</p>
           </div>
@@ -203,15 +199,33 @@ export default function MyTopics() {
       <div className="space-y-4">
         {getSortedTopics().length === 0 ? (
           <div
-            className="p-12 rounded-xl text-center"
-            style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}
+            className="bubble-card p-12 rounded-[32px] text-center transition-all duration-300 relative overflow-hidden"
+            style={{ 
+              backgroundColor: '#FFFFFF',
+              border: '2px solid rgba(72, 128, 255, 0.2)',
+              boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
           >
-            <User className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-500 mb-4">Anda belum membuat topik</p>
-            <Link to="/member/forum/new">
+            <User className="w-12 h-12 mx-auto mb-4 relative z-10" style={{ color: 'rgba(72, 128, 255, 0.3)' }} />
+            <p className="mb-4 relative z-10" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Anda belum membuat topik</p>
+            <Link to="/member/forum/new" className="relative z-10">
               <button
-                className="px-6 py-2 rounded-lg text-white font-semibold"
-                style={{ backgroundColor: '#4880FF' }}
+                className="bubble-button px-6 py-2 rounded-full text-white font-semibold transition-all duration-300"
+                style={{ 
+                  background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 8px 24px rgba(15, 91, 229, 0.3)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 12px 35px rgba(15, 91, 229, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(15, 91, 229, 0.3)';
+                }}
               >
                 Buat Topik Pertama Anda
               </button>
@@ -221,41 +235,65 @@ export default function MyTopics() {
           getSortedTopics().map((topic) => (
             <div
               key={topic.id}
-              className="p-6 rounded-xl shadow-md border hover:shadow-xl transition-all"
-              style={{ backgroundColor: 'white', borderColor: '#E5E7EB' }}
+              className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+              style={{ 
+                backgroundColor: '#FFFFFF',
+                border: '2px solid rgba(72, 128, 255, 0.2)',
+                boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+              }}
             >
-              <div className="flex justify-between items-start gap-4">
+              {/* Bubble glow effect */}
+              <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+                  filter: 'blur(20px)'
+                }}
+              ></div>
+              <div className="flex justify-between items-start gap-4 relative z-10">
                 <div className="flex-1">
                   <Link to={`/member/forum/topic/${topic.id}`}>
                     <h3
                       className="text-lg font-bold hover:underline cursor-pointer mb-2"
-                      style={{ color: '#1F2937' }}
+                      style={{ color: '#133E87', fontWeight: 800, fontFamily: 'Nunito Sans, sans-serif' }}
                     >
                       {topic.title}
                     </h3>
                   </Link>
 
-                  <div className="flex flex-wrap items-center gap-3 mb-3 text-sm">
+                  <div className="flex flex-wrap items-center gap-3 mb-3 text-sm" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>
                     <span
-                      className="px-3 py-1 rounded-lg font-semibold"
+                      className="px-3 py-1 rounded-full font-semibold"
                       style={{
                         backgroundColor: 'rgba(72, 128, 255, 0.1)',
                         color: '#4880FF',
+                        border: '1px solid rgba(72, 128, 255, 0.2)',
+                        fontWeight: 600
                       }}
                     >
                       {topic.category}
                     </span>
-                    <span style={{ color: '#6B7280' }}>•</span>
-                    <span style={{ color: '#6B7280' }}>
+                    <span style={{ color: '#608BC1' }}>•</span>
+                    <span style={{ color: '#608BC1' }}>
                       Dibuat: {formatTimeAgo(topic.created_at)}
                     </span>
-                    <span style={{ color: '#6B7280' }}>•</span>
-                    <span style={{ color: '#6B7280' }}>
+                    <span style={{ color: '#608BC1' }}>•</span>
+                    <span style={{ color: '#608BC1' }}>
                       Diubah: {formatTimeAgo(topic.updated_at)}
                     </span>
                   </div>
 
-                  <p className="text-gray-600 text-sm line-clamp-2 mb-4">
+                  <p className="text-sm line-clamp-2 mb-4" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
                     {topic.content}
                   </p>
 

@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Dialog, DialogContent } from '../ui/dialog';
 import { ThumbsUp, MessageSquare, ArrowLeft, User, Eye } from '../icons';
 import { forumAPI } from '../../services/api';
+import { formatTimeAgo } from '../../utils/dateFormat';
 
 interface Reply {
   id: number;
@@ -170,17 +171,6 @@ export default function TopicDetail() {
     }
   };
 
-  // Format waktu relatif
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return 'Baru saja';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit yang lalu`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
-    return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
-  };
 
   // Loading state
   if (loading) {
@@ -220,8 +210,33 @@ export default function TopicDetail() {
       </div>
 
       {/* Original Post */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <div className="flex items-start gap-4">
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="flex items-start gap-4 relative z-10">
           <Avatar className="w-12 h-12" style={{ backgroundColor: '#CBDCEB' }}>
             <AvatarFallback>
               <User className="w-6 h-6" style={{ color: '#608BC1' }} />
@@ -232,15 +247,38 @@ export default function TopicDetail() {
             <div className="flex items-start justify-between mb-3">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 style={{ color: '#133E87' }}>{topic.title}</h2>
+                  <h2 style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>{topic.title}</h2>
                   {topic.is_pinned && (
-                    <Badge className="bg-orange-100 text-orange-600">Populer</Badge>
+                    <Badge 
+                      className="rounded-full px-3 py-1 text-xs font-semibold"
+                      style={{
+                        backgroundColor: 'rgba(254, 197, 61, 0.15)',
+                        color: '#FEC53D',
+                        border: '1px solid rgba(254, 197, 61, 0.3)',
+                        fontWeight: 700,
+                        fontFamily: 'Nunito Sans, sans-serif'
+                      }}
+                    >
+                      Populer
+                    </Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span style={{ color: '#133E87' }}>{topic.author_name}</span>
+                <div className="flex items-center gap-2 text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
+                  <span style={{ color: '#133E87', fontWeight: 600 }}>{topic.author_name}</span>
                   <span>•</span>
-                  <Badge variant="outline">{topic.category}</Badge>
+                  <Badge 
+                    variant="outline"
+                    className="rounded-full px-3 py-1"
+                    style={{
+                      backgroundColor: 'rgba(72, 128, 255, 0.1)',
+                      color: '#4880FF',
+                      border: '1px solid rgba(72, 128, 255, 0.2)',
+                      fontWeight: 600,
+                      fontFamily: 'Nunito Sans, sans-serif'
+                    }}
+                  >
+                    {topic.category}
+                  </Badge>
                   <span>•</span>
                   <span>{formatTimeAgo(topic.created_at)}</span>
                 </div>
@@ -281,17 +319,47 @@ export default function TopicDetail() {
       </Card>
 
       {/* Replies */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <h3 className="mb-4" style={{ color: '#133E87' }}>
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <h3 className="mb-4 relative z-10" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
           {topic.replies.length} Balasan
         </h3>
 
-        <div className="space-y-4">
+        <div className="space-y-4 relative z-10">
           {topic.replies.map((reply) => (
             <div 
               key={reply.id}
-              className="p-4 rounded-lg"
-              style={{ backgroundColor: '#F3F3E0' }}
+              className="p-4 rounded-xl transition-all duration-300"
+              style={{ 
+                backgroundColor: 'rgba(72, 128, 255, 0.05)',
+                border: '1px solid rgba(72, 128, 255, 0.2)',
+                boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1)',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
             >
               <div className="flex items-start gap-3">
                 <Avatar className="w-10 h-10" style={{ backgroundColor: '#CBDCEB' }}>
@@ -321,23 +389,73 @@ export default function TopicDetail() {
       </Card>
 
       {/* Reply Form */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <h3 className="mb-4" style={{ color: '#133E87' }}>Tulis Balasan</h3>
+      <Card 
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        {/* Bubble glow effect */}
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <h3 className="mb-4 relative z-10" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Tulis Balasan</h3>
         
-        <form onSubmit={handleSubmitReply}>
+        <form onSubmit={handleSubmitReply} className="relative z-10">
           <Textarea
             placeholder="Tulis balasan Anda di sini..."
             value={newReply}
             onChange={(e) => setNewReply(e.target.value)}
             rows={5}
-            className="mb-4"
+            className="mb-4 rounded-xl"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(5px)',
+              border: '1px solid rgba(72, 128, 255, 0.2)',
+              boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1)',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
           />
           
           <div className="flex gap-3">
             <Button
               type="submit"
-              className="text-white"
-              style={{ backgroundColor: '#133E87' }}
+              className="bubble-button text-white rounded-full transition-all duration-300"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                boxShadow: '0 8px 24px rgba(15, 91, 229, 0.3)',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 700
+              }}
+              onMouseEnter={(e) => {
+                if (!(!newReply.trim() || submitting)) {
+                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 12px 35px rgba(15, 91, 229, 0.4)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!(!newReply.trim() || submitting)) {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(15, 91, 229, 0.3)';
+                }
+              }}
               disabled={!newReply.trim() || submitting}
             >
               {submitting ? 'Mengirim...' : 'Kirim Balasan'}
@@ -345,6 +463,13 @@ export default function TopicDetail() {
             <Button
               type="button"
               variant="outline"
+              className="rounded-full transition-all duration-300"
+              style={{
+                border: '2px solid rgba(72, 128, 255, 0.2)',
+                color: '#133E87',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 600
+              }}
               onClick={() => setNewReply('')}
             >
               Batal
