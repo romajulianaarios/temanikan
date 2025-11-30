@@ -144,6 +144,7 @@ def register_routes(app):
     FISHPEDIA_UPLOAD_FOLDER = os.path.abspath('uploads/fishpedia')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
     IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+    MAX_PAYMENT_PROOF_SIZE = 5 * 1024 * 1024  # 5 MB
 
     # Make sure upload folders exist
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -1866,6 +1867,14 @@ def register_routes(app):
                 return jsonify({'error': 'Invalid file type. Only PNG, JPG, JPEG, and PDF are allowed'}), 400
             
             print(f"✅ File type valid")
+
+            # Validate file size (max 5MB)
+            file.seek(0, os.SEEK_END)
+            file_size = file.tell()
+            file.seek(0)
+            if file_size > MAX_PAYMENT_PROOF_SIZE:
+                print(f"❌ File too large: {file_size} bytes")
+                return jsonify({'error': 'File terlalu besar. Maksimum 5MB'}), 400
             
             # Generate unique filename
             filename = secure_filename(file.filename)
@@ -2373,6 +2382,28 @@ def register_routes(app):
             'notifications': [n.to_dict() for n in notifications],
             'count': len(notifications),
             'unread_count': Notification.query.filter_by(user_id=user_id, is_read=False).count()
+        }), 200
+    
+    @app.route('/api/notifications/<int:notification_id>', methods=['GET'])
+    @jwt_required()
+    def get_notification_detail(notification_id):
+        user_id = get_jwt_identity()
+        notification = Notification.query.get(notification_id)
+        
+        if not notification:
+            return jsonify({'success': False, 'error': 'Notification not found'}), 404
+        
+        if notification.user_id != user_id:
+            return jsonify({'success': False, 'error': 'Unauthorized access'}), 403
+        
+        # Mark as read when viewed
+        if not notification.is_read:
+            notification.is_read = True
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'data': notification.to_dict()
         }), 200
     
     @app.route('/api/notifications/<int:notification_id>/read', methods=['PUT'])

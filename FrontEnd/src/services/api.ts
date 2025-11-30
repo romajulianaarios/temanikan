@@ -676,11 +676,19 @@ export const orderAPI = {
       body: formData
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to upload payment proof');
+    let payload: any = null;
+    try {
+      payload = await response.json();
+    } catch (_) {
+      payload = null;
     }
 
-    return await response.json();
+    if (!response.ok) {
+      const message = payload?.error || payload?.message || 'Failed to upload payment proof';
+      throw new Error(message);
+    }
+
+    return payload;
   },
 
   // ✅ ADD THIS METHOD TOO:

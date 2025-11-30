@@ -10,6 +10,7 @@ import SystemSettings from './admin/SystemSettings';
 import AdminProfile from './admin/AdminProfile';
 import AllNotifications from './admin/AllNotifications';
 import AdminOrders from './admin/AdminOrders';
+import NotificationDetail from '../pages/NotificationDetail';
 
 export default function AdminDashboard() {
   return (
@@ -61,6 +62,7 @@ export default function AdminDashboard() {
           <AllNotifications />
         </AdminSidebarLayout>
       } />
+      <Route path="notifications/:id" element={<NotificationDetail />} />
       <Route path="orders" element={
         <AdminSidebarLayout 
           title="Kelola Pesanan"
