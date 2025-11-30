@@ -12,9 +12,10 @@ class Config:
     JWT_SECRET_KEY = 'dev-jwt-secret-key'  # Fixed string!
     
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///temanikan.db')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///temanikan_v2.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False
+    SQLALCHEMY_ENGINE_OPTIONS = {'connect_args': {'timeout': 30}}
     
     # Gemini AI Configuration
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyA_nyNIO60t4OUKkJLKgPnXw4EwoUcOfB8')

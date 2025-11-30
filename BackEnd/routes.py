@@ -1256,12 +1256,12 @@ def register_routes(app):
         # topic.views += 1
         # db.session.commit()
         # ✅ OPSI 2: Try-Except dengan Rollback
-        try:
-            topic.views += 1
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"⚠️ Could not update views: {e}")
+        # try:
+        #     topic.views += 1
+        #     db.session.commit()
+        # except Exception as e:
+        #     db.session.rollback()
+        #     print(f"⚠️ Could not update views: {e}")
     # Tetap return topic meski views tidak ter-update
 
         
@@ -1304,8 +1304,7 @@ def register_routes(app):
                 content=data['content']
             )
             
-            topic.updated_at = datetime.utcnow()
-            
+            # ✅ HANYA CREATE REPLY, TANPA UPDATE TOPIC
             db.session.add(reply)
             db.session.commit()
             
