@@ -68,3 +68,7 @@ if __name__ == '__main__':
         traceback.print_exc()
         input("Press Enter to exit...")
 
+# ... kodingan def create_app() di atas ...
+
+# Tambahkan baris ini di paling bawah agar Gunicorn bisa menemukannya:
+app = create_app()
