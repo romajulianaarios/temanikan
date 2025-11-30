@@ -11,9 +11,11 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('beranda');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [clickedDropdown, setClickedDropdown] = useState<string | null>(null); // Track clicked dropdowns
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const closeTimeoutRefs = useRef<{ [key: string]: NodeJS.Timeout | null }>({}); // Timeout refs for delayed close
 
   // Track scroll position for active section highlighting on landing page
   useEffect(() => {
@@ -49,22 +51,40 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
     }
   }, [location.pathname]);
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside (but respect clicked state)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (openDropdown) {
-        const ref = dropdownRefs.current[openDropdown];
-        if (ref && !ref.contains(event.target as Node)) {
-          setOpenDropdown(null);
-        }
-      }
+      // Use a small delay to ensure onClick handlers have executed
+      setTimeout(() => {
+        // Check all dropdowns
+        Object.keys(dropdownRefs.current).forEach((key) => {
+          const ref = dropdownRefs.current[key];
+          if (ref) {
+            // Check if click is outside the dropdown container
+            const clickedElement = event.target as Node;
+            if (!ref.contains(clickedElement)) {
+              // Only close if it's not a clicked dropdown (clicked dropdowns stay open)
+              if (clickedDropdown !== key) {
+                // Clear any pending timeout
+                if (closeTimeoutRefs.current[key]) {
+                  clearTimeout(closeTimeoutRefs.current[key]);
+                  closeTimeoutRefs.current[key] = null;
+                }
+                setOpenDropdown((prev) => prev === key ? null : prev);
+              }
+            }
+          }
+        });
+      }, 10); // Small delay to let onClick handlers execute first
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    // Use 'click' event instead of 'mousedown' to allow onClick to execute first
+    document.addEventListener('click', handleClickOutside, true);
+
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside, true);
     };
-  }, [openDropdown]);
+  }, [clickedDropdown]);
 
   const handleAuthClick = (mode: 'login' | 'register') => {
     setMobileMenuOpen(false);
@@ -158,13 +178,36 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
             <div 
               className="relative"
               ref={(el) => { dropdownRefs.current['beranda'] = el; }}
-              onMouseEnter={() => setOpenDropdown('beranda')}
-              onMouseLeave={() => setOpenDropdown(null)}
+              onMouseEnter={() => {
+                // Clear any pending close timeout
+                if (closeTimeoutRefs.current['beranda']) {
+                  clearTimeout(closeTimeoutRefs.current['beranda']);
+                  closeTimeoutRefs.current['beranda'] = null;
+                }
+                setOpenDropdown('beranda');
+              }}
+              onMouseLeave={() => {
+                // Only close on mouse leave if it's not clicked
+                if (clickedDropdown !== 'beranda') {
+                  // Add delay before closing to allow mouse to move to dropdown
+                  closeTimeoutRefs.current['beranda'] = setTimeout(() => {
+                    setOpenDropdown(null);
+                  }, 200); // 200ms delay
+                }
+              }}
             >
               <a
                 href="#beranda"
                 onClick={(e) => {
                   e.preventDefault();
+                  // Toggle dropdown on click
+                  if (clickedDropdown === 'beranda') {
+                    setClickedDropdown(null);
+                    setOpenDropdown(null);
+                  } else {
+                    setClickedDropdown('beranda');
+                    setOpenDropdown('beranda');
+                  }
                   handleSmartNavigate(e, 'beranda', true);
                 }}
                 className={`${getNavItemClass('beranda')} navbar-link ${activeSection === 'beranda' ? 'active' : ''} flex items-center gap-1`}
@@ -173,22 +216,51 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 Beranda
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
-              {openDropdown === 'beranda' && (
+              {(openDropdown === 'beranda' || clickedDropdown === 'beranda') && (
                 <div 
-                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  className="absolute top-full left-0 mt-1 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
                   style={{
                     background: 'rgba(255, 255, 255, 0.2)',
                     backdropFilter: 'blur(15px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px',
+                    paddingTop: '8px',
+                    paddingBottom: '8px'
+                  }}
+                  onMouseEnter={() => {
+                    // Clear any pending close timeout
+                    if (closeTimeoutRefs.current['beranda']) {
+                      clearTimeout(closeTimeoutRefs.current['beranda']);
+                      closeTimeoutRefs.current['beranda'] = null;
+                    }
+                    setOpenDropdown('beranda');
+                  }}
+                  onMouseLeave={() => {
+                    // Only close on mouse leave if it's not clicked
+                    if (clickedDropdown !== 'beranda') {
+                      // Add delay before closing
+                      closeTimeoutRefs.current['beranda'] = setTimeout(() => {
+                        setOpenDropdown(null);
+                      }, 200); // 200ms delay
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation(); // Prevent mousedown from triggering outside click
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent click from bubbling up
                   }}
                 >
                   <a
                     href="#beranda"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation(); // Prevent event from bubbling up
                       handleSmartNavigate(e, 'beranda', true);
-                      setOpenDropdown(null);
+                      // Don't close dropdown - let user continue browsing
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation(); // Prevent mousedown from triggering outside click
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
@@ -199,8 +271,12 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                     href="#tentang"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation(); // Prevent event from bubbling up
                       handleSmartNavigate(e, 'tentang', true);
-                      setOpenDropdown(null);
+                      // Don't close dropdown - let user continue browsing
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation(); // Prevent mousedown from triggering outside click
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
@@ -215,13 +291,32 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
             <div 
               className="relative"
               ref={(el) => { dropdownRefs.current['tentang'] = el; }}
-              onMouseEnter={() => setOpenDropdown('tentang')}
-              onMouseLeave={() => setOpenDropdown(null)}
+              onMouseEnter={() => {
+                if (closeTimeoutRefs.current['tentang']) {
+                  clearTimeout(closeTimeoutRefs.current['tentang']);
+                  closeTimeoutRefs.current['tentang'] = null;
+                }
+                setOpenDropdown('tentang');
+              }}
+              onMouseLeave={() => {
+                if (clickedDropdown !== 'tentang') {
+                  closeTimeoutRefs.current['tentang'] = setTimeout(() => {
+                    setOpenDropdown(null);
+                  }, 200);
+                }
+              }}
             >
               <a
                 href="#tentang"
                 onClick={(e) => {
                   e.preventDefault();
+                  if (clickedDropdown === 'tentang') {
+                    setClickedDropdown(null);
+                    setOpenDropdown(null);
+                  } else {
+                    setClickedDropdown('tentang');
+                    setOpenDropdown('tentang');
+                  }
                   handleSmartNavigate(e, 'tentang', true);
                 }}
                 className={`${getNavItemClass('tentang')} navbar-link ${activeSection === 'tentang' ? 'active' : ''} flex items-center gap-1`}
@@ -230,22 +325,47 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 Tentang
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
-              {openDropdown === 'tentang' && (
+              {(openDropdown === 'tentang' || clickedDropdown === 'tentang') && (
                 <div 
-                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  className="absolute top-full left-0 mt-1 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
                   style={{
                     background: 'rgba(255, 255, 255, 0.2)',
                     backdropFilter: 'blur(15px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px',
+                    paddingTop: '8px',
+                    paddingBottom: '8px'
+                  }}
+                  onMouseEnter={() => {
+                    if (closeTimeoutRefs.current['tentang']) {
+                      clearTimeout(closeTimeoutRefs.current['tentang']);
+                      closeTimeoutRefs.current['tentang'] = null;
+                    }
+                    setOpenDropdown('tentang');
+                  }}
+                  onMouseLeave={() => {
+                    if (clickedDropdown !== 'tentang') {
+                      closeTimeoutRefs.current['tentang'] = setTimeout(() => {
+                        setOpenDropdown(null);
+                      }, 200);
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
                   }}
                 >
                   <a
                     href="#tentang"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleSmartNavigate(e, 'tentang', true);
-                      setOpenDropdown(null);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
@@ -256,8 +376,11 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                     href="#fitur"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleSmartNavigate(e, 'fitur', true);
-                      setOpenDropdown(null);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
@@ -272,13 +395,32 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
             <div 
               className="relative"
               ref={(el) => { dropdownRefs.current['fishpedia'] = el; }}
-              onMouseEnter={() => setOpenDropdown('fishpedia')}
-              onMouseLeave={() => setOpenDropdown(null)}
+              onMouseEnter={() => {
+                if (closeTimeoutRefs.current['fishpedia']) {
+                  clearTimeout(closeTimeoutRefs.current['fishpedia']);
+                  closeTimeoutRefs.current['fishpedia'] = null;
+                }
+                setOpenDropdown('fishpedia');
+              }}
+              onMouseLeave={() => {
+                if (clickedDropdown !== 'fishpedia') {
+                  closeTimeoutRefs.current['fishpedia'] = setTimeout(() => {
+                    setOpenDropdown(null);
+                  }, 200);
+                }
+              }}
             >
               <a
                 href="/fishpedia"
                 onClick={(e) => {
                   e.preventDefault();
+                  if (clickedDropdown === 'fishpedia') {
+                    setClickedDropdown(null);
+                    setOpenDropdown(null);
+                  } else {
+                    setClickedDropdown('fishpedia');
+                    setOpenDropdown('fishpedia');
+                  }
                   handleSmartNavigate(e, '/fishpedia', false);
                 }}
                 className={`${getNavItemClass('fishpedia')} navbar-link ${activeSection === 'fishpedia' ? 'active' : ''} flex items-center gap-1`}
@@ -287,22 +429,47 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 FishPedia
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
-              {openDropdown === 'fishpedia' && (
+              {(openDropdown === 'fishpedia' || clickedDropdown === 'fishpedia') && (
                 <div 
-                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  className="absolute top-full left-0 mt-1 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
                   style={{
                     background: 'rgba(255, 255, 255, 0.2)',
                     backdropFilter: 'blur(15px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px',
+                    paddingTop: '8px',
+                    paddingBottom: '8px'
+                  }}
+                  onMouseEnter={() => {
+                    if (closeTimeoutRefs.current['fishpedia']) {
+                      clearTimeout(closeTimeoutRefs.current['fishpedia']);
+                      closeTimeoutRefs.current['fishpedia'] = null;
+                    }
+                    setOpenDropdown('fishpedia');
+                  }}
+                  onMouseLeave={() => {
+                    if (clickedDropdown !== 'fishpedia') {
+                      closeTimeoutRefs.current['fishpedia'] = setTimeout(() => {
+                        setOpenDropdown(null);
+                      }, 200);
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
                   }}
                 >
                   <a
                     href="/fishpedia"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleSmartNavigate(e, '/fishpedia', false);
-                      setOpenDropdown(null);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
@@ -313,8 +480,11 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                     href="/fishpedia"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleSmartNavigate(e, '/fishpedia', false);
-                      setOpenDropdown(null);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
@@ -329,13 +499,32 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
             <div 
               className="relative"
               ref={(el) => { dropdownRefs.current['fitur'] = el; }}
-              onMouseEnter={() => setOpenDropdown('fitur')}
-              onMouseLeave={() => setOpenDropdown(null)}
+              onMouseEnter={() => {
+                if (closeTimeoutRefs.current['fitur']) {
+                  clearTimeout(closeTimeoutRefs.current['fitur']);
+                  closeTimeoutRefs.current['fitur'] = null;
+                }
+                setOpenDropdown('fitur');
+              }}
+              onMouseLeave={() => {
+                if (clickedDropdown !== 'fitur') {
+                  closeTimeoutRefs.current['fitur'] = setTimeout(() => {
+                    setOpenDropdown(null);
+                  }, 200);
+                }
+              }}
             >
               <a
                 href="#fitur"
                 onClick={(e) => {
                   e.preventDefault();
+                  if (clickedDropdown === 'fitur') {
+                    setClickedDropdown(null);
+                    setOpenDropdown(null);
+                  } else {
+                    setClickedDropdown('fitur');
+                    setOpenDropdown('fitur');
+                  }
                   handleSmartNavigate(e, 'fitur', true);
                 }}
                 className={`${getNavItemClass('fitur')} navbar-link ${activeSection === 'fitur' ? 'active' : ''} flex items-center gap-1`}
@@ -344,22 +533,47 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 Fitur
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
-              {openDropdown === 'fitur' && (
+              {(openDropdown === 'fitur' || clickedDropdown === 'fitur') && (
                 <div 
-                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  className="absolute top-full left-0 mt-1 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
                   style={{
                     background: 'rgba(255, 255, 255, 0.2)',
                     backdropFilter: 'blur(15px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px',
+                    paddingTop: '8px',
+                    paddingBottom: '8px'
+                  }}
+                  onMouseEnter={() => {
+                    if (closeTimeoutRefs.current['fitur']) {
+                      clearTimeout(closeTimeoutRefs.current['fitur']);
+                      closeTimeoutRefs.current['fitur'] = null;
+                    }
+                    setOpenDropdown('fitur');
+                  }}
+                  onMouseLeave={() => {
+                    if (clickedDropdown !== 'fitur') {
+                      closeTimeoutRefs.current['fitur'] = setTimeout(() => {
+                        setOpenDropdown(null);
+                      }, 200);
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
                   }}
                 >
                   <a
                     href="#fitur"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleSmartNavigate(e, 'fitur', true);
-                      setOpenDropdown(null);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
@@ -370,8 +584,11 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                     href="#fitur"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleSmartNavigate(e, 'fitur', true);
-                      setOpenDropdown(null);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
@@ -386,13 +603,32 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
             <div 
               className="relative"
               ref={(el) => { dropdownRefs.current['produk'] = el; }}
-              onMouseEnter={() => setOpenDropdown('produk')}
-              onMouseLeave={() => setOpenDropdown(null)}
+              onMouseEnter={() => {
+                if (closeTimeoutRefs.current['produk']) {
+                  clearTimeout(closeTimeoutRefs.current['produk']);
+                  closeTimeoutRefs.current['produk'] = null;
+                }
+                setOpenDropdown('produk');
+              }}
+              onMouseLeave={() => {
+                if (clickedDropdown !== 'produk') {
+                  closeTimeoutRefs.current['produk'] = setTimeout(() => {
+                    setOpenDropdown(null);
+                  }, 200);
+                }
+              }}
             >
               <a
                 href="/produk"
                 onClick={(e) => {
                   e.preventDefault();
+                  if (clickedDropdown === 'produk') {
+                    setClickedDropdown(null);
+                    setOpenDropdown(null);
+                  } else {
+                    setClickedDropdown('produk');
+                    setOpenDropdown('produk');
+                  }
                   handleSmartNavigate(e, '/produk', false);
                 }}
                 className={`${getNavItemClass('produk')} navbar-link ${activeSection === 'produk' ? 'active' : ''} flex items-center gap-1`}
@@ -401,22 +637,47 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 Produk
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
-              {openDropdown === 'produk' && (
+              {(openDropdown === 'produk' || clickedDropdown === 'produk') && (
                 <div 
-                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  className="absolute top-full left-0 mt-1 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
                   style={{
                     background: 'rgba(255, 255, 255, 0.2)',
                     backdropFilter: 'blur(15px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px',
+                    paddingTop: '8px',
+                    paddingBottom: '8px'
+                  }}
+                  onMouseEnter={() => {
+                    if (closeTimeoutRefs.current['produk']) {
+                      clearTimeout(closeTimeoutRefs.current['produk']);
+                      closeTimeoutRefs.current['produk'] = null;
+                    }
+                    setOpenDropdown('produk');
+                  }}
+                  onMouseLeave={() => {
+                    if (clickedDropdown !== 'produk') {
+                      closeTimeoutRefs.current['produk'] = setTimeout(() => {
+                        setOpenDropdown(null);
+                      }, 200);
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
                   }}
                 >
                   <a
                     href="/produk"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleSmartNavigate(e, '/produk', false);
-                      setOpenDropdown(null);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
@@ -427,8 +688,11 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                     href="/produk"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleSmartNavigate(e, '/produk', false);
-                      setOpenDropdown(null);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
@@ -443,13 +707,32 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
             <div 
               className="relative"
               ref={(el) => { dropdownRefs.current['forum'] = el; }}
-              onMouseEnter={() => setOpenDropdown('forum')}
-              onMouseLeave={() => setOpenDropdown(null)}
+              onMouseEnter={() => {
+                if (closeTimeoutRefs.current['forum']) {
+                  clearTimeout(closeTimeoutRefs.current['forum']);
+                  closeTimeoutRefs.current['forum'] = null;
+                }
+                setOpenDropdown('forum');
+              }}
+              onMouseLeave={() => {
+                if (clickedDropdown !== 'forum') {
+                  closeTimeoutRefs.current['forum'] = setTimeout(() => {
+                    setOpenDropdown(null);
+                  }, 200);
+                }
+              }}
             >
               <a
                 href="#forum"
                 onClick={(e) => {
                   e.preventDefault();
+                  if (clickedDropdown === 'forum') {
+                    setClickedDropdown(null);
+                    setOpenDropdown(null);
+                  } else {
+                    setClickedDropdown('forum');
+                    setOpenDropdown('forum');
+                  }
                   handleSmartNavigate(e, 'forum', true);
                 }}
                 className={`${getNavItemClass('forum')} navbar-link ${activeSection === 'forum' ? 'active' : ''} flex items-center gap-1`}
@@ -458,22 +741,47 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                 Forum
                 <ChevronDown className="w-3 h-3" style={{ color: 'inherit' }} />
               </a>
-              {openDropdown === 'forum' && (
+              {(openDropdown === 'forum' || clickedDropdown === 'forum') && (
                 <div 
-                  className="absolute top-full left-0 mt-2 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
+                  className="absolute top-full left-0 mt-1 rounded-2xl shadow-xl py-2 min-w-[180px] z-50"
                   style={{
                     background: 'rgba(255, 255, 255, 0.2)',
                     backdropFilter: 'blur(15px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px'
+                    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 8px 32px',
+                    paddingTop: '8px',
+                    paddingBottom: '8px'
+                  }}
+                  onMouseEnter={() => {
+                    if (closeTimeoutRefs.current['forum']) {
+                      clearTimeout(closeTimeoutRefs.current['forum']);
+                      closeTimeoutRefs.current['forum'] = null;
+                    }
+                    setOpenDropdown('forum');
+                  }}
+                  onMouseLeave={() => {
+                    if (clickedDropdown !== 'forum') {
+                      closeTimeoutRefs.current['forum'] = setTimeout(() => {
+                        setOpenDropdown(null);
+                      }, 200);
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
                   }}
                 >
                   <a
                     href="#forum"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleSmartNavigate(e, 'forum', true);
-                      setOpenDropdown(null);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}
@@ -484,8 +792,11 @@ export default function Navbar({ onAuthClick, onSmartNavigate }: NavbarProps) {
                     href="#forum"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleSmartNavigate(e, 'forum', true);
-                      setOpenDropdown(null);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
                     }}
                     className="block px-4 py-2 text-sm rounded-full mx-2 hover:bg-white/30 transition-all"
                     style={{ color: '#FFFFFF' }}

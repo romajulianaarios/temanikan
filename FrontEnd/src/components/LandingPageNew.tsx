@@ -394,8 +394,8 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             </p>
           </div>
 
-          {/* Main Features - 3 Card dengan Bubble Style */}
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
+          {/* Main Features - 4 Card dengan Bubble Style */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {/* Feature 1 - Diagnosa ML */}
             <div 
               className="relative p-8 rounded-3xl transition-all duration-300 cursor-pointer"
@@ -553,6 +553,59 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
                 }}
               >
                 Bergabung dengan ribuan pecinta ikan hias untuk berbagi pengalaman dan tips perawatan
+              </p>
+            </div>
+
+            {/* Feature 4 - AI Chat */}
+            <div 
+              className="relative p-8 rounded-3xl transition-all duration-300 cursor-pointer"
+              style={{
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                border: '2px solid rgba(15, 91, 229, 0.3)',
+                boxShadow: '0 8px 32px rgba(15, 91, 229, 0.15)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 16px 48px rgba(15, 91, 229, 0.3)';
+                e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.5)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(15, 91, 229, 0.15)';
+                e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.3)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+              }}
+            >
+              <div 
+                className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 relative"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
+                  boxShadow: '0 8px 24px rgba(15, 91, 229, 0.4)'
+                }}
+              >
+                <Bot className="w-10 h-10 text-white" />
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full opacity-60" style={{ background: 'rgba(72, 128, 255, 0.5)', filter: 'blur(8px)' }}></div>
+              </div>
+              <h3 
+                className="text-2xl mb-4 font-extrabold text-center" 
+                style={{ 
+                  color: '#0F5BE5',
+                  textShadow: '0 2px 8px rgba(15, 91, 229, 0.2)',
+                  letterSpacing: '-0.01em'
+                }}
+              >
+                AI Chat Assistant
+              </h3>
+              <p 
+                className="text-gray-800 text-center leading-relaxed font-semibold" 
+                style={{
+                  fontSize: '16px',
+                  lineHeight: '1.7'
+                }}
+              >
+                Dapatkan jawaban instan tentang perawatan ikan dengan AI Chat berbasis Gemini yang siap membantu 24/7
               </p>
             </div>
           </div>
