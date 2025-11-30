@@ -311,44 +311,77 @@ export default function MemberOverview() {
         {waterQualityData.map((item, index) => (
           <Card
             key={index}
-            className="p-6 rounded-2xl shadow-sm border hover:shadow-lg transition-all duration-300 cursor-pointer group"
+            className="bubble-card p-6 rounded-[32px] transition-all duration-300 cursor-pointer group relative overflow-hidden"
             style={{
-              backgroundColor: 'white',
-              borderColor: '#F3F4F6',
+              backgroundColor: '#FFFFFF',
+              border: '2px solid rgba(72, 128, 255, 0.2)',
+              boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              fontFamily: 'Nunito Sans, sans-serif',
               height: '100%'
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+              e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+            }}
           >
-            <div className="flex items-start justify-between mb-4">
+            {/* Bubble glow effect */}
+            <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+                filter: 'blur(20px)'
+              }}
+            ></div>
+            <div className="flex items-start justify-between mb-4 relative z-10">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <p className="text-sm font-medium" style={{ color: '#6B7280' }}>{item.label}</p>
-                  <div className="flex items-center gap-1 bg-gray-50 px-2 py-0.5 rounded-full">
+                  <p className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>{item.label}</p>
+                  <div 
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-full transition-all duration-300"
+                    style={{ 
+                      background: 'rgba(72, 128, 255, 0.1)',
+                      border: '1px solid rgba(72, 128, 255, 0.2)',
+                      boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1)'
+                    }}
+                  >
                     <TrendingUp
                       className={`w-3 h-3 ${item.trendUp ? '' : 'rotate-180'}`}
                       style={{ color: item.trendUp ? '#10B981' : '#EF4444' }}
                     />
-                    <span className="text-xs font-semibold" style={{ color: item.trendUp ? '#10B981' : '#EF4444' }}>
+                    <span className="text-xs font-semibold" style={{ color: item.trendUp ? '#10B981' : '#EF4444', fontFamily: 'Nunito Sans, sans-serif' }}>
                       {item.trend}
                     </span>
                   </div>
                 </div>
-                <p className="text-4xl mb-2 group-hover:scale-105 transition-transform origin-left tracking-tight" style={{ color: '#111827', fontWeight: 800 }}>
-                  {item.value}<span className="text-xl text-gray-500 font-normal ml-1">{item.unit}</span>
+                <p className="text-4xl mb-2 group-hover:scale-105 transition-transform origin-left tracking-tight relative z-10" style={{ color: '#133E87', fontWeight: 800, fontFamily: 'Nunito Sans, sans-serif' }}>
+                  {item.value}<span className="text-xl ml-1 font-normal" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{item.unit}</span>
                 </p>
                 <Badge
-                  className="text-xs px-2.5 py-1 rounded-lg font-medium"
+                  className="text-xs px-2.5 py-1 rounded-full font-medium relative z-10"
                   style={{
-                    backgroundColor: item.status === 'Optimal' ? '#ECFDF5' : '#FFFBEB',
+                    backgroundColor: item.status === 'Optimal' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
                     color: item.status === 'Optimal' ? '#10B981' : '#F59E0B',
-                    border: 'none'
+                    border: `1px solid ${item.status === 'Optimal' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    fontWeight: 600
                   }}
                 >
                   {item.status}
                 </Badge>
               </div>
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-sm"
-                style={{ backgroundColor: item.iconBgColor }}
+                className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform relative z-10"
+                style={{ 
+                  background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(72, 128, 255, 0.3)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+                }}
               >
                 <item.icon className="w-6 h-6" style={{ color: item.iconColor }} />
               </div>
@@ -381,65 +414,163 @@ export default function MemberOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Robot Status - Enhanced */}
         <Card
-          className="p-6 rounded-2xl shadow-sm border hover:shadow-lg transition-all duration-300"
+          className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
           style={{
-            backgroundColor: 'white',
-            borderColor: '#F3F4F6',
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
             height: '100%'
           }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
         >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg" style={{ color: '#111827', fontWeight: 700 }}>
+          {/* Bubble glow effect */}
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center justify-between mb-6 relative z-10">
+            <h3 className="text-lg" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
               Status Robot Temanikan
             </h3>
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform cursor-pointer shadow-sm"
-              style={{ backgroundColor: '#EBF5FF' }}
+              className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-transform cursor-pointer relative z-10"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(72, 128, 255, 0.3)',
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+              }}
             >
-              <Bot className="w-5 h-5" style={{ color: '#3B82F6' }} />
+              <Bot className="w-5 h-5" style={{ color: '#4880FF' }} />
             </div>
           </div>
 
           {/* Status Indicator */}
-          <div className="mb-6 p-4 rounded-xl border border-green-100" style={{ backgroundColor: '#ECFDF5' }}>
+          <div 
+            className="mb-6 p-4 rounded-2xl border relative z-10 transition-all duration-300"
+            style={{ 
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              borderColor: 'rgba(16, 185, 129, 0.3)',
+              boxShadow: '0 4px 15px rgba(16, 185, 129, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
+          >
             <div className="flex items-center gap-2 mb-1">
               <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: '#10B981' }} />
-              <span className="text-sm" style={{ color: '#10B981', fontWeight: 700 }}>Operasi Normal</span>
+              <span className="text-sm" style={{ color: '#10B981', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Operasi Normal</span>
             </div>
-            <p className="text-xs" style={{ color: '#6B7280' }}>Robot berfungsi dengan baik</p>
+            <p className="text-xs" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Robot berfungsi dengan baik</p>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-              <span className="text-sm flex items-center gap-3 font-medium" style={{ color: '#6B7280' }}>
+          <div className="space-y-3 relative z-10">
+            <div 
+              className="flex items-center justify-between p-3 rounded-2xl transition-all duration-200 bubble-button"
+              style={{
+                backgroundColor: 'rgba(72, 128, 255, 0.05)',
+                border: '1px solid rgba(72, 128, 255, 0.15)',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                e.currentTarget.style.transform = 'translateX(4px)';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.25)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.05)';
+                e.currentTarget.style.transform = 'translateX(0)';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.15)';
+              }}
+            >
+              <span className="text-sm flex items-center gap-3 font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
                 <CheckCircle className="w-4 h-4" style={{ color: '#10B981' }} />
                 Status Operasi
               </span>
               <span className="text-xs px-3 py-1 rounded-full font-bold" style={{
                 color: '#10B981',
-                backgroundColor: '#ECFDF5',
+                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                fontFamily: 'Nunito Sans, sans-serif'
               }}>
                 SIAP
               </span>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-              <span className="text-sm font-medium" style={{ color: '#6B7280' }}>Baterai</span>
+            <div 
+              className="flex items-center justify-between p-3 rounded-2xl transition-all duration-200 bubble-button"
+              style={{
+                backgroundColor: 'rgba(72, 128, 255, 0.05)',
+                border: '1px solid rgba(72, 128, 255, 0.15)',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.05)';
+                e.currentTarget.style.transform = 'translateX(0)';
+              }}
+            >
+              <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Baterai</span>
               <div className="flex items-center gap-3">
-                <div className="w-32 h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: '87%', backgroundColor: '#10B981' }} />
+                <div className="w-32 h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(72, 128, 255, 0.1)' }}>
+                  <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: '87%', background: 'linear-gradient(90deg, #10B981, #4AD991)' }} />
                 </div>
-                <span className="text-sm" style={{ color: '#111827', fontWeight: 700 }}>87%</span>
+                <span className="text-sm" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>87%</span>
               </div>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-              <span className="text-sm font-medium" style={{ color: '#6B7280' }}>Pembersihan Terakhir</span>
-              <span className="text-sm" style={{ color: '#111827', fontWeight: 600 }}>2 jam yang lalu</span>
+            <div 
+              className="flex items-center justify-between p-3 rounded-2xl transition-all duration-200 bubble-button"
+              style={{
+                backgroundColor: 'rgba(72, 128, 255, 0.05)',
+                border: '1px solid rgba(72, 128, 255, 0.15)',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.05)';
+                e.currentTarget.style.transform = 'translateX(0)';
+              }}
+            >
+              <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Pembersihan Terakhir</span>
+              <span className="text-sm" style={{ color: '#133E87', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>2 jam yang lalu</span>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-              <span className="text-sm font-medium" style={{ color: '#6B7280' }}>Jadwal Berikutnya</span>
+            <div 
+              className="flex items-center justify-between p-3 rounded-2xl transition-all duration-200 bubble-button"
+              style={{
+                backgroundColor: 'rgba(72, 128, 255, 0.05)',
+                border: '1px solid rgba(72, 128, 255, 0.15)',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.05)';
+                e.currentTarget.style.transform = 'translateX(0)';
+              }}
+            >
+              <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Jadwal Berikutnya</span>
               <span className="text-xs px-3 py-1 rounded-full font-bold" style={{
-                color: '#3B82F6',
-                backgroundColor: '#EBF5FF',
+                color: '#4880FF',
+                backgroundColor: 'rgba(72, 128, 255, 0.15)',
+                border: '1px solid rgba(72, 128, 255, 0.3)',
+                fontFamily: 'Nunito Sans, sans-serif'
               }}>
                 HARI INI, 20:00
               </span>
@@ -449,22 +580,46 @@ export default function MemberOverview() {
 
         {/* Disease Detection Latest - Enhanced */}
         <Card
-          className="p-6 rounded-2xl shadow-sm border hover:shadow-lg transition-all duration-300"
+          className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
           style={{
-            backgroundColor: 'white',
-            borderColor: '#F3F4F6',
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
             height: '100%'
           }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+            e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+            e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+          }}
         >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg" style={{ color: '#111827', fontWeight: 700 }}>
+          {/* Bubble glow effect */}
+          <div className="absolute -top-8 -left-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <div className="flex items-center justify-between mb-6 relative z-10">
+            <h3 className="text-lg" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
               Deteksi Penyakit Terbaru
             </h3>
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform cursor-pointer shadow-sm"
-              style={{ backgroundColor: '#EBF5FF' }}
+              className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-transform cursor-pointer relative z-10"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(72, 128, 255, 0.3)',
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+              }}
             >
-              <Eye className="w-5 h-5" style={{ color: '#3B82F6' }} />
+              <Eye className="w-5 h-5" style={{ color: '#4880FF' }} />
             </div>
           </div>
 
@@ -480,52 +635,116 @@ export default function MemberOverview() {
 
           {/* Alert Banner */}
           <div
-            className="mb-6 p-4 rounded-xl border"
+            className="mb-6 p-4 rounded-2xl border relative z-10 transition-all duration-300"
             style={{
               backgroundColor: diseaseSeverityStyle.bannerBg,
-              borderColor: `${diseaseSeverityStyle.bannerColor}33`
+              borderColor: `${diseaseSeverityStyle.bannerColor}33`,
+              boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              fontFamily: 'Nunito Sans, sans-serif'
             }}
           >
             <div className="flex items-center gap-2 mb-1">
               <BannerIcon className="w-4 h-4" style={{ color: diseaseSeverityStyle.bannerColor }} />
-              <span className="text-sm" style={{ color: diseaseSeverityStyle.bannerColor, fontWeight: 700 }}>
+              <span className="text-sm" style={{ color: diseaseSeverityStyle.bannerColor, fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
                 {diseaseSeverityStyle.bannerTitle}
               </span>
             </div>
-            <p className="text-xs" style={{ color: '#6B7280' }}>{diseaseBannerDescription}</p>
+            <p className="text-xs" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{diseaseBannerDescription}</p>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-              <span className="text-sm font-medium" style={{ color: '#6B7280' }}>Ikan Terdeteksi</span>
-              <span className="text-sm" style={{ color: '#111827', fontWeight: 600 }}>{diseaseData?.fishType || '-'}</span>
+          <div className="space-y-3 relative z-10">
+            <div 
+              className="flex items-center justify-between p-3 rounded-2xl transition-all duration-200 bubble-button"
+              style={{
+                backgroundColor: 'rgba(72, 128, 255, 0.05)',
+                border: '1px solid rgba(72, 128, 255, 0.15)',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.05)';
+                e.currentTarget.style.transform = 'translateX(0)';
+              }}
+            >
+              <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Ikan Terdeteksi</span>
+              <span className="text-sm" style={{ color: '#133E87', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>{diseaseData?.fishType || '-'}</span>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-              <span className="text-sm font-medium" style={{ color: '#6B7280' }}>Penyakit</span>
+            <div 
+              className="flex items-center justify-between p-3 rounded-2xl transition-all duration-200 bubble-button"
+              style={{
+                backgroundColor: 'rgba(72, 128, 255, 0.05)',
+                border: '1px solid rgba(72, 128, 255, 0.15)',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.05)';
+                e.currentTarget.style.transform = 'translateX(0)';
+              }}
+            >
+              <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Penyakit</span>
               <span className="text-xs px-3 py-1 rounded-full font-bold" style={{
                 color: diseaseSeverityStyle.badgeColor,
                 backgroundColor: diseaseSeverityStyle.badgeBg,
-                border: diseaseButtonDisabled ? '1px dashed #D1D5DB' : 'none'
+                border: diseaseButtonDisabled ? '1px dashed #D1D5DB' : `1px solid ${diseaseSeverityStyle.badgeColor}33`,
+                fontFamily: 'Nunito Sans, sans-serif'
               }}>
                 {diseaseData ? diseaseData.disease.toUpperCase() : 'TIDAK ADA'}
               </span>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-              <span className="text-sm font-medium" style={{ color: '#6B7280' }}>Tingkat Keparahan</span>
+            <div 
+              className="flex items-center justify-between p-3 rounded-2xl transition-all duration-200 bubble-button"
+              style={{
+                backgroundColor: 'rgba(72, 128, 255, 0.05)',
+                border: '1px solid rgba(72, 128, 255, 0.15)',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.05)';
+                e.currentTarget.style.transform = 'translateX(0)';
+              }}
+            >
+              <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Tingkat Keparahan</span>
               <Badge
-                className="text-xs px-3 py-1 rounded-lg font-bold"
+                className="text-xs px-3 py-1 rounded-full font-bold"
                 style={{
                   backgroundColor: diseaseSeverityStyle.badgeBg,
                   color: diseaseSeverityStyle.badgeColor,
-                  border: 'none'
+                  border: `1px solid ${diseaseSeverityStyle.badgeColor}33`,
+                  fontFamily: 'Nunito Sans, sans-serif'
                 }}
               >
                 {diseaseSeverityStyle.badgeLabel}
               </Badge>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-              <span className="text-sm font-medium" style={{ color: '#6B7280' }}>Waktu Deteksi</span>
-              <span className="text-sm" style={{ color: '#111827', fontWeight: 600 }}>
+            <div 
+              className="flex items-center justify-between p-3 rounded-2xl transition-all duration-200 bubble-button"
+              style={{
+                backgroundColor: 'rgba(72, 128, 255, 0.05)',
+                border: '1px solid rgba(72, 128, 255, 0.15)',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.05)';
+                e.currentTarget.style.transform = 'translateX(0)';
+              }}
+            >
+              <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Waktu Deteksi</span>
+              <span className="text-sm" style={{ color: '#133E87', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>
                 {diseaseData ? `${diseaseData.date} • ${diseaseData.time}` : '-'}
               </span>
             </div>
@@ -534,13 +753,31 @@ export default function MemberOverview() {
           <button
             onClick={handleOpenDiseaseModal}
             disabled={diseaseButtonDisabled}
-            className="mt-6 w-full block text-center px-4 py-3 rounded-xl transition-all hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bubble-button mt-6 w-full block text-center px-4 py-3 rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative z-10"
             style={{
-              backgroundColor: '#3B82F6',
+              background: diseaseButtonDisabled 
+                ? 'rgba(72, 128, 255, 0.2)' 
+                : 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
               color: 'white',
-              fontWeight: 600,
+              fontWeight: 700,
               fontSize: '14px',
-              border: 'none'
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: diseaseButtonDisabled 
+                ? '0 4px 15px rgba(72, 128, 255, 0.1)' 
+                : '0 8px 24px rgba(15, 91, 229, 0.3)',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
+            onMouseEnter={(e) => {
+              if (!diseaseButtonDisabled) {
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 12px 35px rgba(15, 91, 229, 0.4)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!diseaseButtonDisabled) {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(15, 91, 229, 0.3)';
+              }
             }}
           >
             {diseaseButtonDisabled ? 'Belum Ada Deteksi' : 'Lihat Detail & Rekomendasi'}
@@ -550,55 +787,121 @@ export default function MemberOverview() {
 
       {/* Notifications - Enhanced */}
       <Card
-        className="p-6 rounded-2xl shadow-sm border hover:shadow-lg transition-all duration-300"
+        className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
         style={{
-          backgroundColor: 'white',
-          borderColor: '#F3F4F6'
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+          e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
         }}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg" style={{ color: '#111827', fontWeight: 700 }}>
+        {/* Bubble glow effect */}
+        <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+            filter: 'blur(20px)'
+          }}
+        ></div>
+        <div className="flex items-center justify-between mb-6 relative z-10">
+          <h3 className="text-lg" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
             Notifikasi Terbaru
           </h3>
           <Link
             to={deviceId ? `/member/device/${deviceId}/notifications` : `/member/notifications`}
-            className="text-sm hover:underline flex items-center gap-1 transition-colors px-3 py-1.5 rounded-lg hover:bg-blue-50"
-            style={{ color: '#3B82F6', fontWeight: 600 }}
+            className="bubble-button text-sm flex items-center gap-1 transition-all duration-300 px-3 py-1.5 rounded-full"
+            style={{ 
+              color: '#133E87', 
+              fontWeight: 600,
+              backgroundColor: 'rgba(72, 128, 255, 0.1)',
+              border: '1px solid rgba(72, 128, 255, 0.2)',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.2)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(72, 128, 255, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           >
             Lihat Semua
             <TrendingUp className="w-4 h-4 rotate-90" />
           </Link>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-3 relative z-10">
           {notifications.map((notification) => (
             <div
               key={notification.id}
-              className="flex items-start gap-4 p-4 rounded-xl border hover:shadow-md transition-all cursor-pointer group hover:border-blue-100"
+              className="bubble-button flex items-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer group relative overflow-hidden"
               style={{
-                backgroundColor: '#FFFFFF',
-                borderColor: '#F3F4F6'
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderColor: 'rgba(72, 128, 255, 0.2)',
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#F0F5FF';
+                e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
               }}
             >
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-sm"
-                style={{ backgroundColor: `${notification.iconColor}15` }}
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform relative z-10"
+                style={{ 
+                  background: `linear-gradient(135deg, ${notification.iconColor}40, ${notification.iconColor}20)`,
+                  border: `1px solid ${notification.iconColor}50`,
+                  boxShadow: `0 4px 12px ${notification.iconColor}30`
+                }}
               >
                 <notification.icon className="w-5 h-5" style={{ color: notification.iconColor }} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm mb-1.5" style={{ color: '#1F2937', fontWeight: 600 }}>
+              <div className="flex-1 min-w-0 relative z-10">
+                <p className="text-sm mb-1.5" style={{ color: '#133E87', fontWeight: 600, fontFamily: 'Nunito Sans, sans-serif' }}>
                   {notification.message}
                 </p>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5" style={{ color: '#9CA3AF' }} />
-                  <p className="text-xs font-medium" style={{ color: '#9CA3AF' }}>
+                  <Clock className="w-3.5 h-3.5" style={{ color: '#608BC1' }} />
+                  <p className="text-xs font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
                     {notification.time}
                   </p>
                 </div>
               </div>
               <button
-                className="text-xs px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors font-medium opacity-0 group-hover:opacity-100"
-                style={{ color: '#6B7280' }}
+                className="bubble-button text-xs px-3 py-1.5 rounded-full transition-all duration-300 font-medium opacity-0 group-hover:opacity-100 relative z-10"
+                style={{ 
+                  color: '#133E87',
+                  backgroundColor: 'rgba(72, 128, 255, 0.1)',
+                  border: '1px solid rgba(72, 128, 255, 0.2)',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.2)';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
               >
                 Tandai Baca
               </button>
