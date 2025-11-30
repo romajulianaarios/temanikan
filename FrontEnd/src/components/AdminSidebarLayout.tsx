@@ -226,51 +226,33 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}>
-          <Link
-            to="/admin/settings"
-            className="bubble-button flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="bubble-button w-full flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
             style={{ 
-              backgroundColor: location.pathname === '/admin/settings' ? '#4880FF' : '#FFFFFF',
-              border: location.pathname === '/admin/settings' 
-                ? '2px solid rgba(72, 128, 255, 0.5)' 
-                : '2px solid rgba(72, 128, 255, 0.15)',
-              color: location.pathname === '/admin/settings' ? '#FFFFFF' : '#133E87',
-              fontWeight: location.pathname === '/admin/settings' ? 700 : 600,
+              backgroundColor: '#FEE2E2',
+              border: '2px solid rgba(239, 68, 68, 0.4)',
+              color: '#B91C1C',
+              fontWeight: 700,
               fontFamily: 'Nunito Sans, sans-serif',
-              boxShadow: location.pathname === '/admin/settings' 
-                ? '0 6px 25px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset' 
-                : '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+              boxShadow: '0 6px 25px rgba(239, 68, 68, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6) inset'
             }}
-            title={sidebarCollapsed ? 'Pengaturan' : ''}
+            title={sidebarCollapsed ? 'Logout' : ''}
             onMouseEnter={(e) => {
-              if (location.pathname !== '/admin/settings') {
-                e.currentTarget.style.backgroundColor = '#F0F5FF';
-                e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
-                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
-              }
+              e.currentTarget.style.backgroundColor = '#FECACA';
+              e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 8px 30px rgba(239, 68, 68, 0.35), 0 0 0 1px rgba(239, 68, 68, 0.2) inset';
             }}
             onMouseLeave={(e) => {
-              if (location.pathname !== '/admin/settings') {
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
-                e.currentTarget.style.transform = 'translateX(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
-                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.15)';
-              }
+              e.currentTarget.style.backgroundColor = '#FEE2E2';
+              e.currentTarget.style.transform = 'translateX(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 6px 25px rgba(239, 68, 68, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6) inset';
             }}
           >
-            {/* Bubble glow for active item */}
-            {location.pathname === '/admin/settings' && (
-              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-30 pointer-events-none"
-                style={{
-                  background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%)',
-                  filter: 'blur(15px)'
-                }}
-              ></div>
-            )}
-            <Settings className="w-5 h-5 flex-shrink-0 relative z-10" />
-            {!sidebarCollapsed && <span className="relative z-10">Pengaturan</span>}
-          </Link>
+            <LogOut className="w-5 h-5 flex-shrink-0 relative z-10" />
+            {!sidebarCollapsed && <span className="relative z-10">Logout</span>}
+          </button>
         </div>
       </aside>
 
@@ -385,53 +367,35 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
 
         {/* Mobile Sidebar Footer */}
         <div className="p-4 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}>
-          <Link
-            to="/admin/settings"
-            onClick={() => setMobileMenuOpen(false)}
-            className="bubble-button flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
+          <button
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              handleLogout();
+            }}
+            className="bubble-button w-full flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
             style={{ 
-              backgroundColor: location.pathname === '/admin/settings' 
-                ? '#4880FF' 
-                : '#FFFFFF',
-              border: location.pathname === '/admin/settings' 
-                ? '2px solid rgba(72, 128, 255, 0.5)' 
-                : '2px solid rgba(72, 128, 255, 0.15)',
-              color: location.pathname === '/admin/settings' ? '#FFFFFF' : '#133E87',
-              fontWeight: location.pathname === '/admin/settings' ? 700 : 600,
+              backgroundColor: '#FEE2E2',
+              border: '2px solid rgba(239, 68, 68, 0.4)',
+              color: '#B91C1C',
+              fontWeight: 700,
               fontFamily: 'Nunito Sans, sans-serif',
-              boxShadow: location.pathname === '/admin/settings' 
-                ? '0 6px 25px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset' 
-                : '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+              boxShadow: '0 6px 25px rgba(239, 68, 68, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6) inset'
             }}
             onMouseEnter={(e) => {
-              if (location.pathname !== '/admin/settings') {
-                e.currentTarget.style.backgroundColor = '#F0F5FF';
-                e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
-                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
-              }
+              e.currentTarget.style.backgroundColor = '#FECACA';
+              e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 8px 30px rgba(239, 68, 68, 0.35), 0 0 0 1px rgba(239, 68, 68, 0.2) inset';
             }}
             onMouseLeave={(e) => {
-              if (location.pathname !== '/admin/settings') {
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
-                e.currentTarget.style.transform = 'translateX(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
-                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.15)';
-              }
+              e.currentTarget.style.backgroundColor = '#FEE2E2';
+              e.currentTarget.style.transform = 'translateX(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 6px 25px rgba(239, 68, 68, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6) inset';
             }}
           >
-            {/* Bubble glow for active item */}
-            {location.pathname === '/admin/settings' && (
-              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-30 pointer-events-none"
-                style={{
-                  background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%)',
-                  filter: 'blur(15px)'
-                }}
-              ></div>
-            )}
-            <Settings className="w-5 h-5 flex-shrink-0 relative z-10" />
-            <span className="relative z-10">Pengaturan</span>
-          </Link>
+            <LogOut className="w-5 h-5 flex-shrink-0 relative z-10" />
+            <span className="relative z-10">Logout</span>
+          </button>
         </div>
       </aside>
 
