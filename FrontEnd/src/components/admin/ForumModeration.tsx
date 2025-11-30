@@ -488,13 +488,17 @@ export default function ForumModeration() {
               {filteredTopics.map((item) => (
                 <Card 
                   key={item.id} 
-                  className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+                  className="bubble-card p-6 transition-all duration-300 relative"
                   style={{ 
                     backgroundColor: '#FFFFFF',
                     border: '2px solid rgba(72, 128, 255, 0.2)',
                     borderRadius: '32px',
                     boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-                    fontFamily: 'Nunito Sans, sans-serif'
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    overflow: 'visible',
+                    position: 'relative',
+                    zIndex: 100,
+                    isolation: 'isolate'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
@@ -510,23 +514,25 @@ export default function ForumModeration() {
                   <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
                     style={{
                       background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
-                      filter: 'blur(15px)'
+                      filter: 'blur(15px)',
+                      zIndex: 0
                     }}
                   ></div>
-                  <div className="flex items-start gap-4 relative z-10">
+                  <div className="flex items-start gap-4 relative" style={{ zIndex: 100, position: 'relative' }}>
                     <div 
                       className="p-3 rounded-full flex-shrink-0 transition-all duration-300"
                       style={{ 
                         background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
                         backdropFilter: 'blur(10px)',
                         border: '1px solid rgba(72, 128, 255, 0.3)',
-                        boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+                        boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)',
+                        zIndex: 1
                       }}
                     >
                       <MessageSquare className="w-6 h-6" style={{ color: '#608BC1' }} />
                     </div>
                     
-                    <div className="flex-1">
+                    <div className="flex-1" style={{ position: 'relative', zIndex: 100 }}>
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
@@ -555,13 +561,21 @@ export default function ForumModeration() {
                         <span>{item.like_count || 0} suka</span>
                       </div>
 
-                      <div className="flex items-center gap-3 mt-4">
+                      <div className="flex items-center gap-3 mt-4" style={{ position: 'relative', zIndex: 99999, isolation: 'isolate' }}>
                         <Button 
                           size="sm"
                           variant="outline"
                           onClick={() => {
                             setSelectedTopic(item);
                             setShowDetailModal(true);
+                          }}
+                          className="relative"
+                          style={{ 
+                            position: 'relative', 
+                            zIndex: 999999,
+                            isolation: 'isolate',
+                            pointerEvents: 'auto',
+                            transform: 'translateZ(0)'
                           }}
                         >
                           <Eye className="w-4 h-4 mr-2" />
@@ -685,13 +699,17 @@ export default function ForumModeration() {
             return (
               <Card 
                 key={report.id} 
-                className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+                className="bubble-card p-6 transition-all duration-300 relative"
                 style={{ 
                   backgroundColor: '#FFFFFF',
                   border: '2px solid rgba(72, 128, 255, 0.2)',
                   borderRadius: '32px',
                   boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-                  fontFamily: 'Nunito Sans, sans-serif'
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  overflow: 'visible',
+                  position: 'relative',
+                  zIndex: 100,
+                  isolation: 'isolate'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
@@ -707,23 +725,25 @@ export default function ForumModeration() {
                 <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
                   style={{
                     background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
-                    filter: 'blur(15px)'
+                    filter: 'blur(15px)',
+                    zIndex: 0
                   }}
                 ></div>
-                <div className="flex items-start gap-4 relative z-10">
+                <div className="flex items-start gap-4 relative" style={{ zIndex: 100, position: 'relative' }}>
                   <div 
                     className="p-3 rounded-full flex-shrink-0 transition-all duration-300"
                     style={{ 
                       background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
                       backdropFilter: 'blur(10px)',
                       border: '1px solid rgba(72, 128, 255, 0.3)',
-                      boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+                      boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)',
+                      zIndex: 1
                     }}
                   >
                     <Flag className="w-6 h-6" style={{ color: '#608BC1' }} />
                   </div>
 
-                  <div className="flex-1">
+                  <div className="flex-1" style={{ position: 'relative', zIndex: 100 }}>
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -764,12 +784,19 @@ export default function ForumModeration() {
                     </div>
 
                     {report.status === 'pending' ? (
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3" style={{ position: 'relative', zIndex: 99999, isolation: 'isolate' }}>
                         <Button 
                           size="sm"
                           variant="outline"
-                          className="text-gray-700"
+                          className="text-gray-700 relative"
                           onClick={() => openDetailModal(report)}
+                          style={{ 
+                            position: 'relative', 
+                            zIndex: 999999,
+                            isolation: 'isolate',
+                            pointerEvents: 'auto',
+                            transform: 'translateZ(0)'
+                          }}
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           Lihat Detail
@@ -795,15 +822,24 @@ export default function ForumModeration() {
                         </Button>
                       </div>
                     ) : (
-                      <Button 
-                        size="sm"
-                        variant="outline"
-                        className="text-gray-700"
-                        onClick={() => openDetailModal(report)}
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Lihat Detail
-                      </Button>
+                      <div style={{ position: 'relative', zIndex: 99999, isolation: 'isolate' }}>
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          className="text-gray-700 relative"
+                          onClick={() => openDetailModal(report)}
+                          style={{ 
+                            position: 'relative', 
+                            zIndex: 999999,
+                            isolation: 'isolate',
+                            pointerEvents: 'auto',
+                            transform: 'translateZ(0)'
+                          }}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Lihat Detail
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -814,13 +850,34 @@ export default function ForumModeration() {
       )}
 
       {/* Detail Modal */}
-      <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden" style={{ backgroundColor: 'white' }}>
-          <DialogHeader>
-            <DialogTitle style={{ color: '#133E87' }}>Detail Laporan</DialogTitle>
-          </DialogHeader>
+      <Dialog open={showDetailModal && selectedReport !== null && selectedTopic === null} onOpenChange={setShowDetailModal}>
+        <DialogContent 
+          className="max-w-lg max-h-[90vh] overflow-hidden p-0"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
+            zIndex: 99999999,
+            position: 'fixed',
+            transform: 'translateZ(0)',
+            isolation: 'isolate'
+          }}
+          overlayStyle={{
+            zIndex: 99999999
+          }}
+        >
+          <div className="relative px-6 py-5">
+            <div className="pointer-events-none absolute -top-12 -right-8 h-32 w-32 rounded-full bg-[#608BC1]/20 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-16 -left-4 h-40 w-40 rounded-full bg-[#133E87]/10 blur-3xl" />
+            <div className="relative z-10">
+              <DialogHeader>
+                <DialogTitle style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Detail Laporan</DialogTitle>
+              </DialogHeader>
           {selectedReport && (
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 relative z-10">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Judul</p>
                 <p className="text-sm" style={{ color: '#133E87' }}>
@@ -855,31 +912,41 @@ export default function ForumModeration() {
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-1">Alasan Laporan</p>
+                <p className="text-sm mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Alasan Laporan</p>
                 <div 
-                  className="p-2.5 rounded-lg"
-                  style={{ backgroundColor: '#F3F3E0' }}
+                  className="p-3 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
                 >
-                  <p className="text-sm text-gray-700">{selectedReport.reason}</p>
+                  <p className="text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedReport.reason}</p>
                   {selectedReport.description && (
-                    <p className="text-xs text-gray-600 mt-1">{selectedReport.description}</p>
+                    <p className="text-xs mt-2" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedReport.description}</p>
                   )}
                 </div>
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-1">Konten</p>
+                <p className="text-sm mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Konten</p>
                 <div 
-                  className="p-3 rounded-lg border max-h-[150px] overflow-y-auto"
-                  style={{ borderColor: '#CBDCEB', backgroundColor: '#F5F6FA' }}
+                  className="p-4 rounded-2xl transition-all duration-300 relative overflow-hidden max-h-[150px] overflow-y-auto"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
                 >
-                  <p className="text-sm text-gray-700 font-medium mb-1">
+                  <p className="text-sm font-medium mb-2" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
                     {selectedReport.topic?.title}
                   </p>
-                  <p className="text-sm text-gray-700 line-clamp-3">
+                  <p className="text-sm line-clamp-3" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>
                     {selectedReport.topic?.content || 'Konten tidak tersedia'}
                   </p>
-                  <div className="flex items-center gap-2 mt-2 text-xs text-gray-600">
+                  <div className="flex items-center gap-2 mt-3 text-xs" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
                     <span>Kategori: {selectedReport.topic?.category}</span>
                     <span>•</span>
                     <span>Balasan: {selectedReport.topic?.reply_count || 0}</span>
@@ -944,24 +1011,61 @@ export default function ForumModeration() {
               )}
             </div>
           )}
-          <DialogFooter className="gap-2 mt-4 flex-row justify-end">
+          <DialogFooter className="gap-2 mt-4 flex-row justify-end relative z-10">
             {selectedReport?.status === 'pending' && (
               <>
                 <Button 
                   size="sm"
-                  className="text-white"
-                  style={{ backgroundColor: '#10b981' }}
+                  className="bubble-button transition-all duration-300"
+                  style={{
+                    backgroundColor: '#10b981',
+                    border: '2px solid rgba(16, 185, 129, 0.4)',
+                    color: '#FFFFFF',
+                    borderRadius: '16px',
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                  }}
                   onClick={() => handleApproveClick(selectedReport.id)}
                   disabled={submitting}
+                  onMouseEnter={(e) => {
+                    if (!submitting) {
+                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                      e.currentTarget.style.boxShadow = '0 6px 25px rgba(16, 185, 129, 0.3), 0 0 0 1px rgba(16, 185, 129, 0.5) inset';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  }}
                 >
                   <CheckCircle className="w-4 h-4 mr-1" />
                   {submitting ? 'Memproses...' : 'Setujui'}
                 </Button>
                 <Button 
                   size="sm"
-                  variant="destructive"
+                  className="bubble-button transition-all duration-300"
+                  style={{
+                    backgroundColor: '#EF4444',
+                    border: '2px solid rgba(239, 68, 68, 0.4)',
+                    color: '#FFFFFF',
+                    borderRadius: '16px',
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 15px rgba(239, 68, 68, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                  }}
                   onClick={() => handleRejectClick(selectedReport.id)}
                   disabled={submitting}
+                  onMouseEnter={(e) => {
+                    if (!submitting) {
+                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                      e.currentTarget.style.boxShadow = '0 6px 25px rgba(239, 68, 68, 0.3), 0 0 0 1px rgba(239, 68, 68, 0.5) inset';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  }}
                 >
                   <XCircle className="w-4 h-4 mr-1" />
                   {submitting ? 'Memproses...' : 'Tolak & Hapus'}
@@ -970,17 +1074,40 @@ export default function ForumModeration() {
             )}
             <Button 
               size="sm"
-              variant="outline"
+              className="bubble-button transition-all duration-300"
+              style={{
+                backgroundColor: 'rgba(72, 128, 255, 0.9)',
+                border: '2px solid rgba(72, 128, 255, 0.4)',
+                color: '#FFFFFF',
+                borderRadius: '16px',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 600,
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+              }}
               onClick={() => {
                 setShowDetailModal(false);
                 setSelectedReport(null);
                 setAdminNotes('');
               }}
               disabled={submitting}
+              onMouseEnter={(e) => {
+                if (!submitting) {
+                  e.currentTarget.style.backgroundColor = '#4880FF';
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.5) inset';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.9)';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              }}
             >
               Tutup
             </Button>
           </DialogFooter>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
         </TabsContent>
@@ -993,15 +1120,44 @@ export default function ForumModeration() {
           setSelectedTopic(null);
         }
       }}>
-        <DialogContent className="max-w-2xl" style={{ backgroundColor: 'white' }}>
-          <DialogHeader>
-            <DialogTitle style={{ color: '#133E87' }}>Detail Topik Forum</DialogTitle>
-          </DialogHeader>
+        <DialogContent 
+          className="max-w-2xl max-h-[90vh] overflow-y-auto p-0"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
+            zIndex: 99999999,
+            position: 'fixed',
+            transform: 'translateZ(0)',
+            isolation: 'isolate'
+          }}
+          overlayStyle={{
+            zIndex: 99999999
+          }}
+        >
+          <div className="relative px-6 py-5">
+            <div className="pointer-events-none absolute -top-12 -right-8 h-32 w-32 rounded-full bg-[#608BC1]/20 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-16 -left-4 h-40 w-40 rounded-full bg-[#133E87]/10 blur-3xl" />
+            <div className="relative z-10">
+              <DialogHeader>
+                <DialogTitle style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Detail Topik Forum</DialogTitle>
+              </DialogHeader>
           {selectedTopic && (
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Judul Topik</p>
-                <p style={{ color: '#133E87', fontWeight: 600 }}>
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto mt-4">
+              <div
+                className="p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+              >
+                <p className="text-sm mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Judul Topik</p>
+                <p style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
                   {selectedTopic.title}
                 </p>
               </div>
@@ -1073,12 +1229,17 @@ export default function ForumModeration() {
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-1">Konten Topik</p>
+                <p className="text-sm mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Konten Topik</p>
                 <div 
-                  className="p-4 rounded-lg border"
-                  style={{ borderColor: '#CBDCEB', backgroundColor: '#F5F6FA' }}
+                  className="p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
                 >
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                  <p className="text-sm whitespace-pre-wrap" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>
                     {selectedTopic.content}
                   </p>
                 </div>
@@ -1125,28 +1286,68 @@ export default function ForumModeration() {
               )}
             </div>
           )}
-          <DialogFooter className="gap-2 mt-6">
+          <DialogFooter className="gap-2 mt-6 relative z-10">
             <Button 
-              variant="destructive"
+              className="bubble-button transition-all duration-300"
+              style={{
+                backgroundColor: '#EF4444',
+                border: '2px solid rgba(239, 68, 68, 0.4)',
+                color: '#FFFFFF',
+                borderRadius: '16px',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 600,
+                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+              }}
               onClick={() => {
                 setShowDetailModal(false);
                 handleDeleteTopicClick(selectedTopic.id);
               }}
               disabled={submitting}
+              onMouseEnter={(e) => {
+                if (!submitting) {
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(239, 68, 68, 0.3), 0 0 0 1px rgba(239, 68, 68, 0.5) inset';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              }}
             >
               <XCircle className="w-4 h-4 mr-2" />
               Hapus Topik
             </Button>
             <Button 
-              variant="outline"
+              className="bubble-button transition-all duration-300"
+              style={{
+                backgroundColor: 'rgba(72, 128, 255, 0.9)',
+                border: '2px solid rgba(72, 128, 255, 0.4)',
+                color: '#FFFFFF',
+                borderRadius: '16px',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontWeight: 600,
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+              }}
               onClick={() => {
                 setShowDetailModal(false);
                 setSelectedTopic(null);
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#4880FF';
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.5) inset';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.9)';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
               }}
             >
               Tutup
             </Button>
           </DialogFooter>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

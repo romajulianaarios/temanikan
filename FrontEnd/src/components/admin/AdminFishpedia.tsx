@@ -1007,43 +1007,42 @@ export default function AdminFishpedia() {
       {/* View Fish Modal */}
       <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
         <DialogContent
-          className="fixed left-1/2 top-1/2 w-full max-w-4xl max-h-[90vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto border-none shadow-2xl"
-          overlayClassName="bg-[#010b1f]/80 backdrop-blur-[10px] z-[9998]"
+          className="max-w-4xl max-h-[90vh] overflow-y-auto p-0"
           style={{
-            background: 'transparent',
-            boxShadow: 'none',
-            zIndex: 9999,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
+            zIndex: 99999,
+            position: 'fixed'
+          }}
+          overlayStyle={{
+            zIndex: 99998
           }}
         >
-          <div
-            className="relative px-8 py-6"
-            style={{
-              background: 'linear-gradient(155deg, #fefeff 0%, #dfe7ff 100%)',
-              borderRadius: '32px',
-              border: '1px solid rgba(19,62,135,0.15)',
-              boxShadow: '0 25px 60px rgba(5, 21, 51, 0.35)',
-            }}
-          >
+          <div className="relative px-8 py-6">
             <div className="pointer-events-none absolute -top-16 -right-10 h-48 w-48 rounded-full bg-[#608BC1]/25 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-24 -left-6 h-64 w-64 rounded-full bg-[#133E87]/15 blur-[120px]" />
 
             <div className="relative z-10 space-y-4">
-            <DialogHeader className="border-b pb-4" style={{ borderColor: 'rgba(255,255,255,0.35)' }}>
+            <DialogHeader className="border-b pb-4" style={{ borderColor: 'rgba(72, 128, 255, 0.2)' }}>
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <DialogTitle className="text-3xl font-bold" style={{ color: '#133E87' }}>Detail Ikan</DialogTitle>
+                  <DialogTitle className="text-3xl font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Detail Ikan</DialogTitle>
                   {selectedFish && (
-                    <p className="text-sm italic text-gray-600 mt-1">{selectedFish.scientificName}</p>
+                    <p className="text-sm italic mt-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.scientificName}</p>
                   )}
                 </div>
                 {selectedFish && (
                   <div className="flex items-center gap-2">
                     {selectedFish.status === 'published' ? (
-                      <Badge className="bg-green-100 text-green-800 shadow-sm">Published</Badge>
+                      <Badge className="bg-green-100 text-green-800 shadow-sm" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Published</Badge>
                     ) : (
-                      <Badge className="bg-gray-100 text-gray-800 shadow-sm">Draft</Badge>
+                      <Badge className="bg-gray-100 text-gray-800 shadow-sm" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Draft</Badge>
                     )}
-                    <div className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-[#133E87] shadow-sm">
+                    <div className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold shadow-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
                       🐟 #{selectedFish.id}
                     </div>
                   </div>
@@ -1171,12 +1170,31 @@ export default function AdminFishpedia() {
 
             <DialogFooter className="justify-end pt-2">
               <Button
-                variant="outline"
                 onClick={() => {
                   setShowViewModal(false);
                   setSelectedFish(null);
                 }}
-                className="border-none bg-white/70 text-[#133E87] hover:bg-white"
+                className="bubble-button transition-all duration-300"
+                style={{
+                  backgroundColor: 'rgba(72, 128, 255, 0.9)',
+                  border: '2px solid rgba(72, 128, 255, 0.4)',
+                  color: '#FFFFFF',
+                  borderRadius: '16px',
+                  padding: '10px 24px',
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#4880FF';
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.5) inset';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.9)';
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                }}
               >
                 Tutup
               </Button>

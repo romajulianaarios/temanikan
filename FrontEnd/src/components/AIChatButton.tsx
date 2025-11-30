@@ -8,55 +8,9 @@ export default function AIChatButton() {
   const [isOpen, setIsOpen] = useState(false);
   const { isLoggedIn, user, loading } = useAuth();
 
-  // STRICT CHECK: Hanya render jika user BENAR-BENAR sudah login
-  // Pastikan SEMUA kondisi terpenuhi (semua harus true):
-  // 1. AuthContext sudah selesai loading
-  // 2. isLoggedIn harus true (strict equality check)
-  // 3. user object harus ada (bukan null atau undefined)
-  // 4. user.id harus ada dan valid (number > 0)
-  // 5. user.email harus ada dan valid (string non-empty)
-  // 6. Token HARUS ada di storage (double check untuk keamanan)
-  
-  // Check token di storage
-  const hasToken = typeof window !== 'undefined' && (
-    sessionStorage.getItem('access_token') || 
-    localStorage.getItem('access_token')
-  );
-  
-  // Validasi user object yang lebih ketat
-  const hasValidUser = user !== null && 
-                       user !== undefined &&
-                       typeof user === 'object' &&
-                       typeof user.id === 'number' && 
-                       user.id > 0 &&
-                       typeof user.email === 'string' &&
-                       user.email.trim().length > 0 &&
-                       user.email.includes('@');
-  
-  // Hanya render jika SEMUA kondisi terpenuhi
-  const shouldRender = !loading &&           // ✅ AuthContext sudah selesai loading
-                       isLoggedIn === true && // ✅ isLoggedIn harus true (strict check)
-                       hasValidUser &&       // ✅ User object valid dengan id dan email
-                       hasToken;             // ✅ Token harus ada (double check)
-
-  useEffect(() => {
-    if (shouldRender) {
-      console.log('✅ AIChatButton - User logged in, button visible', {
-        userId: user?.id,
-        userEmail: user?.email
-      });
-    } else {
-      console.log('❌ AIChatButton - User not logged in, button hidden', {
-        loading,
-        isLoggedIn,
-        hasValidUser,
-        hasToken,
-        hasUser: !!user,
-        userId: user?.id,
-        userEmail: user?.email
-      });
-    }
-  }, [shouldRender, loading, isLoggedIn, user, hasValidUser, hasToken]);
+  // Hanya render jika user sudah login
+  // Kondisi: AuthContext sudah selesai loading DAN user sudah login
+  const shouldRender = !loading && isLoggedIn && user !== null && user !== undefined;
 
   // JANGAN RENDER APAPUN jika user belum login
   // Return null = tidak ada button yang muncul sama sekali

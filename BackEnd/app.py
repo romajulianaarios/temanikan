@@ -43,7 +43,7 @@ def create_app(config_name='development'):
         app.register_blueprint(ml_bp, url_prefix='/api')
         print("ML routes loaded successfully")
     except ImportError as e:
-        print(f"⚠️  ML routes not available: {e}")
+        print(f"WARNING: ML routes not available: {e}")
         print("Backend will run without ML features (login and other features will still work)")
     
     register_routes(app)

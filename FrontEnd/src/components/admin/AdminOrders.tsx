@@ -58,6 +58,7 @@ export default function AdminOrders() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [paymentProofImage, setPaymentProofImage] = useState<string | null>(null);
   const [showPaymentProofModal, setShowPaymentProofModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('orders');
 
   const statusFilterOptions = [
     { value: 'all', label: 'Semua Status' },
@@ -619,7 +620,7 @@ export default function AdminOrders() {
       </div>
 
       {/* Tabs Section - Large Toggle Buttons */}
-      <Tabs defaultValue="orders" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <TabsList className="h-auto p-0 bg-transparent">
             <TabsTrigger
@@ -627,10 +628,10 @@ export default function AdminOrders() {
               className="w-full data-[state=active]:bg-[#F3F3E0] data-[state=active]:border-2 data-[state=active]:border-[#4880FF] data-[state=active]:shadow-lg data-[state=inactive]:bg-white data-[state=inactive]:border-2 data-[state=inactive]:border-transparent hover:border-[#CBDCEB] p-6 rounded-xl transition-all shadow-sm h-auto"
             >
               <div className="flex items-center justify-center gap-3">
-                <ShoppingBag className="w-6 h-6" style={{ color: '#4880FF' }} />
+                <ShoppingBag className="w-6 h-6 transition-colors" style={{ color: activeTab === 'orders' ? '#4880FF' : '#FFFFFF' }} />
                 <div className="text-left">
-                  <h3 style={{ color: '#4880FF' }}>Daftar Pesanan</h3>
-                  <p className="text-sm text-gray-600">Kelola semua pesanan</p>
+                  <h3 className="transition-colors" style={{ color: activeTab === 'orders' ? '#4880FF' : '#FFFFFF' }}>Daftar Pesanan</h3>
+                  <p className="text-sm transition-colors" style={{ color: activeTab === 'orders' ? '#636E72' : 'rgba(255, 255, 255, 0.8)' }}>Kelola semua pesanan</p>
                 </div>
               </div>
             </TabsTrigger>
@@ -642,10 +643,10 @@ export default function AdminOrders() {
               className="w-full data-[state=active]:bg-[#F3F3E0] data-[state=active]:border-2 data-[state=active]:border-[#4880FF] data-[state=active]:shadow-lg data-[state=inactive]:bg-white data-[state=inactive]:border-2 data-[state=inactive]:border-transparent hover:border-[#CBDCEB] p-6 rounded-xl transition-all shadow-sm h-auto"
             >
               <div className="flex items-center justify-center gap-3">
-                <TrendingUp className="w-6 h-6" style={{ color: '#4880FF' }} />
+                <TrendingUp className="w-6 h-6 transition-colors" style={{ color: activeTab === 'analytics' ? '#4880FF' : '#FFFFFF' }} />
                 <div className="text-left">
-                  <h3 style={{ color: '#4880FF' }}>Analitik</h3>
-                  <p className="text-sm text-gray-600">Lihat statistik & tren</p>
+                  <h3 className="transition-colors" style={{ color: activeTab === 'analytics' ? '#4880FF' : '#FFFFFF' }}>Analitik</h3>
+                  <p className="text-sm transition-colors" style={{ color: activeTab === 'analytics' ? '#636E72' : 'rgba(255, 255, 255, 0.8)' }}>Lihat statistik & tren</p>
                 </div>
               </div>
             </TabsTrigger>
@@ -1053,22 +1054,45 @@ export default function AdminOrders() {
       {/* Detail Modal */}
       <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
         <DialogContent
-          className="w-[92vw] sm:max-w-md text-[12px] md:text-[13px] max-h-[80vh] overflow-y-auto"
-          style={{ backgroundColor: 'white', fontFamily: '"Nunito Sans", sans-serif', borderRadius: '12px' }}
-          overlayStyle={dialogOverlayStyle}
+          className="w-[92vw] sm:max-w-md text-[12px] md:text-[13px] max-h-[80vh] overflow-y-auto p-0"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
+            zIndex: 99999,
+            position: 'fixed'
+          }}
+          overlayStyle={{
+            zIndex: 99998
+          }}
         >
+          <div className="relative px-6 py-5">
+            <div className="pointer-events-none absolute -top-12 -right-8 h-32 w-32 rounded-full bg-[#608BC1]/20 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-16 -left-4 h-40 w-40 rounded-full bg-[#133E87]/10 blur-3xl" />
+            <div className="relative z-10">
           {selectedOrder && (
             <>
               <DialogHeader>
-                <DialogTitle className="text-base font-semibold" style={{ color: '#4880FF', fontFamily: 'inherit' }}>
+                <DialogTitle className="text-base font-semibold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>
                   Detail Pesanan
                 </DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4 py-4">
-                <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
-                  <p className="text-gray-600 mb-1">ID Pesanan</p>
-                  <p className="text-[13px] font-semibold" style={{ color: '#4880FF' }}>{selectedOrder.order_number}</p>
+                <div 
+                  className="p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <p className="mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>ID Pesanan</p>
+                  <p className="text-[13px] font-semibold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedOrder.order_number}</p>
                 </div>
 
                 <div className="space-y-3">
@@ -1143,19 +1167,55 @@ export default function AdminOrders() {
                 </div>
               </div>
 
-              <DialogFooter className="flex gap-2">
+              <DialogFooter className="flex gap-2 relative z-10">
                 <Button
-                  variant="outline"
+                  className="bubble-button transition-all duration-300"
+                  style={{
+                    backgroundColor: 'rgba(72, 128, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.4)',
+                    color: '#FFFFFF',
+                    borderRadius: '16px',
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                  }}
                   onClick={() => setShowDetailModal(false)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#4880FF';
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.5) inset';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.9)';
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  }}
                 >
                   Tutup
                 </Button>
                 <Button
+                  className="bubble-button transition-all duration-300"
                   onClick={() => {
                     setShowDetailModal(false);
                     handleUpdateStatus(selectedOrder);
                   }}
-                  style={{ backgroundColor: '#10B981', color: 'white' }}
+                  style={{
+                    backgroundColor: '#10B981',
+                    border: '2px solid rgba(16, 185, 129, 0.4)',
+                    color: '#FFFFFF',
+                    borderRadius: '16px',
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 6px 25px rgba(16, 185, 129, 0.3), 0 0 0 1px rgba(16, 185, 129, 0.5) inset';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  }}
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Update Status
@@ -1163,6 +1223,8 @@ export default function AdminOrders() {
               </DialogFooter>
             </>
           )}
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -1244,17 +1306,44 @@ export default function AdminOrders() {
 
       {/* Update Status Modal */}
       <Dialog open={showUpdateModal} onOpenChange={setShowUpdateModal}>
-        <DialogContent className="max-w-md" style={{ backgroundColor: 'white' }}>
+        <DialogContent 
+          className="max-w-md p-0"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
+            zIndex: 99999,
+            position: 'fixed'
+          }}
+          overlayStyle={{
+            zIndex: 99998
+          }}
+        >
+          <div className="relative px-6 py-5">
+            <div className="pointer-events-none absolute -top-12 -right-8 h-32 w-32 rounded-full bg-[#608BC1]/20 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-16 -left-4 h-40 w-40 rounded-full bg-[#133E87]/10 blur-3xl" />
+            <div className="relative z-10">
           {selectedOrder && (
             <>
               <DialogHeader>
-                <DialogTitle style={{ color: '#4880FF' }}>Update Status Pesanan</DialogTitle>
+                <DialogTitle style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>Update Status Pesanan</DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4 py-4">
-                <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3F4F6' }}>
-                  <p className="text-sm text-gray-600 mb-1">ID Pesanan</p>
-                  <p style={{ color: '#4880FF' }}>{selectedOrder.order_number}</p>
+                <div 
+                  className="p-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <p className="text-sm mb-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>ID Pesanan</p>
+                  <p style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>{selectedOrder.order_number}</p>
                 </div>
 
                 <div>
@@ -1289,17 +1378,55 @@ export default function AdminOrders() {
                 )}
               </div>
 
-              <DialogFooter className="flex gap-2">
+              <DialogFooter className="flex gap-2 relative z-10">
                 <Button
-                  variant="outline"
+                  className="bubble-button transition-all duration-300"
+                  style={{
+                    backgroundColor: 'rgba(72, 128, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.4)',
+                    color: '#FFFFFF',
+                    borderRadius: '16px',
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                  }}
                   onClick={() => setShowUpdateModal(false)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#4880FF';
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.5) inset';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.9)';
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  }}
                 >
                   Batal
                 </Button>
                 <Button
+                  className="bubble-button transition-all duration-300"
                   onClick={handleSaveStatus}
-                  style={{ backgroundColor: '#4880FF', color: 'white' }}
+                  style={{
+                    backgroundColor: '#10B981',
+                    border: '2px solid rgba(16, 185, 129, 0.4)',
+                    color: '#FFFFFF',
+                    borderRadius: '16px',
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                  }}
                   disabled={!newStatus || newStatus === selectedOrder.status}
+                  onMouseEnter={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                      e.currentTarget.style.boxShadow = '0 6px 25px rgba(16, 185, 129, 0.3), 0 0 0 1px rgba(16, 185, 129, 0.5) inset';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  }}
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Simpan Perubahan
@@ -1307,6 +1434,8 @@ export default function AdminOrders() {
               </DialogFooter>
             </>
           )}
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

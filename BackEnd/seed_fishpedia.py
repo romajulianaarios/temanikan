@@ -144,14 +144,14 @@ def seed_fishpedia():
         # Hapus data lama jika ada
         existing_count = FishSpecies.query.count()
         if existing_count > 0:
-            print(f"⚠ Found {existing_count} existing fish species")
+            print(f"WARNING: Found {existing_count} existing fish species")
             confirm = input("Delete existing data? (y/n): ")
             if confirm.lower() == 'y':
                 FishSpecies.query.delete()
                 db.session.commit()
-                print("✓ Deleted existing data\n")
+                print("OK: Deleted existing data\n")
             else:
-                print("✗ Cancelled\n")
+                print("CANCELLED\n")
                 return
         
         # Insert data baru
@@ -181,11 +181,11 @@ def seed_fishpedia():
                 db.session.add(fish)
                 db.session.commit()
                 
-                print(f"✓ [{idx}/8] Added: {fish_data['name']}")
+                print(f"OK [{idx}/8] Added: {fish_data['name']}")
                 success_count += 1
                 
             except Exception as e:
-                print(f"✗ [{idx}/8] Error adding {fish_data['name']}: {e}")
+                print(f"ERROR [{idx}/8] Error adding {fish_data['name']}: {e}")
                 db.session.rollback()
         
         print(f"\n=== Seeding Complete ===")

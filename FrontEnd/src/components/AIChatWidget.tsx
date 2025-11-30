@@ -6,7 +6,7 @@ import { X, Send, Image as ImageIcon, Bot, User, Trash2, History } from './icons
 import { aiChatAPI } from '../services/api';
 import { useAuth } from './AuthContext';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { formatTime } from '../utils/dateFormat';
+import { formatTime, formatDateTime } from '../utils/dateFormat';
 
 interface ChatMessage {
   id: string;
