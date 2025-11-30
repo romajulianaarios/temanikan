@@ -5,9 +5,7 @@ import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Search, Fish, ChevronRight } from '../icons';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
-import { fishpediaAPI } from '../../services/api';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { fishpediaAPI, buildAssetUrl } from '../../services/api';
 
 interface FishSpecies {
   id: number;
@@ -64,7 +62,7 @@ export default function MemberFishpedia() {
             difficulty: fish.difficulty,
             description: fish.description,
             habitat: fish.habitat,
-            imageUrl: fish.image ? `${API_BASE_URL}${fish.image}` : '',
+            imageUrl: buildAssetUrl(fish.image),
             image: fish.image,
             ph: fish.phMin && fish.phMax ? `${fish.phMin}-${fish.phMax}` : '7.0',
             temperature: fish.tempMin && fish.tempMax ? `${fish.tempMin}-${fish.tempMax}°C` : '25°C',

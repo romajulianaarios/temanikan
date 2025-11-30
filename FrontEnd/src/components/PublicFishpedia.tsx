@@ -6,9 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Search, Fish, ChevronRight, Menu, X } from './icons';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import Navbar from './Navbar';
-import { fishpediaAPI } from '../services/api';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { fishpediaAPI, buildAssetUrl } from '../services/api';
 
 interface PublicFishpediaProps {
   onAuthClick?: (mode: 'login' | 'register') => void;
@@ -71,7 +69,7 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
             difficulty: fish.difficulty,
             description: fish.description,
             habitat: fish.habitat,
-            imageUrl: fish.image ? `${API_BASE_URL}${fish.image}` : '',
+            imageUrl: buildAssetUrl(fish.image),
             image: fish.image,
             ph: fish.phMin && fish.phMax ? `${fish.phMin}-${fish.phMax}` : '7.0',
             temperature: fish.tempMin && fish.tempMax ? `${fish.tempMin}-${fish.tempMax}°C` : '25°C',
