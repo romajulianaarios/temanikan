@@ -1253,8 +1253,17 @@ def register_routes(app):
             return jsonify({'error': 'Topic not found'}), 404
         
         # Increment views
-        topic.views += 1
-        db.session.commit()
+        # topic.views += 1
+        # db.session.commit()
+        # ✅ OPSI 2: Try-Except dengan Rollback
+        try:
+            topic.views += 1
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"⚠️ Could not update views: {e}")
+    # Tetap return topic meski views tidak ter-update
+
         
         # Get current user if authenticated
         current_user_id = None
@@ -1274,34 +1283,43 @@ def register_routes(app):
     @jwt_required()
     def create_forum_reply(topic_id):
         user_id = get_jwt_identity()
-        topic = ForumTopic.query.get(topic_id)
         
-        if not topic:
-            return jsonify({'error': 'Topic not found'}), 404
+        try:
+            topic = ForumTopic.query.get(topic_id)
+            
+            if not topic:
+                return jsonify({'error': 'Topic not found'}), 404
+            
+            if topic.is_locked:
+                return jsonify({'error': 'Topic is locked'}), 403
+            
+            data = request.get_json()
+            
+            if not data.get('content'):
+                return jsonify({'error': 'Content is required'}), 400
+            
+            reply = ForumReply(
+                topic_id=topic_id,
+                author_id=user_id,
+                content=data['content']
+            )
+            
+            topic.updated_at = datetime.utcnow()
+            
+            db.session.add(reply)
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Reply created successfully',
+                'reply': reply.to_dict()
+            }), 201
         
-        if topic.is_locked:
-            return jsonify({'error': 'Topic is locked'}), 403
-        
-        data = request.get_json()
-        
-        if not data.get('content'):
-            return jsonify({'error': 'Content is required'}), 400
-        
-        reply = ForumReply(
-            topic_id=topic_id,
-            author_id=user_id,
-            content=data['content']
-        )
-        
-        topic.updated_at = datetime.utcnow()
-        
-        db.session.add(reply)
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Reply created successfully',
-            'reply': reply.to_dict()
-        }), 201
+        except Exception as e:
+            db.session.rollback()
+            print(f"⚠️ Error creating reply: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': 'Failed to create reply', 'message': str(e)}), 500
     
     @app.route('/api/forum/replies/<int:reply_id>', methods=['PUT'])
     @jwt_required()
