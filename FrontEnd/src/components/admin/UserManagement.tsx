@@ -255,19 +255,77 @@ export default function UserManagement() {
   return (
     <div className="space-y-6">
       {loading && (
-        <div className="text-center py-8">
-          <p className="text-gray-600">Memuat data pengguna...</p>
-        </div>
+        <Card 
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+        >
+          <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+              filter: 'blur(15px)'
+            }}
+          ></div>
+          <div className="text-center py-8 relative z-10">
+            <p style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Memuat data pengguna...</p>
+          </div>
+        </Card>
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
+        <Card 
+          className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(239, 68, 68, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+        >
+          <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(239, 68, 68, 0.3), transparent 70%)',
+              filter: 'blur(15px)'
+            }}
+          ></div>
+          <p className="text-red-700 font-semibold relative z-10" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>{error}</p>
+        </Card>
       )}
 
       {/* Filters and Actions */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
+      <Card 
+        className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="relative z-10">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -297,10 +355,37 @@ export default function UserManagement() {
             Tambah Pengguna
           </Button>
         </div>
+        </div>
       </Card>
 
       {/* Users Table */}
-      <Card className="overflow-hidden" style={{ backgroundColor: 'white' }}>
+      <Card 
+        className="bubble-card overflow-hidden transition-all duration-300 relative"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="relative z-10">
         <Table>
           <TableHeader>
             <TableRow>
@@ -370,6 +455,7 @@ export default function UserManagement() {
             )}
           </TableBody>
         </Table>
+        </div>
       </Card>
 
       {/* Add User Modal */}

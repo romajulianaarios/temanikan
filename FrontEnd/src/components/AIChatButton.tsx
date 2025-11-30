@@ -79,8 +79,16 @@ export default function AIChatButton() {
           console.log('🤖 AI Chat button clicked!');
           setIsOpen(true);
         }}
-        className="bubble-button w-16 h-16 rounded-full transition-all duration-300 flex items-center justify-center relative overflow-hidden"
+        className="bubble-button transition-all duration-300 flex items-center justify-center relative overflow-hidden"
         style={{ 
+          width: '64px',
+          height: '64px',
+          minWidth: '64px',
+          minHeight: '64px',
+          maxWidth: '64px',
+          maxHeight: '64px',
+          padding: '0',
+          borderRadius: '50%',
           background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.95), rgba(15, 91, 229, 0.9))',
           backdropFilter: 'blur(15px)',
           border: '2px solid rgba(255, 255, 255, 0.4)',

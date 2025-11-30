@@ -28,6 +28,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from './ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface BreadcrumbItem {
   label: string;
@@ -483,29 +484,36 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
               {/* Right Side Actions */}
               <div className="flex items-center gap-3 ml-auto">
                 {/* Language Selector */}
-                <select 
-                  className="bubble-button hidden md:block px-3 py-2 rounded-full text-sm font-semibold transition-all duration-300"
-                  style={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(72, 128, 255, 0.3)',
-                    color: '#133E87',
-                    fontFamily: 'Nunito Sans, sans-serif',
-                    cursor: 'pointer'
-                  }}
-                  defaultValue="id"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
-                    e.currentTarget.style.transform = 'scale(1.05)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  <option value="id">ID</option>
-                  <option value="en">EN</option>
-                </select>
+                <div className="hidden md:block">
+                  <Select defaultValue="id">
+                    <SelectTrigger 
+                      className="bubble-button px-3 py-2 h-auto text-sm font-semibold transition-all duration-300"
+                      style={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(72, 128, 255, 0.3)',
+                        color: '#133E87',
+                        fontFamily: 'Nunito Sans, sans-serif',
+                        cursor: 'pointer',
+                        minWidth: '80px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="id">ID</SelectItem>
+                      <SelectItem value="en">EN</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {/* Notification Dropdown */}
                 <div className="relative">

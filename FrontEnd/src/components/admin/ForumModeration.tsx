@@ -320,9 +320,35 @@ export default function ForumModeration() {
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {moderationStats.map((stat, index) => (
-          <Card key={index} className="p-6" style={{ backgroundColor: 'white' }}>
-            <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-            <p className="text-3xl" style={{ color: stat.color }}>{stat.value}</p>
+          <Card 
+            key={index} 
+            className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+            style={{ 
+              backgroundColor: '#FFFFFF',
+              border: '2px solid rgba(72, 128, 255, 0.2)',
+              borderRadius: '32px',
+              boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+              e.currentTarget.style.boxShadow = '0 20px 70px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+            }}
+          >
+            <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-30 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(72, 128, 255, 0.4), transparent 70%)',
+                filter: 'blur(20px)'
+              }}
+            ></div>
+            <p className="text-sm font-semibold mb-1 relative z-10" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{stat.label}</p>
+            <p className="text-3xl font-bold relative z-10" style={{ color: stat.color, fontFamily: 'Nunito Sans, sans-serif', fontWeight: 800 }}>{stat.value}</p>
           </Card>
         ))}
       </div>
@@ -364,8 +390,33 @@ export default function ForumModeration() {
         {/* Forum Temanikan Tab */}
         <TabsContent value="topics" className="space-y-6 mt-6">
           {/* Search & Filter */}
-          <Card className="p-6" style={{ backgroundColor: 'white' }}>
-            <div className="flex flex-col md:flex-row gap-4">
+          <Card 
+            className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+            style={{ 
+              backgroundColor: '#FFFFFF',
+              border: '2px solid rgba(72, 128, 255, 0.2)',
+              borderRadius: '32px',
+              boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              fontFamily: 'Nunito Sans, sans-serif'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+              e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+            }}
+          >
+            <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                filter: 'blur(15px)'
+              }}
+            ></div>
+            <div className="flex flex-col md:flex-row gap-4 relative z-10">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input 
@@ -393,23 +444,84 @@ export default function ForumModeration() {
 
           {/* Topics List */}
           {loading ? (
-            <Card className="p-12 text-center" style={{ backgroundColor: 'white' }}>
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-              <p className="text-gray-600">Memuat topik forum...</p>
+            <Card 
+              className="bubble-card p-12 text-center transition-all duration-300 relative overflow-hidden"
+              style={{ 
+                backgroundColor: '#FFFFFF',
+                border: '2px solid rgba(72, 128, 255, 0.2)',
+                borderRadius: '32px',
+                boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+            >
+              <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                  filter: 'blur(20px)'
+                }}
+              ></div>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4 relative z-10"></div>
+              <p className="text-gray-600 relative z-10" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Memuat topik forum...</p>
             </Card>
           ) : filteredTopics.length === 0 ? (
-            <Card className="p-12 text-center" style={{ backgroundColor: 'white' }}>
-              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">Tidak ada topik forum</p>
+            <Card 
+              className="bubble-card p-12 text-center transition-all duration-300 relative overflow-hidden"
+              style={{ 
+                backgroundColor: '#FFFFFF',
+                border: '2px solid rgba(72, 128, 255, 0.2)',
+                borderRadius: '32px',
+                boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+            >
+              <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                  filter: 'blur(20px)'
+                }}
+              ></div>
+              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300 relative z-10" />
+              <p className="text-gray-500 relative z-10" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>Tidak ada topik forum</p>
             </Card>
           ) : (
             <div className="space-y-4">
               {filteredTopics.map((item) => (
-                <Card key={item.id} className="p-6" style={{ backgroundColor: 'white' }}>
-                  <div className="flex items-start gap-4">
+                <Card 
+                  key={item.id} 
+                  className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: '#FFFFFF',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    borderRadius: '32px',
+                    boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+                    e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                    e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                    e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+                  }}
+                >
+                  <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+                    style={{
+                      background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                      filter: 'blur(15px)'
+                    }}
+                  ></div>
+                  <div className="flex items-start gap-4 relative z-10">
                     <div 
-                      className="p-3 rounded-lg flex-shrink-0"
-                      style={{ backgroundColor: '#CBDCEB' }}
+                      className="p-3 rounded-full flex-shrink-0 transition-all duration-300"
+                      style={{ 
+                        background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(72, 128, 255, 0.3)',
+                        boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+                      }}
                     >
                       <MessageSquare className="w-6 h-6" style={{ color: '#608BC1' }} />
                     </div>
@@ -476,8 +588,33 @@ export default function ForumModeration() {
         {/* Moderasi Forum Tab */}
         <TabsContent value="moderation" className="space-y-6 mt-6">
       {/* Filters */}
-      <Card className="p-6" style={{ backgroundColor: 'white' }}>
-        <div className="flex flex-col md:flex-row gap-4">
+      <Card 
+        className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+          e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+          e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+            filter: 'blur(15px)'
+          }}
+        ></div>
+        <div className="flex flex-col md:flex-row gap-4 relative z-10">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input 
@@ -503,24 +640,85 @@ export default function ForumModeration() {
 
       {/* Reported Content List */}
       {loading ? (
-        <Card className="p-12 text-center" style={{ backgroundColor: 'white' }}>
-          <p style={{ color: '#6B7280' }}>Memuat laporan...</p>
+        <Card 
+          className="bubble-card p-12 text-center transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+        >
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-20 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <p className="relative z-10" style={{ color: '#6B7280', fontFamily: 'Nunito Sans, sans-serif' }}>Memuat laporan...</p>
         </Card>
       ) : getFilteredReports().length === 0 ? (
-        <Card className="p-12 text-center" style={{ backgroundColor: 'white' }}>
-          <Flag className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p style={{ color: '#6B7280' }}>Tidak ada konten yang dilaporkan</p>
+        <Card 
+          className="bubble-card p-12 text-center transition-all duration-300 relative overflow-hidden"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif'
+          }}
+        >
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-20 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+              filter: 'blur(20px)'
+            }}
+          ></div>
+          <Flag className="w-16 h-16 mx-auto mb-4 text-gray-300 relative z-10" />
+          <p className="relative z-10" style={{ color: '#6B7280', fontFamily: 'Nunito Sans, sans-serif' }}>Tidak ada konten yang dilaporkan</p>
         </Card>
       ) : (
         <div className="space-y-4">
           {getFilteredReports().map((report) => {
             const severity = getSeverity(report.reason);
             return (
-              <Card key={report.id} className="p-6" style={{ backgroundColor: 'white' }}>
-                <div className="flex items-start gap-4">
+              <Card 
+                key={report.id} 
+                className="bubble-card p-6 transition-all duration-300 relative overflow-hidden"
+                style={{ 
+                  backgroundColor: '#FFFFFF',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  borderRadius: '32px',
+                  boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+                  e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
+                }}
+              >
+                <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20 pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(72, 128, 255, 0.3), transparent 70%)',
+                    filter: 'blur(15px)'
+                  }}
+                ></div>
+                <div className="flex items-start gap-4 relative z-10">
                   <div 
-                    className="p-3 rounded-lg flex-shrink-0"
-                    style={{ backgroundColor: '#CBDCEB' }}
+                    className="p-3 rounded-full flex-shrink-0 transition-all duration-300"
+                    style={{ 
+                      background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(72, 128, 255, 0.3)',
+                      boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)'
+                    }}
                   >
                     <Flag className="w-6 h-6" style={{ color: '#608BC1' }} />
                   </div>
