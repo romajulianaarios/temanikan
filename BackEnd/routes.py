@@ -12,6 +12,8 @@ import string
 from werkzeug.utils import secure_filename
 import os
 import base64
+import json
+import mimetypes
 
 def admin_required(fn):
     """
@@ -32,20 +34,6 @@ def admin_required(fn):
         
         if user.role != 'admin':
             return jsonify({'success': False, 'message': 'Admin access required'}), 403
-
-            payment_labels = {
-                'pending': 'Menunggu Pembayaran',
-                'paid': 'Pembayaran Diterima',
-                'failed': 'Pembayaran Gagal'
-            }
-            payment_label = payment_labels.get(payment_status, payment_status.replace('_', ' ').title())
-            payment_notif_type = 'success' if payment_status == 'paid' else 'warning' if payment_status == 'failed' else 'info'
-            queue_notification(
-                order.user_id,
-                'Status Pembayaran Diperbarui',
-                f"Status pembayaran untuk pesanan #{order.order_number} sekarang {payment_label}.",
-                payment_notif_type
-            )
         
         # User is admin, proceed to endpoint
         return fn(*args, **kwargs)
@@ -153,13 +141,125 @@ def register_routes(app):
     """Register all API routes"""
     
     UPLOAD_FOLDER = 'uploads/payment_proofs'
+    DISEASE_UPLOAD_FOLDER = 'uploads/disease_detections'
+    FISHPEDIA_UPLOAD_FOLDER = os.path.abspath('uploads/fishpedia')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+    IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-    # Make sure upload folder exists
+    # Make sure upload folders exist
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(DISEASE_UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(FISHPEDIA_UPLOAD_FOLDER, exist_ok=True)
 
     def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+    def allowed_image_file(filename):
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in IMAGE_EXTENSIONS
+
+    def save_fishpedia_image(file_storage):
+        if not file_storage or file_storage.filename == '':
+            return None
+        if not allowed_image_file(file_storage.filename):
+            return None
+
+        filename = secure_filename(file_storage.filename)
+        unique_filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}_{filename}"
+        abs_path = os.path.join(FISHPEDIA_UPLOAD_FOLDER, unique_filename)
+        file_storage.save(abs_path)
+        return unique_filename
+
+    def build_fishpedia_image_url(filename):
+        if not filename:
+            return None
+        return f"/api/fishpedia/images/{filename}"
+
+    def delete_fishpedia_image(image_url):
+        if not image_url:
+            return
+        prefix = '/api/fishpedia/images/'
+        if not image_url.startswith(prefix):
+            return
+        filename = image_url.replace(prefix, '', 1)
+        file_path = os.path.join(FISHPEDIA_UPLOAD_FOLDER, filename)
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception as remove_err:
+                print(f"⚠️ Unable to delete fishpedia image {file_path}: {remove_err}")
+
+    def parse_range(min_value, max_value, suffix=''):
+        if min_value and max_value:
+            base = f"{min_value}-{max_value}"
+        else:
+            base = min_value or max_value
+        if not base:
+            return None
+        if suffix and suffix not in base:
+            return f"{base}{suffix}"
+        return base
+
+    def get_request_data():
+        if request.content_type and 'application/json' in request.content_type:
+            return request.get_json() or {}
+        return request.form.to_dict()
+
+    def extract_fishpedia_payload(form_data):
+        payload = {}
+        payload['name'] = form_data.get('name')
+        payload['scientific_name'] = form_data.get('scientific_name') or form_data.get('scientificName')
+        payload['category'] = form_data.get('category')
+        payload['description'] = form_data.get('description')
+        payload['family'] = form_data.get('family')
+        payload['habitat'] = form_data.get('habitat')
+        payload['care_level'] = form_data.get('difficulty') or form_data.get('care_level')
+        payload['temperament'] = form_data.get('temperament')
+        payload['diet'] = form_data.get('diet')
+        payload['max_size'] = form_data.get('max_size') or form_data.get('size')
+        payload['min_tank_size'] = form_data.get('min_tank_size') or form_data.get('tank_size')
+
+        temp_min = form_data.get('temp_min') or form_data.get('temperature_min')
+        temp_max = form_data.get('temp_max') or form_data.get('temperature_max')
+        payload['water_temp'] = form_data.get('water_temp') or form_data.get('temperature_range') or parse_range(temp_min, temp_max, '°C')
+
+        ph_min = form_data.get('ph_min') or form_data.get('phMin')
+        ph_max = form_data.get('ph_max') or form_data.get('phMax')
+        payload['ph_range'] = form_data.get('ph_range') or parse_range(ph_min, ph_max)
+
+        payload['status'] = form_data.get('status') or 'draft'
+        payload['image_url'] = form_data.get('image_url') or form_data.get('image')
+        return payload
+
+    def apply_fishpedia_fields(instance, payload):
+        for field, value in payload.items():
+            if value is not None and hasattr(instance, field):
+                setattr(instance, field, value)
+
+    def queue_notification(user_id, title, message, notif_type='info', device_id=None):
+        """Queue a notification without committing the session."""
+        if not user_id or not title or not message:
+            return None
+
+        notification = Notification(
+            user_id=user_id,
+            device_id=device_id,
+            type=notif_type or 'info',
+            title=title[:200],
+            message=message
+        )
+        db.session.add(notification)
+        return notification
+
+    def notify_admins(title, message, notif_type='info'):
+        """Broadcast a notification to every active admin account."""
+        admins = User.query.filter_by(role='admin').all()
+        created = 0
+        for admin in admins:
+            if admin.is_active is False:
+                continue
+            if queue_notification(admin.id, title, message, notif_type):
+                created += 1
+        return created
 
 
     # Authentication Routes
