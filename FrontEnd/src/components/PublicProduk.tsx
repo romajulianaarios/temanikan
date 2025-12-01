@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { Fish, Menu, X, ShoppingCart, Check } from './icons';
+import { Menu, X, ShoppingCart, Check } from './icons';
 import Navbar from './Navbar';
+import Fish3DBackground from './Fish3DBackground';
+import logo from '../assets/logo_temanikan.png';
 
 interface PublicProdukProps {
   onAuthClick?: (mode: 'login' | 'register') => void;
@@ -41,50 +43,55 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
       background: 'linear-gradient(to bottom, #87CEEB 0%, #4A90E2 15%, #357ABD 30%, #2E5C8A 50%, #1E3A5F 70%, #0F2027 100%)',
       position: 'relative'
     }}>
+      {/* Background Ikan 3D Animasi */}
+      <Fish3DBackground />
+      
       {/* Background Bubbles */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
         <div className="absolute top-20 right-10 w-96 h-96 bg-[#0F5BE5] rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 left-10 w-96 h-96 bg-[#FFD6D6] rounded-full blur-3xl"></div>
       </div>
 
+      {/* Konten */}
+      <div className="relative" style={{ zIndex: 1 }}>
+      <style>{`
+        /* Global Bubble Button Style dengan Hover Interaktif */
+        .bubble-button {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          cursor: pointer;
+          will-change: transform, background-color, box-shadow;
+        }
+        .bubble-button:hover {
+          transform: translateY(-4px) scale(1.05) !important;
+        }
+        .bubble-button:active {
+          transform: translateY(-2px) scale(1.02) !important;
+        }
+        
+        /* Style untuk semua button yang belum menggunakan class bubble-button */
+        button:not(.bubble-button):not([class*="navbar"]):not([class*="mobile"]) {
+          border-radius: 9999px !important;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        button:not(.bubble-button):not([class*="navbar"]):not([class*="mobile"]):hover {
+          transform: translateY(-3px) scale(1.03) !important;
+          box-shadow: 0 8px 25px rgba(72, 128, 255, 0.4) !important;
+        }
+      `}</style>
+
       {/* Global Navbar */}
-      <div className="relative z-10">
+      <div className="relative" style={{ zIndex: 9999999 }}>
         <Navbar onAuthClick={onAuthClick} onSmartNavigate={onSmartNavigate} />
       </div>
 
-      {/* Main Content */}
-      <main className="flex-1 py-8 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Breadcrumb */}
-          <div className="mb-8">
-            <nav className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)', fontFamily: 'Nunito Sans, sans-serif' }}>
-              <button 
-                onClick={handleNavigateHome} 
-                className="hover:text-white transition-colors font-semibold"
-                style={{ fontFamily: 'Nunito Sans, sans-serif' }}
-              >
-                Beranda
-              </button>
-              <span>/</span>
-              <span className="text-white font-bold">Produk</span>
-            </nav>
-          </div>
+      {/* Spacer untuk fixed navbar */}
+      <div style={{ height: '76px' }}></div>
 
+      {/* Main Content */}
+      <main className="flex-1 py-8 relative" style={{ zIndex: 1 }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Product Header */}
           <div className="mb-12">
-            <div 
-              className="inline-block px-5 py-2.5 rounded-full text-sm mb-4 font-semibold transition-all duration-300"
-              style={{
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(10px)',
-                border: '2px solid rgba(15, 91, 229, 0.3)',
-                boxShadow: '0 6px 20px rgba(15, 91, 229, 0.2)',
-                color: '#133E87',
-                fontFamily: 'Nunito Sans, sans-serif'
-              }}
-            >
-              Produk Unggulan
-            </div>
             <h1 
               className="text-4xl md:text-5xl mb-4 font-extrabold" 
               style={{ 
@@ -193,7 +200,7 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
                   }}
                 ></div>
                 
-                <div className="relative z-10">
+                <div className="relative" style={{ zIndex: 1 }}>
                   <div className="mb-6">
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-sm line-through" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Rp 3.499.000</span>
@@ -278,8 +285,8 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
                       filter: 'blur(10px)'
                     }}
                   ></div>
-                  <div className="text-2xl mb-1 relative z-10">⚡</div>
-                  <div className="text-xs font-semibold relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Garansi 1 Tahun</div>
+                  <div className="text-2xl mb-1 relative" style={{ zIndex: 1 }}>⚡</div>
+                  <div className="text-xs font-semibold relative" style={{ zIndex: 1, color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Garansi 1 Tahun</div>
                 </div>
                 <div 
                   className="text-center p-5 transition-all duration-300 relative overflow-hidden"
@@ -308,8 +315,8 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
                       filter: 'blur(10px)'
                     }}
                   ></div>
-                  <div className="text-2xl mb-1 relative z-10">🚚</div>
-                  <div className="text-xs font-semibold relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Gratis Ongkir</div>
+                  <div className="text-2xl mb-1 relative" style={{ zIndex: 1 }}>🚚</div>
+                  <div className="text-xs font-semibold relative" style={{ zIndex: 1, color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Gratis Ongkir</div>
                 </div>
                 <div 
                   className="text-center p-5 transition-all duration-300 relative overflow-hidden"
@@ -338,8 +345,8 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
                       filter: 'blur(10px)'
                     }}
                   ></div>
-                  <div className="text-2xl mb-1 relative z-10">🔧</div>
-                  <div className="text-xs font-semibold relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Free Maintenance</div>
+                  <div className="text-2xl mb-1 relative" style={{ zIndex: 1 }}>🔧</div>
+                  <div className="text-xs font-semibold relative" style={{ zIndex: 1, color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Free Maintenance</div>
                 </div>
               </div>
             </div>
@@ -380,8 +387,8 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
               }}
             ></div>
             
-            <h2 className="text-3xl mb-8 font-extrabold relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Fitur Unggulan</h2>
-            <div className="grid md:grid-cols-2 gap-6 relative z-10">
+            <h2 className="text-3xl mb-8 font-extrabold relative" style={{ zIndex: 1, color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Fitur Unggulan</h2>
+            <div className="grid md:grid-cols-2 gap-6 relative" style={{ zIndex: 1 }}>
               <div className="flex items-start gap-4">
                 <div 
                   className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
@@ -533,8 +540,8 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
               }}
             ></div>
             
-            <h2 className="text-3xl mb-8 font-extrabold relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Spesifikasi Teknis</h2>
-            <div className="grid md:grid-cols-2 gap-x-12 gap-y-6 relative z-10">
+            <h2 className="text-3xl mb-8 font-extrabold relative" style={{ zIndex: 1, color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Spesifikasi Teknis</h2>
+            <div className="grid md:grid-cols-2 gap-x-12 gap-y-6 relative" style={{ zIndex: 1 }}>
               <div className="flex justify-between py-3 border-b" style={{ borderColor: 'rgba(15, 91, 229, 0.2)' }}>
                 <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Dimensi</span>
                 <span className="font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>18cm x 12cm x 8cm</span>
@@ -613,8 +620,8 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
               }}
             ></div>
             
-            <h2 className="text-3xl mb-8 font-extrabold relative z-10" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Isi Paket</h2>
-            <div className="grid md:grid-cols-2 gap-4 relative z-10">
+            <h2 className="text-3xl mb-8 font-extrabold relative" style={{ zIndex: 1, color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Isi Paket</h2>
+            <div className="grid md:grid-cols-2 gap-4 relative" style={{ zIndex: 1 }}>
               <div className="flex items-center gap-3">
                 <div 
                   className="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300"
@@ -704,6 +711,7 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
 
           {/* CTA Section */}
           <div 
+            id="beli-sekarang"
             className="rounded-[40px] p-12 text-center text-white relative overflow-hidden transition-all duration-300"
             style={{
               background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
@@ -724,13 +732,14 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
             <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-30 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%)', filter: 'blur(40px)' }}></div>
             <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full opacity-20 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255, 182, 193, 0.3), transparent 70%)', filter: 'blur(35px)' }}></div>
             
-            <h2 className="text-3xl md:text-4xl mb-4 font-extrabold relative z-10" style={{ fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)' }}>Siap Menjadikan Akuarium Anda Lebih Smart?</h2>
-            <p className="text-lg mb-8 max-w-2xl mx-auto relative z-10" style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 500 }}>
+            <h2 className="text-3xl md:text-4xl mb-4 font-extrabold relative" style={{ zIndex: 1, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)' }}>Siap Menjadikan Akuarium Anda Lebih Smart?</h2>
+            <p className="text-lg mb-8 max-w-2xl mx-auto relative" style={{ zIndex: 1, color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 500 }}>
               Bergabunglah dengan 9,000+ pengguna yang telah mempercayai Robot Temanikan untuk perawatan akuarium mereka
             </p>
             <button 
               onClick={handleBuyNow}
-              className="px-8 py-4 rounded-full font-bold transition-all duration-300 bubble-button inline-flex items-center gap-2 relative z-10"
+              className="px-8 py-4 rounded-full font-bold transition-all duration-300 bubble-button inline-flex items-center gap-2 relative"
+              style={{ zIndex: 1 }}
               style={{
                 background: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(10px)',
@@ -766,12 +775,13 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
         </div>
 
         <div 
-          className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-12 relative z-10"
+          className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-12 relative"
           style={{
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
             borderRadius: '40px 40px 0 0',
-            boxShadow: '0 -10px 40px rgba(15, 91, 229, 0.1), inset 0 2px 10px rgba(255, 255, 255, 0.5)'
+            boxShadow: '0 -10px 40px rgba(15, 91, 229, 0.1), inset 0 2px 10px rgba(255, 255, 255, 0.5)',
+            zIndex: 1
           }}
         >
           <div className="grid md:grid-cols-4 gap-8 mb-8">
@@ -786,17 +796,17 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
                     boxShadow: '0 4px 12px rgba(15, 91, 229, 0.15)'
                   }}
                 >
-                  <Fish className="w-6 h-6" style={{ color: '#0F5BE5' }} />
+                  <img src={logo} alt="Temanikan Logo" className="w-6 h-6 object-contain" />
                 </div>
                 <span 
-                  className="text-2xl font-extrabold" 
+                  className="text-2xl font-bold" 
                   style={{ 
-                    fontFamily: 'Allura, cursive',
+                    fontFamily: 'Nunito Sans, sans-serif',
                     color: '#0F5BE5',
                     textShadow: '0 2px 8px rgba(15, 91, 229, 0.2)'
                   }}
                 >
-                  Temanikan
+                  temanikan
                 </span>
               </div>
               <p className="text-sm font-medium" style={{ color: '#374151', lineHeight: '1.6' }}>
@@ -1039,6 +1049,7 @@ export default function PublicProduk({ onAuthClick, onNavigateHome, onSmartNavig
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }

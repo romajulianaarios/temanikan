@@ -88,9 +88,10 @@ const DialogOverlay = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const zIndex = props.style?.zIndex 
-    ? (typeof props.style.zIndex === 'number' ? props.style.zIndex : 9999998)
-    : 9999998;
+  // Get z-index from props.style, with high default to ensure it's above navbar
+  const overlayZIndex = props.style?.zIndex 
+    ? (typeof props.style.zIndex === 'number' ? props.style.zIndex : 99999998)
+    : 99999998;
   
   return (
     <div
@@ -103,7 +104,7 @@ const DialogOverlay = React.forwardRef<
         pointerEvents: 'auto',
         background: 'rgba(0, 0, 0, 0.5)',
         backdropFilter: 'blur(8px)',
-        zIndex: zIndex - 1,
+        zIndex: overlayZIndex, // Use z-index from props (overlayStyle)
         transform: 'translateZ(0)',
         isolation: 'isolate',
         ...props.style
@@ -186,18 +187,21 @@ const DialogContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 p-6",
+          "fixed grid w-full max-w-lg gap-4 p-6",
           className
         )}
         style={{
           pointerEvents: 'auto',
           position: 'fixed',
+          left: props.style?.left !== undefined ? props.style.left : '50%',
+          top: props.style?.top !== undefined ? props.style.top : '50%',
+          transform: props.style?.transform || 'translate(-50%, -50%)',
           background: 'rgba(255, 255, 255, 0.95)',
           borderRadius: '24px',
           border: '2px solid rgba(255, 255, 255, 0.5)',
           boxShadow: '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
           zIndex: props.style?.zIndex || 9999999,
-          transform: 'translateZ(0)',
+          margin: props.style?.margin !== undefined ? props.style.margin : undefined,
           isolation: 'isolate',
           ...props.style
         }}

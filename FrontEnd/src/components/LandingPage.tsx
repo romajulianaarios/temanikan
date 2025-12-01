@@ -1,4 +1,5 @@
-import { Fish, Eye, BookOpen, Users, Menu, X, Star, Mail, MapPin, ArrowRight, ShoppingCart, CheckCircle } from './icons';
+import { Eye, BookOpen, Users, Menu, X, Star, Mail, MapPin, ArrowRight, ShoppingCart, CheckCircle } from './icons';
+import logo from '../assets/logo_temanikan.png';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Button } from './ui/button';
 import { useState, useEffect, useRef } from 'react';
@@ -111,7 +112,7 @@ export default function LandingPage() {
               onClick={() => window.location.reload()}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
-              <Fish className="w-8 h-8" style={{ color: '#133E87' }} />
+              <img src={logo} alt="Temanikan Logo" className="w-8 h-8 object-contain" />
               <span className="text-xl" style={{ color: '#133E87' }}>temanikan</span>
             </button>
 
@@ -552,7 +553,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Fish className="w-6 h-6" style={{ color: '#F3F3E0' }} />
+                <img src={logo} alt="Temanikan Logo" className="w-6 h-6 object-contain" />
                 <span style={{ color: '#F3F3E0' }}>temanikan</span>
               </div>
               <p className="text-sm" style={{ color: '#F3F3E0' }}>

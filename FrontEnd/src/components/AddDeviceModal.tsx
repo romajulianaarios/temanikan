@@ -59,12 +59,22 @@ export default function AddDeviceModal({ isOpen, onClose, onAddDevice }: AddDevi
   return (
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+      style={{ 
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backdropFilter: 'blur(8px)'
+      }}
       onClick={handleClose}
     >
       <div 
-        className="relative w-full max-w-md rounded-lg shadow-lg p-6"
-        style={{ backgroundColor: '#FFFFFF' }}
+        className="relative w-full max-w-md shadow-lg p-6"
+        style={{ 
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(15px)',
+          border: '2px solid rgba(72, 128, 255, 0.2)',
+          borderRadius: '32px',
+          boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+          fontFamily: 'Nunito Sans, sans-serif'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -120,13 +130,24 @@ export default function AddDeviceModal({ isOpen, onClose, onAddDevice }: AddDevi
               value={namaPerangkat}
               onChange={(e) => setNamaPerangkat(e.target.value)}
               placeholder="Contoh: Akuarium Ruang Tamu"
-              className="w-full px-4 py-2.5 rounded-lg border text-sm outline-none transition-all"
+              className="w-full px-4 py-3 rounded-2xl border-2 text-sm outline-none transition-all duration-300"
               style={{ 
-                borderColor: '#E5E7EB',
-                color: '#1F2937'
+                borderColor: 'rgba(72, 128, 255, 0.3)',
+                color: '#133E87',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#4880FF'}
-              onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'rgba(72, 128, 255, 0.5)';
+                e.target.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                e.target.style.boxShadow = '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.target.style.transform = 'translateY(0)';
+              }}
             />
             <p className="text-xs mt-1" style={{ color: '#6B7280' }}>
               Beri nama yang mudah Anda kenali
@@ -148,13 +169,24 @@ export default function AddDeviceModal({ isOpen, onClose, onAddDevice }: AddDevi
               value={uniqueID}
               onChange={(e) => setUniqueID(e.target.value)}
               placeholder="TMNKN-XXXX-XXXX"
-              className="w-full px-4 py-2.5 rounded-lg border text-sm outline-none transition-all font-mono"
+              className="w-full px-4 py-3 rounded-2xl border-2 text-sm outline-none transition-all duration-300 font-mono"
               style={{ 
-                borderColor: '#E5E7EB',
-                color: '#1F2937'
+                borderColor: 'rgba(72, 128, 255, 0.3)',
+                color: '#133E87',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#4880FF'}
-              onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'rgba(72, 128, 255, 0.5)';
+                e.target.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                e.target.style.boxShadow = '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.target.style.transform = 'translateY(0)';
+              }}
               maxLength={15}
             />
             <p className="text-xs mt-1" style={{ color: '#6B7280' }}>
@@ -177,22 +209,48 @@ export default function AddDeviceModal({ isOpen, onClose, onAddDevice }: AddDevi
             <Button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2.5 rounded-lg text-sm transition-colors"
+              className="flex-1 px-4 py-3 rounded-full text-sm transition-all duration-300 bubble-button"
               style={{
-                backgroundColor: '#F3F4F6',
-                color: '#374151',
-                fontWeight: 600
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                color: '#133E87',
+                fontWeight: 600,
+                border: '2px solid rgba(72, 128, 255, 0.3)',
+                boxShadow: '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#F0F5FF';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
               }}
             >
               Batal
             </Button>
             <Button
               type="submit"
-              className="flex-1 px-4 py-2.5 rounded-lg text-sm transition-colors"
+              className="flex-1 px-4 py-3 rounded-full text-sm transition-all duration-300 bubble-button"
               style={{
                 backgroundColor: '#4880FF',
                 color: '#FFFFFF',
-                fontWeight: 600
+                fontWeight: 600,
+                border: '2px solid rgba(72, 128, 255, 0.4)',
+                boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.5) inset';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3) inset';
               }}
             >
               Daftarkan Perangkat

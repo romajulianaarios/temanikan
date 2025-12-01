@@ -40,6 +40,71 @@ def admin_required(fn):
     return wrapper
 
 
+def try_gemini_api_with_keys(api_keys, url, payload, model_name="gemini-2.0-flash"):
+    """
+    Try multiple API keys until one works
+    Returns: (success: bool, response_text: str, error: str)
+    """
+    import requests
+    
+    for idx, api_key in enumerate(api_keys):
+        if not api_key or not api_key.strip():
+            continue
+            
+        try:
+            headers = {
+                'Content-Type': 'application/json',
+                'X-goog-api-key': api_key.strip()
+            }
+            
+            response = requests.post(url, headers=headers, json=payload, timeout=30)
+            
+            if response.status_code == 200:
+                result = response.json()
+                # Extract text from response
+                if 'candidates' in result and len(result['candidates']) > 0:
+                    if 'content' in result['candidates'][0]:
+                        if 'parts' in result['candidates'][0]['content']:
+                            ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
+                        else:
+                            ai_response = result['candidates'][0]['content'].get('text', '')
+                    else:
+                        ai_response = result['candidates'][0].get('text', '')
+                else:
+                    ai_response = str(result)
+                
+                if ai_response:
+                    print(f"✅ API Key #{idx+1} berhasil digunakan")
+                    return (True, ai_response, None)
+                else:
+                    print(f"⚠️ API Key #{idx+1} berhasil tapi response kosong")
+                    continue
+            elif response.status_code == 403:
+                error_detail = response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text
+                error_msg = error_detail.get('error', {}).get('message', '') if isinstance(error_detail, dict) else str(error_detail)
+                print(f"❌ API Key #{idx+1} gagal (403): {error_msg[:100]}")
+                # Try next key
+                continue
+            elif response.status_code == 429:
+                print(f"⚠️ API Key #{idx+1} quota habis (429) - mencoba key berikutnya...")
+                # Try next key
+                continue
+            else:
+                print(f"⚠️ API Key #{idx+1} error {response.status_code} - mencoba key berikutnya...")
+                # Try next key
+                continue
+                
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️ API Key #{idx+1} error: {str(e)[:100]} - mencoba key berikutnya...")
+            continue
+        except Exception as e:
+            print(f"⚠️ API Key #{idx+1} unexpected error: {str(e)[:100]} - mencoba key berikutnya...")
+            continue
+    
+    # All keys failed
+    return (False, None, "Semua API key gagal")
+
+
 def generate_fallback_response(message: str, fish_species_list):
     """
     Generate fallback response from database when AI API is not available.
@@ -436,6 +501,65 @@ def register_routes(app):
             devices = Device.query.filter_by(user_id=user_id).all()
         
         return jsonify({'devices': [d.to_dict() for d in devices]}), 200
+    
+    @app.route('/api/devices', methods=['POST'])
+    @jwt_required()
+    def add_device():
+        """Add a new device for the current user"""
+        try:
+            user_id_str = get_jwt_identity()
+            user_id = int(user_id_str)  # Convert string to int
+            user = User.query.get(user_id)
+            
+            if not user:
+                return jsonify({'error': 'User not found'}), 404
+            
+            data = request.get_json() or {}
+            
+            # Validate required fields
+            if not data.get('name'):
+                return jsonify({'error': 'Device name is required'}), 400
+            
+            device_code = data.get('device_code')
+            if not device_code:
+                return jsonify({'error': 'Device code is required'}), 400
+            
+            # Check if device_code already exists
+            existing_device = Device.query.filter_by(device_code=device_code).first()
+            if existing_device:
+                return jsonify({'error': 'Device code already exists'}), 400
+            
+            # Create new device
+            new_device = Device(
+                name=data['name'],
+                device_code=device_code,
+                user_id=user_id,
+                status='active',
+                robot_status='idle',
+                battery_level=100,
+                last_online=datetime.utcnow()
+            )
+            
+            db.session.add(new_device)
+            db.session.commit()
+            
+            print(f"✅ Device added successfully!")
+            print(f"   User: {user.name} ({user.email})")
+            print(f"   Device Name: {data['name']}")
+            print(f"   Device Code: {device_code}")
+            print(f"   Device ID: {new_device.id}")
+            
+            return jsonify({
+                'message': 'Device added successfully',
+                'device': new_device.to_dict()
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error adding device: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': 'Failed to add device'}), 500
     
     @app.route('/api/devices/<int:device_id>', methods=['GET'])
     @jwt_required()
@@ -1221,6 +1345,60 @@ def register_routes(app):
             traceback.print_exc()
             return jsonify({'error': str(e)}), 500
     
+    @app.route('/api/forum/topics', methods=['POST'])
+    @jwt_required()
+    def create_forum_topic():
+        """Create a new forum topic"""
+        try:
+            user_id = get_jwt_identity()
+            user = User.query.get(user_id)
+            
+            if not user:
+                return jsonify({'success': False, 'error': 'User not found'}), 404
+            
+            data = request.get_json()
+            title = data.get('title', '').strip()
+            content = data.get('content', '').strip()
+            category = data.get('category', 'diskusi-umum').strip()
+            
+            # Validation
+            if not title:
+                return jsonify({'success': False, 'error': 'Judul topik harus diisi'}), 400
+            
+            if not content:
+                return jsonify({'success': False, 'error': 'Isi topik harus diisi'}), 400
+            
+            if len(content) < 20:
+                return jsonify({'success': False, 'error': 'Isi topik minimal 20 karakter'}), 400
+            
+            # Create new topic
+            new_topic = ForumTopic(
+                title=title,
+                content=content,
+                category=category,
+                author_id=user_id,
+                is_pinned=False,
+                views=0
+            )
+            
+            db.session.add(new_topic)
+            db.session.commit()
+            
+            print(f"✅ Topic created: {new_topic.id} - {new_topic.title}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Topik berhasil dibuat',
+                'topic': new_topic.to_dict(current_user_id=user_id)
+            }), 201
+            
+        except Exception as e:
+            print(f"❌ Error creating topic: {e}")
+            import traceback
+            traceback.print_exc()
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
+    
     @app.route('/api/forum/my-topics', methods=['GET'])
     @jwt_required()
     def get_my_forum_topics():
@@ -1278,6 +1456,83 @@ def register_routes(app):
             'success': True,
             'topic': topic.to_dict(include_replies=True, current_user_id=current_user_id)
         }), 200
+    
+    @app.route('/api/forum/topics/<int:topic_id>', methods=['DELETE'])
+    @jwt_required()
+    def delete_forum_topic(topic_id):
+        """Delete a forum topic"""
+        try:
+            user_id = get_jwt_identity()
+            user = User.query.get(user_id)
+            topic = ForumTopic.query.get(topic_id)
+            
+            if not topic:
+                return jsonify({'success': False, 'error': 'Topic not found'}), 404
+            
+            # Check permission: only author or admin can delete
+            if topic.author_id != user_id and user.role != 'admin':
+                return jsonify({'success': False, 'error': 'Unauthorized: Only topic author or admin can delete'}), 403
+            
+            # Delete topic (cascade will delete replies and likes)
+            db.session.delete(topic)
+            db.session.commit()
+            
+            print(f"✅ Topic deleted: {topic_id} by user {user_id}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Topik berhasil dihapus'
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Error deleting topic: {e}")
+            import traceback
+            traceback.print_exc()
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
+    
+    @app.route('/api/forum/topics/<int:topic_id>', methods=['PUT'])
+    @jwt_required()
+    def update_forum_topic(topic_id):
+        """Update a forum topic"""
+        try:
+            user_id = get_jwt_identity()
+            user = User.query.get(user_id)
+            topic = ForumTopic.query.get(topic_id)
+            
+            if not topic:
+                return jsonify({'success': False, 'error': 'Topic not found'}), 404
+            
+            # Check permission: only author or admin can update
+            if topic.author_id != user_id and user.role != 'admin':
+                return jsonify({'success': False, 'error': 'Unauthorized: Only topic author or admin can update'}), 403
+            
+            data = request.get_json()
+            
+            if 'title' in data:
+                topic.title = data['title'].strip()
+            if 'content' in data:
+                topic.content = data['content'].strip()
+            if 'category' in data:
+                topic.category = data['category'].strip()
+            
+            topic.updated_at = datetime.utcnow()
+            db.session.commit()
+            
+            print(f"✅ Topic updated: {topic_id}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Topik berhasil diupdate',
+                'topic': topic.to_dict(current_user_id=user_id)
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Error updating topic: {e}")
+            import traceback
+            traceback.print_exc()
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
     
     @app.route('/api/forum/topics/<int:topic_id>/replies', methods=['POST'])
     @jwt_required()
@@ -2536,6 +2791,7 @@ def register_routes(app):
         notifications = query.order_by(Notification.created_at.desc()).limit(limit).all()
         
         return jsonify({
+            'success': True,
             'notifications': [n.to_dict() for n in notifications],
             'count': len(notifications),
             'unread_count': Notification.query.filter_by(user_id=user_id, is_read=False).count()
@@ -2802,11 +3058,46 @@ def register_routes(app):
             if not message:
                 return jsonify({'error': 'Message is required'}), 400
             
-            # Get Gemini API key
-            api_key = config['development'].GEMINI_API_KEY or os.getenv('GEMINI_API_KEY')
-            if not api_key:
+            # Get context from database (fish species info) - DO THIS FIRST
+            fish_species = FishSpecies.query.limit(50).all()
+            
+            # Get Gemini API keys (support multiple backup keys)
+            # Access via class method for compatibility
+            print("\n" + "=" * 70)
+            print("🤖 AI CHAT REQUEST RECEIVED")
+            print("=" * 70)
+            print(f"👤 User ID: {user_id}")
+            print(f"📝 Message: {message[:100]}...")
+            
+            dev_config = config['development']
+            api_keys = dev_config.get_gemini_api_keys()
+            
+            # Debug logging - EXPLICIT
+            print(f"\n🔑 STEP 1: Loading API Keys from Config...")
+            print(f"   ✅ API Keys loaded: {len(api_keys) if api_keys else 0}")
+            if api_keys:
+                print(f"   ✅ Primary key: {api_keys[0][:30]}...")
+                print(f"   ✅ Total backup keys: {len(api_keys)}")
+            else:
+                print("   ⚠️ No keys from config, trying environment...")
+            
+            if not api_keys:
+                # Fallback to old method (backward compatibility)
+                # Check both GEMINI_API_KEYS (plural) and GEMINI_API_KEY (singular)
+                print(f"\n🔑 STEP 2: Trying Environment Variables...")
+                keys_str = os.getenv('GEMINI_API_KEYS') or os.getenv('GEMINI_API_KEY')
+                if keys_str:
+                    # Split by comma if multiple keys
+                    api_keys = [k.strip() for k in keys_str.split(',') if k.strip()]
+                    print(f"   ✅ Fallback: Loaded {len(api_keys)} key(s) from env")
+                else:
+                    print("   ❌ No keys in environment variables")
+            
+            if not api_keys:
                 # Use database fallback if API key not configured
-                print("API key not configured - Using database fallback")
+                print("\n" + "=" * 70)
+                print("⚠️ ERROR: API key not configured - Using database fallback")
+                print("=" * 70)
                 ai_response = generate_fallback_response(message, fish_species)
                 # Save to chat history
                 chat = ChatHistory(
@@ -2823,9 +3114,6 @@ def register_routes(app):
                     'chat_id': chat.id,
                     'created_at': chat.created_at.isoformat()
                 }), 200
-            
-            # Get context from database (fish species info)
-            fish_species = FishSpecies.query.limit(50).all()
             fish_context = "\n\nInformasi Ikan di Database:\n"
             for fish in fish_species:
                 fish_context += f"- {fish.name} ({fish.scientific_name}): {fish.description or 'Tidak ada deskripsi'}\n"
@@ -2892,115 +3180,40 @@ Setiap paragraf harus jelas, informatif, dan mudah dipahami. Jangan gunakan form
                     }
                 })
             
-            headers = {
-                'Content-Type': 'application/json',
-                'X-goog-api-key': api_key
-            }
+            # Try multiple API keys until one works
+            print(f"\n🔄 STEP 3: Trying {len(api_keys)} API key(s) with Gemini API...")
+            print(f"   📝 User message: {message[:100]}...")
+            print(f"   🌐 URL: {url}")
+            print(f"   🤖 Model: {model_name}")
             
-            try:
-                response = requests.post(url, headers=headers, json=payload, timeout=30)
-                response.raise_for_status()
-                
-                result = response.json()
-                
-                # Extract text from response
-                if 'candidates' in result and len(result['candidates']) > 0:
-                    if 'content' in result['candidates'][0]:
-                        if 'parts' in result['candidates'][0]['content']:
-                            ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
-                        else:
-                            ai_response = result['candidates'][0]['content'].get('text', '')
-                    else:
-                        ai_response = result['candidates'][0].get('text', '')
-                else:
-                    ai_response = str(result)
-                    
+            success, ai_response, error = try_gemini_api_with_keys(api_keys, url, payload, model_name)
+            
+            print("\n" + "=" * 70)
+            if not success:
+                # All API keys failed - use database fallback
+                print(f"❌ ERROR: Semua API key gagal: {error}")
+                print("📦 FALLBACK: Menggunakan response dari database...")
+                print("=" * 70)
+                ai_response = generate_fallback_response(message, fish_species)
+            else:
                 if not ai_response:
-                    ai_response = "Maaf, saya tidak dapat menghasilkan respons. Silakan coba lagi."
-                    
-            except requests.exceptions.RequestException as req_error:
-                print(f"Error calling Gemini API: {req_error}")
-                error_msg = str(req_error)
-                status_code = None
-                error_detail = None
-                
-                if hasattr(req_error, 'response') and req_error.response is not None:
-                    status_code = req_error.response.status_code
-                    try:
-                        error_detail = req_error.response.json()
-                    except:
-                        error_detail = req_error.response.text
-                    print(f"Response status: {status_code}")
-                    print(f"Response: {error_detail}")
-                
-                # Handle specific error codes
-                if status_code == 403:
-                    # API key issue - try fallback model first, then provide fallback response from database
-                    try:
-                        print("403 Forbidden - Trying fallback to gemini-2.0-flash with header auth...")
-                        fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-                        fallback_headers = {
-                            'Content-Type': 'application/json',
-                            'X-goog-api-key': api_key
-                        }
-                        fallback_response = requests.post(fallback_url, headers=fallback_headers, json=payload, timeout=30)
-                        fallback_response.raise_for_status()
-                        result = fallback_response.json()
-                        if 'candidates' in result and len(result['candidates']) > 0:
-                            if 'content' in result['candidates'][0] and 'parts' in result['candidates'][0]['content']:
-                                ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
-                                if ai_response:
-                                    # Success with fallback, continue normally
-                                    pass
-                                else:
-                                    # Provide fallback response from database
-                                    ai_response = generate_fallback_response(message, fish_species)
-                            else:
-                                # Provide fallback response from database
-                                ai_response = generate_fallback_response(message, fish_species)
-                        else:
-                            # Provide fallback response from database
-                            ai_response = generate_fallback_response(message, fish_species)
-                    except Exception as fallback_error:
-                        print(f"Fallback model also failed: {fallback_error}")
-                        # Provide fallback response from database
-                        ai_response = generate_fallback_response(message, fish_species)
-                elif status_code == 404:
-                    # Model not found - try fallback, then use database fallback
-                    try:
-                        print("404 Not Found - Trying fallback to gemini-2.0-flash...")
-                        fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-                        fallback_headers = {
-                            'Content-Type': 'application/json',
-                            'X-goog-api-key': api_key
-                        }
-                        fallback_response = requests.post(fallback_url, headers=fallback_headers, json=payload, timeout=30)
-                        fallback_response.raise_for_status()
-                        result = fallback_response.json()
-                        if 'candidates' in result and len(result['candidates']) > 0:
-                            if 'content' in result['candidates'][0] and 'parts' in result['candidates'][0]['content']:
-                                ai_response = result['candidates'][0]['content']['parts'][0].get('text', '')
-                                if not ai_response:
-                                    # Use database fallback
-                                    ai_response = generate_fallback_response(message, fish_species)
-                            else:
-                                # Use database fallback
-                                ai_response = generate_fallback_response(message, fish_species)
-                        else:
-                            # Use database fallback
-                            ai_response = generate_fallback_response(message, fish_species)
-                    except Exception as fallback_error:
-                        print(f"Fallback model also failed: {fallback_error}")
-                        # Use database fallback
-                        ai_response = generate_fallback_response(message, fish_species)
-                elif status_code == 429:
-                    # Quota exceeded - use database fallback instead of error
-                    print("429 Quota exceeded - Using database fallback response")
+                    print("⚠️ WARNING: API berhasil tapi response kosong")
+                    print("📦 FALLBACK: Menggunakan response dari database...")
+                    print("=" * 70)
                     ai_response = generate_fallback_response(message, fish_species)
                 else:
-                    # Generic error - use database fallback instead of returning error
-                    print(f"Error {status_code} - Using database fallback response")
-                    ai_response = generate_fallback_response(message, fish_species)
+                    print(f"✅ SUCCESS: AI Response dari Gemini API!")
+                    print(f"   📏 Panjang: {len(ai_response)} karakter")
+                    print(f"   📄 Preview: {ai_response[:200]}...")
+                    print("=" * 70)
+            
+            # Legacy error handling (kept for backward compatibility, but should not be reached)
+            try:
+                pass  # This block is now handled by try_gemini_api_with_keys
+            except requests.exceptions.RequestException as req_error:
+                # This should not be reached as try_gemini_api_with_keys handles errors
+                print(f"Unexpected error: {req_error}")
+                ai_response = generate_fallback_response(message, fish_species)
             except Exception as api_error:
                 print(f"Error processing API response: {api_error}")
                 import traceback

@@ -149,12 +149,21 @@ const SelectContent = React.forwardRef<
   const updatePosition = React.useCallback(() => {
     if (context?.open && context?.triggerRef) {
       const rect = context.triggerRef.getBoundingClientRect();
+      const contentRefElement = contentRef.current;
+      
+      // Estimate content height (default to 200px if not available)
+      const estimatedHeight = contentRefElement?.scrollHeight || 200;
+      
+      // Always show above the trigger
+      const spaceAbove = rect.top;
+      
       setPositionStyle({
         position: 'fixed',
-        top: `${rect.bottom + 4}px`,
+        top: `${rect.top - estimatedHeight - 4}px`,
         left: `${rect.left}px`,
         width: `${rect.width}px`,
-        minWidth: `${rect.width}px`
+        minWidth: `${rect.width}px`,
+        maxHeight: `${Math.max(spaceAbove - 8, 150)}px` // Minimum 150px height
       });
     }
   }, [context?.open, context?.triggerRef]);

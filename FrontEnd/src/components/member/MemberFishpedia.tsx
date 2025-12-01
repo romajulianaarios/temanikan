@@ -3,9 +3,10 @@ import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Fish, ChevronRight } from '../icons';
+import { ChevronRight } from '../icons';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { fishpediaAPI, buildAssetUrl } from '../../services/api';
+import logo from '../../assets/logo_temanikan.png';
 
 interface FishSpecies {
   id: number;
@@ -257,11 +258,6 @@ export default function MemberFishpedia() {
     }
   };
 
-  const modalOverlayStyle = {
-    backdropFilter: 'none',
-    background: 'rgba(19, 62, 135, 0.4)'
-  };
-
   return (
     <div className="space-y-6">
       {loading && (
@@ -296,19 +292,20 @@ export default function MemberFishpedia() {
             style={{ 
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(10px)',
-              border: '2px solid rgba(15, 91, 229, 0.3)',
-              boxShadow: '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+              border: '2px solid rgba(15, 91, 229, 0.7)',
+              boxShadow: 'rgba(15, 91, 229, 0.35) 0px 15px 50px, rgba(15, 91, 229, 0.5) 0px 0px 0px 1px inset',
               fontFamily: 'Nunito Sans, sans-serif',
-              outline: 'none'
+              outline: 'none',
+              color: '#133E87'
             }}
             onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.5)';
-              e.currentTarget.style.boxShadow = '0 12px 40px rgba(15, 91, 229, 0.25), 0 0 0 1px rgba(15, 91, 229, 0.4) inset';
+              e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.9)';
+              e.currentTarget.style.boxShadow = 'rgba(15, 91, 229, 0.45) 0px 18px 60px, rgba(15, 91, 229, 0.6) 0px 0px 0px 1px inset';
               e.currentTarget.style.transform = 'translateY(-2px)';
             }}
             onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.3)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              e.currentTarget.style.borderColor = 'rgba(15, 91, 229, 0.7)';
+              e.currentTarget.style.boxShadow = 'rgba(15, 91, 229, 0.35) 0px 15px 50px, rgba(15, 91, 229, 0.5) 0px 0px 0px 1px inset';
               e.currentTarget.style.transform = 'translateY(0)';
             }}
           />
@@ -454,7 +451,7 @@ export default function MemberFishpedia() {
       {/* No Results */}
       {filteredFish.length === 0 && (
         <div className="text-center py-12">
-          <Fish className="w-16 h-16 mx-auto mb-4" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+          <img src={logo} alt="Temanikan Logo" className="w-16 h-16 mx-auto mb-4 object-contain opacity-50" />
           <p className="text-lg" style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Tidak ada ikan yang ditemukan</p>
           <p className="text-sm mt-2" style={{ color: 'rgba(255, 255, 255, 0.8)', fontFamily: 'Nunito Sans, sans-serif' }}>Coba ubah kata kunci pencarian atau filter tingkat kesulitan</p>
         </div>
@@ -463,19 +460,48 @@ export default function MemberFishpedia() {
       {/* Fish Detail Dialog */}
       <Dialog open={selectedFish !== null} onOpenChange={() => setSelectedFish(null)}>
         <DialogContent
-          className="max-w-4xl max-h-[90vh] overflow-y-auto"
-          style={{ backgroundColor: '#F3F3E0', border: 'none' }}
-          overlayStyle={modalOverlayStyle}
+          className="max-w-4xl max-h-[85vh] overflow-y-auto p-0"
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
+            zIndex: 99999999,
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            maxHeight: 'calc(100vh - 120px)',
+            margin: '0'
+          } as React.CSSProperties}
+          overlayStyle={{
+            backdropFilter: 'blur(8px)',
+            background: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 99999998
+          }}
         >
-          <DialogHeader className="border-b pb-4" style={{ borderColor: '#CBDCEB' }}>
-            <DialogTitle className="text-2xl font-bold" style={{ color: '#133E87' }}>{selectedFish?.name}</DialogTitle>
-            <p className="text-sm italic text-gray-600 mt-1">{selectedFish?.scientificName}</p>
-          </DialogHeader>
-          
-          {selectedFish && (
-            <div className="space-y-4 pt-4">
+          <div className="relative px-6 py-5">
+            <div className="pointer-events-none absolute -top-12 -right-8 h-32 w-32 rounded-full bg-[#608BC1]/20 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-16 -left-4 h-40 w-40 rounded-full bg-[#133E87]/10 blur-3xl" />
+            <div className="relative z-10">
+              <DialogHeader className="border-b pb-4 mb-4" style={{ borderColor: 'rgba(72, 128, 255, 0.2)' }}>
+                <DialogTitle className="text-2xl font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700 }}>{selectedFish?.name}</DialogTitle>
+                <p className="text-sm italic mt-1" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish?.scientificName}</p>
+              </DialogHeader>
+              
+              {selectedFish && (
+                <div className="space-y-4 pt-4">
               {/* Image */}
-              <div className="relative h-72 rounded-xl overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 shadow-lg">
+              <div 
+                className="relative h-72 rounded-2xl overflow-hidden shadow-lg"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.1), rgba(15, 91, 229, 0.05))',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 8px 32px rgba(15, 91, 229, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                }}
+              >
                 <ImageWithFallback
                   src={selectedFish.imageUrl}
                   alt={selectedFish.name}
@@ -490,74 +516,140 @@ export default function MemberFishpedia() {
 
               {/* Basic Info Cards */}
               <div className="grid md:grid-cols-3 gap-3">
-                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Kategori</span>
-                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.category}</p>
+                <div 
+                  className="p-4 rounded-2xl transition-all duration-300"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <span className="text-xs font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Kategori</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.category}</p>
                 </div>
-                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Famili</span>
-                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.family || 'N/A'}</p>
+                <div 
+                  className="p-4 rounded-2xl transition-all duration-300"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <span className="text-xs font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Famili</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.family || 'N/A'}</p>
                 </div>
-                <div className="p-4 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <span className="text-xs font-semibold" style={{ color: '#636E72' }}>Temperamen</span>
-                  <p className="font-medium mt-1" style={{ color: '#133E87' }}>{selectedFish.temperament || 'Damai'}</p>
+                <div 
+                  className="p-4 rounded-2xl transition-all duration-300"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <span className="text-xs font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Temperamen</span>
+                  <p className="font-medium mt-1" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.temperament || 'Damai'}</p>
                 </div>
               </div>
 
               {/* Description */}
-              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>📝 Deskripsi</h3>
-                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.detailedDescription || selectedFish.description}</p>
+              <div 
+                className="p-5 rounded-2xl transition-all duration-300"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+              >
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>📝 Deskripsi</h3>
+                <p className="leading-relaxed text-sm" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.detailedDescription || selectedFish.description}</p>
               </div>
 
               {/* Parameters Grid */}
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>💧 Parameter Air</h3>
+                <div 
+                  className="p-5 rounded-2xl transition-all duration-300"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>💧 Parameter Air</h3>
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Suhu</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.temperature}</span>
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: 'rgba(72, 128, 255, 0.2)' }}>
+                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Suhu</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.temperature}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>pH</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.ph}</span>
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: 'rgba(72, 128, 255, 0.2)' }}>
+                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>pH</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.ph}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Ukuran Maksimal</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.size}</span>
+                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Ukuran Maksimal</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.size}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87' }}>ℹ️ Informasi Lainnya</h3>
+                <div 
+                  className="p-5 rounded-2xl transition-all duration-300"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif'
+                  }}
+                >
+                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>ℹ️ Informasi Lainnya</h3>
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: '#E5E7EB' }}>
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Temperamen</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.temperament}</span>
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: 'rgba(72, 128, 255, 0.2)' }}>
+                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Temperamen</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.temperament}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <span className="text-sm font-medium" style={{ color: '#636E72' }}>Lama Hidup</span>
-                      <span className="font-semibold text-sm" style={{ color: '#133E87' }}>{selectedFish.lifespan}</span>
+                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Lama Hidup</span>
+                      <span className="font-semibold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.lifespan}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Habitat */}
-              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>🌍 Habitat Alami</h3>
-                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.habitat || 'Informasi habitat tidak tersedia'}</p>
+              <div 
+                className="p-5 rounded-2xl transition-all duration-300"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+              >
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>🌍 Habitat Alami</h3>
+                <p className="leading-relaxed text-sm" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.habitat || 'Informasi habitat tidak tersedia'}</p>
               </div>
 
               {/* Diet */}
-              <div className="p-5 rounded-lg" style={{ backgroundColor: 'white' }}>
-                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87' }}>🍽️ Makanan & Diet</h3>
-                <p className="leading-relaxed text-sm" style={{ color: '#636E72' }}>{selectedFish.diet || 'Informasi diet tidak tersedia'}</p>
+              <div 
+                className="p-5 rounded-2xl transition-all duration-300"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  border: '2px solid rgba(72, 128, 255, 0.2)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                  fontFamily: 'Nunito Sans, sans-serif'
+                }}
+              >
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>🍽️ Makanan & Diet</h3>
+                <p className="leading-relaxed text-sm" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.diet || 'Informasi diet tidak tersedia'}</p>
               </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

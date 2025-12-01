@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from './Router';
-import { Fish } from './icons';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import logo from '../assets/logo_temanikan.png';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function Login() {
         <div className="p-8 rounded-lg shadow-lg" style={{ backgroundColor: 'white' }}>
           {/* Logo */}
           <div className="flex items-center justify-center gap-2 mb-8">
-            <Fish className="w-10 h-10" style={{ color: '#608BC1' }} />
+            <img src={logo} alt="Temanikan Logo" className="w-10 h-10 object-contain" />
             <span className="text-2xl" style={{ color: '#133E87' }}>temanikan</span>
           </div>
 

@@ -68,8 +68,9 @@ export default function MyOrders() {
   };
 
   const dialogOverlayStyle = {
-    backdropFilter: 'none',
-    background: 'rgba(15, 23, 42, 0.45)'
+    backdropFilter: 'blur(8px)',
+    background: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 99999998 // Just below dialog content (99999999)
   };
 
   // Fetch orders on mount
@@ -178,7 +179,13 @@ export default function MyOrders() {
     setShowSuccessModal(false);
     if (newOrderData) {
       setSelectedOrder(newOrderData);
-      setShowPaymentModal(true);
+      // Use setTimeout to ensure state is updated before opening modal
+      setTimeout(() => {
+        setShowPaymentModal(true);
+      }, 100);
+    } else {
+      console.error('❌ newOrderData is null when trying to pay');
+      alert('Data pesanan tidak ditemukan. Silakan coba lagi.');
     }
   };
 
@@ -380,7 +387,7 @@ export default function MyOrders() {
       <div className="grid grid-cols-2 gap-4">
         <button
           onClick={() => setActiveView('create')}
-          className={`bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden ${
+          className={`bubble-card p-6 transition-all duration-300 relative overflow-hidden ${
             activeView === 'create' ? '' : ''
           }`}
           style={{ 
@@ -388,20 +395,30 @@ export default function MyOrders() {
             border: activeView === 'create' 
               ? '2px solid rgba(72, 128, 255, 0.4)' 
               : '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '48px',
             boxShadow: activeView === 'create'
               ? '0 10px 50px rgba(72, 128, 255, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
               : '0 8px 32px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-            fontFamily: 'Nunito Sans, sans-serif'
+            fontFamily: 'Nunito Sans, sans-serif',
+            overflow: 'hidden'
           }}
           onMouseEnter={(e) => {
-            if (activeView !== 'create') {
+            if (activeView === 'create') {
+              e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.4) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.5)';
+            } else {
               e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
               e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
               e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
             }
           }}
           onMouseLeave={(e) => {
-            if (activeView !== 'create') {
+            if (activeView === 'create') {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+            } else {
               e.currentTarget.style.transform = 'translateY(0) scale(1)';
               e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
               e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
@@ -437,7 +454,7 @@ export default function MyOrders() {
         
         <button
           onClick={() => setActiveView('list')}
-          className={`bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden ${
+          className={`bubble-card p-6 transition-all duration-300 relative overflow-hidden ${
             activeView === 'list' ? '' : ''
           }`}
           style={{ 
@@ -445,20 +462,30 @@ export default function MyOrders() {
             border: activeView === 'list' 
               ? '2px solid rgba(72, 128, 255, 0.4)' 
               : '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '48px',
             boxShadow: activeView === 'list'
               ? '0 10px 50px rgba(72, 128, 255, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
               : '0 8px 32px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-            fontFamily: 'Nunito Sans, sans-serif'
+            fontFamily: 'Nunito Sans, sans-serif',
+            overflow: 'hidden'
           }}
           onMouseEnter={(e) => {
-            if (activeView !== 'list') {
+            if (activeView === 'list') {
+              e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 15px 60px rgba(72, 128, 255, 0.3), 0 0 0 1px rgba(72, 128, 255, 0.4) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.5)';
+            } else {
               e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
               e.currentTarget.style.boxShadow = '0 12px 40px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
               e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
             }
           }}
           onMouseLeave={(e) => {
-            if (activeView !== 'list') {
+            if (activeView === 'list') {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 10px 50px rgba(72, 128, 255, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+              e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+            } else {
               e.currentTarget.style.transform = 'translateY(0) scale(1)';
               e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
               e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.2)';
@@ -498,7 +525,7 @@ export default function MyOrders() {
         <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
             <Card 
-              className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+              className="bubble-card p-6 rounded-[48px] transition-all duration-300 relative overflow-hidden"
               style={{ 
                 backgroundColor: '#FFFFFF',
                 border: '2px solid rgba(72, 128, 255, 0.2)',
@@ -546,7 +573,7 @@ export default function MyOrders() {
             </Card>
 
             <Card 
-              className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+              className="bubble-card p-6 rounded-[48px] transition-all duration-300 relative overflow-hidden"
               style={{ 
                 backgroundColor: '#FFFFFF',
                 border: '2px solid rgba(72, 128, 255, 0.2)',
@@ -691,7 +718,7 @@ export default function MyOrders() {
 
           <div className="md:col-span-1">
             <Card 
-              className={`bubble-card p-6 rounded-[32px] sticky top-20 transition-all duration-300 relative overflow-hidden ${formValid ? '' : 'opacity-50'}`}
+              className={`bubble-card p-6 rounded-[48px] sticky top-20 transition-all duration-300 relative overflow-hidden ${formValid ? '' : 'opacity-50'}`}
               style={{ 
                 backgroundColor: '#FFFFFF',
                 border: '2px solid rgba(72, 128, 255, 0.2)',
@@ -797,7 +824,7 @@ export default function MyOrders() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Card 
-              className="bubble-card p-4 text-center rounded-[32px] transition-all duration-300 relative overflow-hidden"
+              className="bubble-card p-4 text-center rounded-[48px] transition-all duration-300 relative overflow-hidden"
               style={{ 
                 backgroundColor: '#FFFFFF',
                 border: '2px solid rgba(72, 128, 255, 0.2)',
@@ -905,7 +932,7 @@ export default function MyOrders() {
 
           {error && (
             <Card 
-              className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+              className="bubble-card p-6 rounded-[48px] transition-all duration-300 relative overflow-hidden"
               style={{
                 backgroundColor: 'rgba(239, 68, 68, 0.1)',
                 border: '2px solid rgba(239, 68, 68, 0.3)',
@@ -931,7 +958,7 @@ export default function MyOrders() {
           )}
 
           <Card 
-            className="bubble-card rounded-[32px] transition-all duration-300 relative overflow-hidden"
+            className="bubble-card rounded-[48px] transition-all duration-300 relative overflow-hidden"
             style={{ 
               backgroundColor: '#FFFFFF',
               border: '2px solid rgba(72, 128, 255, 0.2)',
@@ -1106,7 +1133,20 @@ export default function MyOrders() {
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
         <DialogContent
           className="max-w-md"
-          style={{ backgroundColor: 'white' }}
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
+            position: 'fixed',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            margin: 0,
+            zIndex: 99999999
+          }}
           overlayStyle={dialogOverlayStyle}
         >
           <DialogHeader>
@@ -1194,7 +1234,20 @@ export default function MyOrders() {
       <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
         <DialogContent
           className="w-[92vw] sm:max-w-md text-[12px] md:text-[13px] max-h-[80vh] overflow-y-auto"
-          style={{ backgroundColor: 'white', fontFamily: '"Nunito Sans", sans-serif', borderRadius: '12px' }}
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
+            position: 'fixed',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            margin: 0,
+            zIndex: 99999999
+          }}
           overlayStyle={dialogOverlayStyle}
         >
           {selectedOrder && (
@@ -1289,7 +1342,20 @@ export default function MyOrders() {
       <Dialog open={showPaymentSuccessModal} onOpenChange={setShowPaymentSuccessModal}>
         <DialogContent
           className="max-w-md"
-          style={{ backgroundColor: 'white' }}
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
+            position: 'fixed',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            margin: 0,
+            zIndex: 99999999
+          }}
           overlayStyle={dialogOverlayStyle}
         >
           <DialogHeader>
@@ -1333,10 +1399,23 @@ export default function MyOrders() {
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
         <DialogContent
           className="max-w-lg"
-          style={{ backgroundColor: 'white' }}
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            border: '2px solid rgba(72, 128, 255, 0.2)',
+            borderRadius: '32px',
+            boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+            fontFamily: 'Nunito Sans, sans-serif',
+            position: 'fixed',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            margin: 0,
+            zIndex: 99999999
+          }}
           overlayStyle={dialogOverlayStyle}
         >
-          {selectedOrder && (
+          {selectedOrder ? (
             <>
               <DialogHeader>
                 <DialogTitle style={{ color: '#4880FF' }}>
@@ -1408,6 +1487,19 @@ export default function MyOrders() {
                 </Button>
               </DialogFooter>
             </>
+          ) : (
+            <div className="p-6 text-center">
+              <p className="text-gray-600 mb-4">Memuat informasi pesanan...</p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowPaymentModal(false);
+                  setSelectedOrder(null);
+                }}
+              >
+                Tutup
+              </Button>
+            </div>
           )}
         </DialogContent>
       </Dialog>

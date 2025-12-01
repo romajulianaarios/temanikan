@@ -138,7 +138,7 @@ const DropdownMenuContent = React.forwardRef<
         position: 'fixed' as const,
         top: '0px',
         left: '0px',
-        zIndex: 9999,
+        zIndex: 9999999,
         visibility: 'hidden' as any
       };
     }
@@ -168,7 +168,7 @@ const DropdownMenuContent = React.forwardRef<
       position: 'fixed' as const,
       top: `${top}px`,
       left: `${left}px`,
-      zIndex: 9999
+      zIndex: 9999999
     };
   }, [context?.triggerRef, sideOffset, align]);
 
@@ -179,7 +179,8 @@ const DropdownMenuContent = React.forwardRef<
       // Reset position when closed
       setPositionStyle({
         position: 'fixed' as const,
-        visibility: 'hidden' as any
+        visibility: 'hidden' as any,
+        display: 'none'
       });
       return;
     }
@@ -239,7 +240,10 @@ const DropdownMenuContent = React.forwardRef<
           position: 'fixed' as const,
           top: `${top}px`,
           left: `${left}px`,
-          zIndex: 9999
+          zIndex: 9999999,
+          display: 'block',
+          visibility: 'visible',
+          opacity: 1
         });
       }
     };
@@ -318,7 +322,11 @@ const DropdownMenuContent = React.forwardRef<
       )}
       style={{
         ...positionStyle,
-        ...props.style
+        ...props.style,
+        display: 'block',
+        visibility: 'visible',
+        opacity: 1,
+        pointerEvents: 'auto'
       }}
       {...props}
     >

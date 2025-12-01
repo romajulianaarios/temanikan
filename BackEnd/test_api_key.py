@@ -77,7 +77,7 @@ def test_api_key(api_key=None):
             print("1. Cek API key di: https://makersuite.google.com/app/apikey")
             print("2. Pastikan API key aktif dan tidak expired")
             print("3. Buat API key baru jika perlu")
-                    print(f"\nResponse: {response.text[:200]}")
+            print(f"\nResponse: {response.text[:200]}")
             return False
             
         elif response.status_code == 429:
