@@ -349,6 +349,11 @@ export const diseaseAPI = {
     return response.data;
   },
 
+  deleteDetection: async (detectionId: number) => {
+    const response = await api.delete(`/disease-detections/${detectionId}`);
+    return response.data;
+  },
+
   updateDetection: async (detectionId: number, data: {
     status?: string;
     notes?: string;

@@ -2667,6 +2667,112 @@ def register_routes(app):
             print(f"❌ Error fetching disease detections: {e}")
             return jsonify({'success': False, 'error': str(e)}), 500
 
+    @app.route('/api/devices/<int:device_id>/disease-detections', methods=['POST'])
+    @jwt_required()
+    def save_device_disease_detection(device_id):
+        """Save a new disease detection record for a specific device"""
+        try:
+            user_id = get_jwt_identity()
+            
+            # Verify device ownership
+            device = Device.query.filter_by(id=device_id, user_id=user_id).first()
+            if not device:
+                return jsonify({'success': False, 'message': 'Device not found or unauthorized'}), 404
+
+            # Handle image upload
+            image_url = None
+            if 'image' in request.files:
+                file = request.files['image']
+                if file and file.filename:
+                    filename = secure_filename(f"detection_{device_id}_{int(datetime.utcnow().timestamp())}.jpg")
+                    upload_folder = os.path.join('static', 'uploads', 'detections')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    file_path = os.path.join(upload_folder, filename)
+                    file.save(file_path)
+                    image_url = f"/static/uploads/detections/{filename}"
+
+            # Create detection record
+            detection = DiseaseDetection(
+                device_id=device_id,
+                disease_name=request.form.get('disease_name'),
+                confidence=float(request.form.get('confidence', 0)),
+                severity=request.form.get('severity', 'low'),
+                image_url=image_url,
+                detected_at=datetime.utcnow(),
+                symptoms=request.form.get('symptoms'), # Can be JSON string
+                recommended_treatment=request.form.get('recommended_treatment'),
+                status=request.form.get('status', 'detected'),
+                notes=request.form.get('notes')
+            )
+            
+            db.session.add(detection)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Detection saved successfully',
+                'detection': detection.to_dict()
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error saving disease detection: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/disease-detections/<int:detection_id>/image', methods=['GET'])
+    def get_disease_detection_image(detection_id):
+        """Serve the image for a disease detection"""
+        try:
+            detection = DiseaseDetection.query.get_or_404(detection_id)
+            
+            if not detection.image_url:
+                return jsonify({'error': 'No image associated with this detection'}), 404
+                
+            # Remove leading slash if present to make path relative
+            image_path = detection.image_url.lstrip('/')
+            
+            if not os.path.exists(image_path):
+                return jsonify({'error': 'Image file not found'}), 404
+                
+            return send_file(image_path, mimetype='image/jpeg')
+            
+        except Exception as e:
+            print(f"❌ Error serving detection image: {e}")
+            return jsonify({'error': str(e)}), 500
+
+    @app.route('/api/disease-detections/<int:detection_id>', methods=['DELETE'])
+    @jwt_required()
+    def delete_disease_detection(detection_id):
+        """Delete a disease detection record"""
+        try:
+            user_id = int(get_jwt_identity())
+            
+            detection = DiseaseDetection.query.get_or_404(detection_id)
+            
+            # Verify ownership via device
+            device = Device.query.get(detection.device_id)
+            if not device or device.user_id != user_id:
+                return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+            
+            # Delete image file if exists
+            if detection.image_url:
+                image_path = detection.image_url.lstrip('/')
+                if os.path.exists(image_path):
+                    try:
+                        os.remove(image_path)
+                    except Exception as e:
+                        print(f"⚠️ Failed to delete image file: {e}")
+            
+            db.session.delete(detection)
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': 'Detection deleted successfully'}), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error deleting detection: {e}")
+            return jsonify({'success': False, 'error': str(e)}), 500
+
     # ==================== NOTIFICATION ROUTES ====================
 
     @app.route('/api/notifications', methods=['GET'])
