@@ -1,14 +1,13 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from './Router';
 import { useAuth } from './AuthContext';
-import { notificationAPI } from '../services/api';
-import { formatNotificationTime } from '../utils/dateFormat';
-import { 
-  Home as LayoutDashboard, 
-  Bot, 
-  Camera, 
-  BookOpen, 
-  Users as UsersIcon, 
+import {
+  Fish,
+  Home as LayoutDashboard,
+  Bot,
+  Camera,
+  BookOpen,
+  Users as UsersIcon,
   MessageSquare,
   Settings,
   Bell,
@@ -20,15 +19,14 @@ import {
   ChevronLeft,
   ShoppingCart
 } from './icons';
-import logo from '../assets/logo_temanikan.png';
 import { Button } from './ui/button';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from './ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
@@ -64,43 +62,53 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
+        const { notificationAPI } = await import('../services/api');
         const response = await notificationAPI.getNotifications(10, false);
-        console.log('🔔 Notification API Response:', response);
-        
-        // Handle different response formats
-        let notifs = [];
-        let count = 0;
-        
-        if (response.success || response.notifications) {
-          notifs = response.notifications || (response.data && response.data.notifications) || [];
-          count = response.unread_count !== undefined ? response.unread_count : (response.data && response.data.unread_count) || 0;
-        } else if (Array.isArray(response)) {
-          // If response is directly an array
-          notifs = response;
-          count = response.filter((n: any) => !n.is_read).length;
+
+        if (response.notifications) {
+          setNotifications(response.notifications);
+          setUnreadCount(response.unread_count || 0);
         }
-
-        console.log('📬 Notifications:', notifs);
-        console.log('🔴 Unread Count:', count);
-
-        setNotifications(notifs);
-        setUnreadCount(count);
       } catch (error) {
-        console.error('❌ Failed to fetch notifications', error);
-        setNotifications([]);
-        setUnreadCount(0);
+        console.error('Failed to fetch notifications', error);
       }
     };
 
     if (user) {
       fetchNotifications();
-      const interval = setInterval(fetchNotifications, 30000);
+      // Optional: Poll every minute
+      const interval = setInterval(fetchNotifications, 60000);
       return () => clearInterval(interval);
-    } else {
-      setNotifications([]);
-      setUnreadCount(0);
     }
   }, [user]);
+
+  const handleMarkAsRead = async (id: number) => {
+    try {
+      const { notificationAPI } = await import('../services/api');
+      await notificationAPI.markAsRead(id);
+
+      // Update local state
+      setNotifications(prev =>
+        prev.map(n => n.id === id ? { ...n, is_read: true } : n)
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Failed to mark notification as read', error);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      const { notificationAPI } = await import('../services/api');
+      await notificationAPI.markAllAsRead();
+
+      // Update local state
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all as read', error);
+    }
+  };
 
   const adminMenuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
@@ -114,8 +122,7 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
 
   const handleLogout = () => {
     logout();
-    // Force reload to home page to ensure clean state
-    window.location.href = '/';
+    navigate('/');
   };
 
   const isActivePath = (path: string) => {
@@ -128,8 +135,25 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
     return location.pathname === path;
   };
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (notificationOpen && !target.closest('.notification-dropdown-container')) {
+        setNotificationOpen(false);
+      }
+    };
+
+    if (notificationOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [notificationOpen]);
+
   return (
-    <div className="min-h-screen flex relative overflow-hidden" style={{ 
+    <div className="min-h-screen flex relative overflow-hidden" style={{
       background: 'linear-gradient(to bottom, #87CEEB 0%, #4A90E2 15%, #357ABD 30%, #2E5C8A 50%, #1E3A5F 70%, #0F2027 100%)',
       position: 'relative'
     }}>
@@ -138,11 +162,11 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#0F5BE5] rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#FFD6D6] rounded-full blur-3xl"></div>
       </div>
-      
+
       {/* Sidebar - Desktop */}
-      <aside 
+      <aside
         className={`hidden lg:flex flex-col fixed left-0 top-0 h-full transition-all duration-300 z-40 shadow-lg`}
-        style={{ 
+        style={{
           width: sidebarCollapsed ? '80px' : '280px',
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
@@ -150,15 +174,15 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
         }}
       >
         {/* Sidebar Header */}
-        <div className="p-4 border-b flex items-center justify-between" style={{ 
+        <div className="p-4 border-b flex items-center justify-between" style={{
           borderColor: 'rgba(255, 255, 255, 0.3)',
           backgroundColor: 'rgba(255, 255, 255, 0.5)',
           backdropFilter: 'blur(10px)'
         }}>
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2">
-              <img src={logo} alt="Temanikan Logo" className="w-7 h-7 object-contain" />
-              <span className="text-lg font-bold" style={{ 
+              <Fish className="w-7 h-7" style={{ color: '#4880FF' }} />
+              <span className="text-lg font-bold" style={{
                 color: '#133E87',
                 fontFamily: 'Nunito Sans, sans-serif',
                 fontWeight: 700
@@ -166,7 +190,7 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
             </div>
           )}
           {sidebarCollapsed && (
-            <img src={logo} alt="Temanikan Logo" className="w-7 h-7 mx-auto object-contain" />
+            <Fish className="w-7 h-7 mx-auto" style={{ color: '#4880FF' }} />
           )}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -185,7 +209,7 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
               e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-            <ChevronLeft 
+            <ChevronLeft
               className={`w-5 h-5 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`}
               style={{ color: '#4880FF' }}
             />
@@ -199,18 +223,18 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
               key={item.path}
               to={item.path}
               className="bubble-button flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
-              style={{ 
-                backgroundColor: isActivePath(item.path) 
-                  ? '#4880FF' 
+              style={{
+                backgroundColor: isActivePath(item.path)
+                  ? '#4880FF'
                   : '#FFFFFF',
-                border: isActivePath(item.path) 
-                  ? '2px solid rgba(72, 128, 255, 0.5)' 
+                border: isActivePath(item.path)
+                  ? '2px solid rgba(72, 128, 255, 0.5)'
                   : '2px solid rgba(72, 128, 255, 0.15)',
                 color: isActivePath(item.path) ? '#FFFFFF' : '#133E87',
                 fontWeight: isActivePath(item.path) ? 700 : 600,
                 fontFamily: 'Nunito Sans, sans-serif',
-                boxShadow: isActivePath(item.path) 
-                  ? '0 6px 25px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset' 
+                boxShadow: isActivePath(item.path)
+                  ? '0 6px 25px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset'
                   : '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
               }}
               title={sidebarCollapsed ? item.label : ''}
@@ -252,7 +276,7 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
             type="button"
             onClick={handleLogout}
             className="bubble-button w-full flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
-            style={{ 
+            style={{
               backgroundColor: '#FEE2E2',
               border: '2px solid rgba(239, 68, 68, 0.4)',
               color: '#B91C1C',
@@ -280,463 +304,234 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
 
       {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
-        <div 
+        <div
           className="lg:hidden fixed inset-0 bg-black/50 z-40"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
       {/* Mobile Sidebar */}
-      <aside 
-        className={`lg:hidden fixed left-0 top-0 h-full w-280px z-50 shadow-lg transform transition-transform ${
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        style={{ 
+      <aside
+        className={`lg:hidden fixed left-0 top-0 h-full w-280px z-50 shadow-lg transform transition-transform ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        style={{
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           borderRight: '1px solid rgba(255, 255, 255, 0.3)',
           width: '280px'
         }}
       >
-        {/* Mobile Sidebar Header */}
-        <div className="p-4 border-b flex items-center justify-between" style={{ 
-          borderColor: 'rgba(255, 255, 255, 0.3)',
-          backgroundColor: 'rgba(255, 255, 255, 0.5)',
-          backdropFilter: 'blur(10px)'
-        }}>
+        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}>
           <div className="flex items-center gap-2">
-            <img src={logo} alt="Temanikan Logo" className="w-7 h-7 object-contain" />
-            <span className="text-lg font-bold" style={{ 
-              color: '#133E87',
-              fontFamily: 'Nunito Sans, sans-serif',
-              fontWeight: 700
-            }}>temanikan</span>
+            <Fish className="w-7 h-7" style={{ color: '#4880FF' }} />
+            <span className="text-lg font-bold" style={{ color: '#133E87' }}>temanikan</span>
           </div>
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="bubble-button p-1.5 rounded-full transition-all duration-300"
-            style={{
-              backgroundColor: 'rgba(72, 128, 255, 0.2)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(72, 128, 255, 0.3)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
-              e.currentTarget.style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.2)';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-          >
-            <X className="w-5 h-5" style={{ color: '#4880FF' }} />
+          <button onClick={() => setMobileMenuOpen(false)} className="p-2">
+            <X className="w-6 h-6" style={{ color: '#133E87' }} />
           </button>
         </div>
 
-        {/* Mobile Sidebar Navigation */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {adminMenuItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
               onClick={() => setMobileMenuOpen(false)}
-              className="bubble-button flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
-              style={{ 
-                backgroundColor: isActivePath(item.path) 
-                  ? '#4880FF' 
-                  : '#FFFFFF',
-                border: isActivePath(item.path) 
-                  ? '2px solid rgba(72, 128, 255, 0.5)' 
-                  : '2px solid rgba(72, 128, 255, 0.15)',
+              className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300"
+              style={{
+                backgroundColor: isActivePath(item.path) ? '#4880FF' : 'transparent',
                 color: isActivePath(item.path) ? '#FFFFFF' : '#133E87',
-                fontWeight: isActivePath(item.path) ? 700 : 600,
-                fontFamily: 'Nunito Sans, sans-serif',
-                boxShadow: isActivePath(item.path) 
-                  ? '0 6px 25px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset' 
-                  : '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
-              }}
-              onMouseEnter={(e) => {
-                if (!isActivePath(item.path)) {
-                  e.currentTarget.style.backgroundColor = '#F0F5FF';
-                  e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
-                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActivePath(item.path)) {
-                  e.currentTarget.style.backgroundColor = '#FFFFFF';
-                  e.currentTarget.style.transform = 'translateX(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
-                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.15)';
-                }
+                fontWeight: isActivePath(item.path) ? 700 : 600
               }}
             >
-              {/* Bubble glow for active item */}
-              {isActivePath(item.path) && (
-                <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-30 pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%)',
-                    filter: 'blur(15px)'
-                  }}
-                ></div>
-              )}
-              <item.icon className="w-5 h-5 flex-shrink-0 relative z-10" />
-              <span className="relative z-10">{item.label}</span>
+              <item.icon className="w-5 h-5" />
+              <span>{item.label}</span>
             </Link>
           ))}
         </nav>
 
-        {/* Mobile Sidebar Footer */}
         <div className="p-4 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}>
           <button
-            type="button"
-            onClick={() => {
-              setMobileMenuOpen(false);
-              handleLogout();
-            }}
-            className="bubble-button w-full flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
-            style={{ 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300"
+            style={{
               backgroundColor: '#FEE2E2',
-              border: '2px solid rgba(239, 68, 68, 0.4)',
               color: '#B91C1C',
-              fontWeight: 700,
-              fontFamily: 'Nunito Sans, sans-serif',
-              boxShadow: '0 6px 25px rgba(239, 68, 68, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6) inset'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#FECACA';
-              e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 8px 30px rgba(239, 68, 68, 0.35), 0 0 0 1px rgba(239, 68, 68, 0.2) inset';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#FEE2E2';
-              e.currentTarget.style.transform = 'translateX(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 6px 25px rgba(239, 68, 68, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6) inset';
+              fontWeight: 700
             }}
           >
-            <LogOut className="w-5 h-5 flex-shrink-0 relative z-10" />
-            <span className="relative z-10">Logout</span>
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div 
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          sidebarCollapsed ? 'lg:ml-[80px]' : 'lg:ml-[280px]'
-        }`}
-      >
-        {/* Top Bar */}
-        <header className="sticky top-0 z-30" style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 4px 30px rgba(72, 128, 255, 0.1)'
-        }}>
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Mobile Menu Button */}
-              <button 
-                className="bubble-button lg:hidden p-2 rounded-full transition-all duration-300"
-                style={{
-                  backgroundColor: 'rgba(72, 128, 255, 0.2)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(72, 128, 255, 0.3)'
-                }}
-                onClick={() => setMobileMenuOpen(true)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
-                  e.currentTarget.style.transform = 'scale(1.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.2)';
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              >
-                <Menu className="w-6 h-6" style={{ color: '#4880FF' }} />
-              </button>
+      {/* Main Content */}
+      <main className={`flex-1 transition-all duration-300 flex flex-col min-h-screen ${sidebarCollapsed ? 'lg:ml-[80px]' : 'lg:ml-[280px]'
+        }`}>
+        {/* Top Header */}
+        <header className="sticky top-0 z-30 px-6 py-4 flex items-center justify-between shadow-sm"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(12px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.5)'
+          }}
+        >
+          <div className="flex items-center gap-4">
+            <button
+              className="lg:hidden p-2 rounded-lg hover:bg-white/50 transition-colors"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="w-6 h-6" style={{ color: '#133E87' }} />
+            </button>
 
-              {/* Page Title */}
-              <div className="hidden sm:block">
-                <h1 style={{ 
-                  color: '#133E87',
-                  fontFamily: 'Nunito Sans, sans-serif',
-                  fontWeight: 700,
-                  fontSize: '1.5rem'
-                }}>{title}</h1>
-              </div>
-
-              {/* Right Side Actions */}
-              <div className="flex items-center gap-3 ml-auto">
-                {/* Language Selector */}
-                <div className="hidden md:block">
-                  <Select defaultValue="id">
-                    <SelectTrigger 
-                      className="bubble-button px-3 py-2 h-auto text-sm font-semibold transition-all duration-300"
-                      style={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(72, 128, 255, 0.3)',
-                        color: '#133E87',
-                        fontFamily: 'Nunito Sans, sans-serif',
-                        cursor: 'pointer',
-                        minWidth: '80px'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
-                        e.currentTarget.style.transform = 'scale(1.05)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="id">ID</SelectItem>
-                      <SelectItem value="en">EN</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Notification Dropdown */}
-                <div className="relative">
-                  <DropdownMenu open={notificationOpen} onOpenChange={(open) => {
-                    console.log('🔔 Dropdown open state changed:', open);
-                    setNotificationOpen(open);
-                  }}>
-                    <DropdownMenuTrigger asChild>
-                      <button className="bubble-button p-2 rounded-full transition-all duration-300"
-                        style={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                          backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(72, 128, 255, 0.3)'
-                        }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
-                        e.currentTarget.style.transform = 'scale(1.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }}
-                    >
-                      <Bell className="w-5 h-5" style={{ color: '#4880FF' }} />
-                      {unreadCount > 0 && (
-                        <span 
-                          className="absolute top-1 right-1 w-4 h-4 rounded-full text-xs flex items-center justify-center text-white font-bold"
-                          style={{ backgroundColor: '#EF4444', fontSize: '10px' }}
-                        >
-                          {unreadCount}
-                        </span>
-                      )}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
-                    sideOffset={4} 
-                    className="w-80" 
-                    style={{ 
-                      backgroundColor: 'white',
-                      zIndex: 9999999,
-                      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
-                      border: '1px solid rgba(229, 231, 235, 0.8)',
-                      borderRadius: '16px',
-                      padding: '8px',
-                      display: 'block',
-                      visibility: 'visible',
-                      opacity: 1,
-                      pointerEvents: 'auto',
-                      minWidth: '320px',
-                      maxWidth: '400px'
-                    }}
-                  >
-                    <DropdownMenuLabel style={{ color: '#1F2937', fontWeight: 600, padding: '8px 12px' }}>
-                      Notifikasi {unreadCount > 0 ? `(${unreadCount} belum dibaca)` : ''}
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <div className="max-h-96 overflow-y-auto" style={{ minHeight: '100px' }}>
-                      {(() => {
-                        console.log('🔔 Rendering notifications. Count:', notifications.length);
-                        console.log('🔔 Notifications data:', notifications);
-                        return null;
-                      })()}
-                      {notifications.length === 0 ? (
-                        <div className="p-8 text-center text-sm text-gray-500">
-                          <div className="bg-gray-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <Bell className="w-6 h-6 text-gray-400" />
-                          </div>
-                          Tidak ada notifikasi baru
-                        </div>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
+                {title}
+              </h1>
+              {breadcrumbs && (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  {breadcrumbs.map((crumb, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      {index > 0 && <span className="text-gray-400">/</span>}
+                      {crumb.path ? (
+                        <Link to={crumb.path} className="hover:text-blue-600 transition-colors">
+                          {crumb.label}
+                        </Link>
                       ) : (
-                        notifications.slice(0, 5).map((notification) => {
-                          console.log('🔔 Rendering notification:', notification);
-                          return (
-                          <DropdownMenuItem 
-                            key={notification.id}
-                            className="flex flex-col items-start p-3 cursor-pointer hover:bg-gray-50"
-                            onClick={() => {
-                              setNotificationOpen(false);
-                              navigate(`/admin/notifications/${notification.id}`);
-                            }}
-                            style={{ 
-                              borderRadius: '8px',
-                              marginBottom: '4px'
-                            }}
-                          >
-                            <div className="flex items-start gap-2 w-full">
-                              <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                                notification.type === 'warning' || notification.type === 'alert' ? 'bg-yellow-500' : 
-                                notification.type === 'success' ? 'bg-green-500' : 'bg-blue-500'
-                              }`} />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold" style={{ color: !notification.is_read ? '#1F2937' : '#6B7280' }}>
-                                  {notification.title || 'Notifikasi'}
-                                </p>
-                                <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                                  {notification.message || 'Tidak ada pesan'}
-                                </p>
-                                <p className="text-xs text-gray-400 mt-1">
-                                  {notification.created_at ? formatNotificationTime(notification.created_at) : 'Baru saja'}
-                                </p>
-                              </div>
-                              {!notification.is_read && (
-                                <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5"></span>
-                              )}
-                            </div>
-                          </DropdownMenuItem>
-                          );
-                        })
+                        <span>{crumb.label}</span>
                       )}
                     </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      className="text-center cursor-pointer hover:bg-gray-50"
-                      onClick={() => navigate('/admin/notifications')}
-                      style={{ borderRadius: '8px', padding: '8px' }}
-                    >
-                      <span className="w-full" style={{ color: '#4880FF', fontWeight: 600 }}>
-                        Lihat Semua Notifikasi
-                      </span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                  </DropdownMenu>
+                  ))}
                 </div>
-                
-                {/* User Profile Dropdown Menu */}
-                <div className="relative">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="bubble-button flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300"
-                        style={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                          backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(72, 128, 255, 0.3)'
-                        }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
-                        e.currentTarget.style.transform = 'scale(1.05)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }}
-                    >
-                      <div 
-                        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{ 
-                          background: 'linear-gradient(135deg, #4880FF, #0F5BE5)',
-                          boxShadow: '0 2px 8px rgba(72, 128, 255, 0.4)'
-                        }}
-                      >
-                        <User className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="hidden lg:flex flex-col items-start">
-                        <p className="text-xs font-semibold" style={{ 
-                          color: '#133E87',
-                          fontFamily: 'Nunito Sans, sans-serif',
-                          fontWeight: 700
-                        }}>{currentUser.name}</p>
-                        <p className="text-xs" style={{ 
-                          color: '#608BC1',
-                          fontSize: '11px',
-                          fontFamily: 'Nunito Sans, sans-serif'
-                        }}>{currentUser.role}</p>
-                      </div>
-                      <ChevronDown className="w-4 h-4 hidden lg:block" style={{ color: '#4880FF' }} />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={4} className="w-56">
-                    <DropdownMenuLabel>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm" style={{ color: '#1F2937' }}>{currentUser.name}</p>
-                        <p className="text-xs text-gray-600">{currentUser.email}</p>
-                        <p className="text-xs" style={{ color: '#4880FF' }}>{currentUser.role}</p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    
-                    {/* Profil Saya */}
-                    <DropdownMenuItem 
-                      className="cursor-pointer flex items-center"
-                      onClick={() => {
-                        navigate('/admin/profile');
-                      }}
-                    >
-                      <User className="w-4 h-4 mr-2" style={{ color: '#4880FF' }} />
-                      Profil Saya
-                    </DropdownMenuItem>
-
-                    {/* Pengaturan */}
-                    <DropdownMenuItem 
-                      className="cursor-pointer flex items-center"
-                      onClick={() => {
-                        navigate('/admin/settings');
-                      }}
-                    >
-                      <Settings className="w-4 h-4 mr-2" style={{ color: '#4880FF' }} />
-                      Pengaturan
-                    </DropdownMenuItem>
-
-                    <DropdownMenuSeparator />
-
-                    {/* Logout */}
-                    <DropdownMenuItem 
-                      onClick={handleLogout}
-                      className="cursor-pointer text-red-600 focus:text-red-600 flex items-center"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
+              )}
             </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Notification Dropdown */}
+            <div className="relative notification-dropdown-container">
+              <button
+                onClick={() => setNotificationOpen(!notificationOpen)}
+                className="bubble-button relative p-2.5 rounded-full transition-all duration-300"
+                style={{
+                  backgroundColor: notificationOpen ? '#E0E7FF' : '#F0F5FF',
+                  color: '#4880FF',
+                  boxShadow: notificationOpen
+                    ? '0 0 0 2px rgba(72, 128, 255, 0.3), inset 0 2px 5px rgba(0,0,0,0.05)'
+                    : '0 4px 15px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8) inset'
+                }}
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                )}
+              </button>
+
+              {/* Notification Content */}
+              {notificationOpen && (
+                <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl shadow-2xl overflow-hidden z-50 origin-top-right transition-all duration-200 animate-in fade-in zoom-in-95"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.5)'
+                  }}
+                >
+                  <div className="p-4 border-b flex justify-between items-center bg-white/50">
+                    <h3 className="font-bold text-gray-800">Notifikasi</h3>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllRead}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        Tandai semua dibaca
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          onClick={() => handleMarkAsRead(notif.id)}
+                          className={`p-4 border-b last:border-0 hover:bg-blue-50/50 transition-colors cursor-pointer ${!notif.is_read ? 'bg-blue-50/30' : ''}`}
+                        >
+                          <div className="flex gap-3">
+                            <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${!notif.is_read ? 'bg-blue-500' : 'bg-gray-300'}`} />
+                            <div className="flex-1">
+                              <h4 className={`text-sm ${!notif.is_read ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>
+                                {notif.title}
+                              </h4>
+                              <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                {notif.message}
+                              </p>
+                              <span className="text-[10px] text-gray-400 mt-2 block">
+                                {new Date(notif.created_at).toLocaleString('id-ID')}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-8 text-center text-gray-500">
+                        <Bell className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm">Tidak ada notifikasi</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3 border-t bg-gray-50/50 text-center">
+                    <Link to="/admin/notifications" className="text-xs font-bold text-blue-600 hover:text-blue-800">
+                      Lihat Semua Notifikasi
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Profile Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="bubble-button flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.8) inset'
+                  }}
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-md">
+                    {currentUser.name.charAt(0)}
+                  </div>
+                  <div className="text-left hidden sm:block">
+                    <p className="text-sm font-bold text-gray-800 leading-tight">{currentUser.name}</p>
+                    <p className="text-[10px] text-gray-500 font-medium">{currentUser.role}</p>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl border-white/50 bg-white/90 backdrop-blur-xl">
+                <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer">
+                  <User className="w-4 h-4 mr-2" /> Profil
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  <Settings className="w-4 h-4 mr-2" /> Pengaturan
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" /> Keluar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 relative" style={{ zIndex: 1 }}>
-          <div className="max-w-7xl mx-auto">
+        <div className="p-6 overflow-x-hidden">
+          <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             {children}
           </div>
-        </main>
-
-        {/* Footer */}
-        <footer 
-          className="py-6 text-center border-t"
-          style={{ 
-            backgroundColor: 'transparent',
-            borderColor: 'rgba(229, 231, 235, 0.5)',
-            color: '#6B7280'
-          }}
-        >
-          <p className="text-sm">© 2025 Temanikan. All rights reserved.</p>
-        </footer>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

@@ -16,7 +16,7 @@ def create_app(config_name='development'):
     print("=" * 70)
     
     CORS(app, 
-        resources={r"/api/*": {"origins": "*"}},
+        resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}},
         supports_credentials=True,
         allow_headers=["Content-Type", "Authorization"],
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
@@ -24,7 +24,7 @@ def create_app(config_name='development'):
     db.init_app(app)
     bcrypt.init_app(app)
     jwt = JWTManager(app)
-    
+
     @jwt.expired_token_loader
     def expired_token_callback(jwt_header, jwt_payload):
         return jsonify({'success': False, 'message': 'Token has expired'}), 401
@@ -49,8 +49,17 @@ def create_app(config_name='development'):
     register_routes(app)
     
     with app.app_context():
-        db.create_all()
-        print("Database tables created/verified")
+        # Enable WAL mode for SQLite to handle concurrency better
+        try:
+            from sqlalchemy import text
+            with db.engine.connect() as connection:
+                connection.execute(text("PRAGMA journal_mode=WAL"))
+                print("SQLite WAL mode enabled")
+        except Exception as e:
+            print(f"Warning: Could not enable WAL mode: {e}")
+
+        # db.create_all()
+        print("Database tables created/verified (skipped)")
     
     return app
 
@@ -61,14 +70,12 @@ if __name__ == '__main__':
         print("Server running on: http://localhost:5000")
         print("CORS: ENABLED (Allow All Origins)")
         print("=" * 70)
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        app.run(debug=False, host='0.0.0.0', port=5000)
     except Exception as e:
         print(f"ERROR starting server: {e}")
         import traceback
         traceback.print_exc()
         input("Press Enter to exit...")
-
-# ... kodingan def create_app() di atas ...
 
 # Tambahkan baris ini di paling bawah agar Gunicorn bisa menemukannya:
 app = create_app()

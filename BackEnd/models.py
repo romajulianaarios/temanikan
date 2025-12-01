@@ -332,8 +332,6 @@ class ForumTopic(db.Model):
     replies = db.relationship('ForumReply', backref='topic', lazy=True, cascade='all, delete-orphan')
     
     def to_dict(self, include_replies=False, current_user_id=None):
-        from models import ForumTopicLike  # Import di dalam method untuk avoid circular import
-        
         # Count likes
         like_count = ForumTopicLike.query.filter_by(topic_id=self.id).count()
         
@@ -378,8 +376,6 @@ class ForumReply(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def to_dict(self, current_user_id=None):
-        from models import ForumReplyLike  # Import di dalam method untuk avoid circular import
-        
         # Count likes
         like_count = ForumReplyLike.query.filter_by(reply_id=self.id).count()
         

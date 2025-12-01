@@ -144,6 +144,7 @@ def register_routes(app):
     FISHPEDIA_UPLOAD_FOLDER = os.path.abspath('uploads/fishpedia')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
     IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+    MAX_PAYMENT_PROOF_SIZE = 5 * 1024 * 1024  # 5 MB
 
     # Make sure upload folders exist
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -1311,8 +1312,17 @@ def register_routes(app):
             return jsonify({'error': 'Topic not found'}), 404
         
         # Increment views
-        topic.views += 1
-        db.session.commit()
+        # topic.views += 1
+        # db.session.commit()
+        # ✅ OPSI 2: Try-Except dengan Rollback
+        # try:
+        #     topic.views += 1
+        #     db.session.commit()
+        # except Exception as e:
+        #     db.session.rollback()
+        #     print(f"⚠️ Could not update views: {e}")
+    # Tetap return topic meski views tidak ter-update
+
         
         # Get current user if authenticated
         current_user_id = None
@@ -1332,34 +1342,42 @@ def register_routes(app):
     @jwt_required()
     def create_forum_reply(topic_id):
         user_id = get_jwt_identity()
-        topic = ForumTopic.query.get(topic_id)
         
-        if not topic:
-            return jsonify({'error': 'Topic not found'}), 404
+        try:
+            topic = ForumTopic.query.get(topic_id)
+            
+            if not topic:
+                return jsonify({'error': 'Topic not found'}), 404
+            
+            if topic.is_locked:
+                return jsonify({'error': 'Topic is locked'}), 403
+            
+            data = request.get_json()
+            
+            if not data.get('content'):
+                return jsonify({'error': 'Content is required'}), 400
+            
+            reply = ForumReply(
+                topic_id=topic_id,
+                author_id=user_id,
+                content=data['content']
+            )
+            
+            # ✅ HANYA CREATE REPLY, TANPA UPDATE TOPIC
+            db.session.add(reply)
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Reply created successfully',
+                'reply': reply.to_dict()
+            }), 201
         
-        if topic.is_locked:
-            return jsonify({'error': 'Topic is locked'}), 403
-        
-        data = request.get_json()
-        
-        if not data.get('content'):
-            return jsonify({'error': 'Content is required'}), 400
-        
-        reply = ForumReply(
-            topic_id=topic_id,
-            author_id=user_id,
-            content=data['content']
-        )
-        
-        topic.updated_at = datetime.utcnow()
-        
-        db.session.add(reply)
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Reply created successfully',
-            'reply': reply.to_dict()
-        }), 201
+        except Exception as e:
+            db.session.rollback()
+            print(f"⚠️ Error creating reply: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': 'Failed to create reply', 'message': str(e)}), 500
     
     @app.route('/api/forum/replies/<int:reply_id>', methods=['PUT'])
     @jwt_required()
@@ -1925,6 +1943,14 @@ def register_routes(app):
                 return jsonify({'error': 'Invalid file type. Only PNG, JPG, JPEG, and PDF are allowed'}), 400
             
             print(f"✅ File type valid")
+
+            # Validate file size (max 5MB)
+            file.seek(0, os.SEEK_END)
+            file_size = file.tell()
+            file.seek(0)
+            if file_size > MAX_PAYMENT_PROOF_SIZE:
+                print(f"❌ File too large: {file_size} bytes")
+                return jsonify({'error': 'File terlalu besar. Maksimum 5MB'}), 400
             
             # Generate unique filename
             filename = secure_filename(file.filename)
@@ -2413,6 +2439,40 @@ def register_routes(app):
             return jsonify({'error': str(e)}), 500
 
     # Notification Routes
+    # ==================== DISEASE DETECTION ROUTES ====================
+
+    @app.route('/api/disease-detections', methods=['GET'])
+    @jwt_required()
+    def get_all_disease_detections():
+        """Get all disease detections with optional filtering"""
+        try:
+            # Get query parameters
+            limit = request.args.get('limit', default=50, type=int)
+            device_id = request.args.get('device_id', type=int)
+            
+            # Build query
+            query = DiseaseDetection.query
+            
+            # Filter by device_id if provided (though user asked to ignore it for now, 
+            # keeping it as an option is good practice)
+            if device_id:
+                query = query.filter_by(device_id=device_id)
+            
+            # Order by detected_at desc
+            detections = query.order_by(DiseaseDetection.detected_at.desc()).limit(limit).all()
+            
+            return jsonify({
+                'success': True,
+                'detections': [d.to_dict() for d in detections],
+                'count': len(detections)
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Error fetching disease detections: {e}")
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+    # ==================== NOTIFICATION ROUTES ====================
+
     @app.route('/api/notifications', methods=['GET'])
     @jwt_required()
     def get_notifications():
@@ -2433,6 +2493,30 @@ def register_routes(app):
             'notifications': [n.to_dict() for n in notifications],
             'count': len(notifications),
             'unread_count': Notification.query.filter_by(user_id=user_id, is_read=False).count()
+        }), 200
+    
+    @app.route('/api/notifications/<int:notification_id>', methods=['GET'])
+    @jwt_required()
+    def get_notification_detail(notification_id):
+        user_id_str = get_jwt_identity()
+        user_id = int(user_id_str)  # ✅ Convert string to integer
+        
+        notification = Notification.query.get(notification_id)
+        
+        if not notification:
+            return jsonify({'success': False, 'error': 'Notification not found'}), 404
+        
+        if notification.user_id != user_id:  # ✅ Sekarang keduanya integer
+            return jsonify({'success': False, 'error': 'Unauthorized access'}), 403
+        
+        # Mark as read when viewed
+        if not notification.is_read:
+            notification.is_read = True
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'data': notification.to_dict()
         }), 200
     
     @app.route('/api/notifications/<int:notification_id>/read', methods=['PUT'])

@@ -10,6 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Package, ShoppingCart, CheckCircle, XCircle, Clock, Truck, CreditCard, Plus, Eye, Upload } from '../icons';
 import { formatDateTime } from '../../utils/dateFormat';
 
+const MAX_PAYMENT_PROOF_SIZE = 5 * 1024 * 1024; // 5MB
+const PAYMENT_PROOF_EXTENSIONS = ['jpg', 'jpeg', 'png', 'pdf'];
+
 interface Order {
   id: number;
   order_number: string;
@@ -190,14 +193,33 @@ export default function MyOrders() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setPaymentProof(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (!extension || !PAYMENT_PROOF_EXTENSIONS.includes(extension)) {
+      alert('Format file harus JPG, JPEG, PNG, atau PDF');
+      e.target.value = '';
+      return;
     }
+
+    if (file.size > MAX_PAYMENT_PROOF_SIZE) {
+      alert('Ukuran file tidak boleh lebih dari 5MB');
+      e.target.value = '';
+      return;
+    }
+
+    setPaymentProof(file);
   };
 
   const handleSubmitPaymentProof = async () => {
     if (!paymentProof) {
       alert('Mohon upload bukti pembayaran terlebih dahulu');
+      return;
+    }
+
+    if (paymentProof.size > MAX_PAYMENT_PROOF_SIZE) {
+      alert('Ukuran file tidak boleh lebih dari 5MB');
       return;
     }
     
@@ -1423,13 +1445,13 @@ export default function MyOrders() {
                     </p>
                     <Input
                       type="file"
-                      accept="image/*,.pdf"
+                      accept=".jpg,.jpeg,.png,.pdf"
                       onChange={handleFileChange}
                       className="max-w-xs mx-auto"
                     />
                   </div>
                   <p className="text-xs text-gray-500 text-center">
-                    Format: JPG, PNG, atau PDF (Max 5MB)
+                    Format: JPG, JPEG, PNG, atau PDF (Maks 5MB)
                   </p>
                 </div>
               </div>
