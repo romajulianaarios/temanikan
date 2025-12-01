@@ -242,42 +242,168 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
           {/* Stats Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
             {/* Card 1: Pengguna */}
-            <div className="rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center transition-colors" style={{ 
-              background: 'rgba(15, 91, 229, 0.15)',
-              backdropFilter: 'blur(10px)',
-              border: '2px solid rgba(255, 255, 255, 0.3)'
-            }}>
-              <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
-                <Users className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#FFFFFF' }} />
+            <div 
+              className="relative p-3 sm:p-4 md:p-6 text-center transition-all duration-300 cursor-pointer overflow-hidden"
+              style={{ 
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(15px)',
+                border: '2px solid rgba(72, 128, 255, 0.3)',
+                borderRadius: '32px',
+                boxShadow: '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px) scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 16px 48px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(72, 128, 255, 0.4) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.5)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+              }}
+            >
+              {/* Bubble glow effect */}
+              <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-30 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.6), transparent 70%)',
+                  filter: 'blur(15px)'
+                }}
+              ></div>
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255, 182, 193, 0.5), transparent 70%)',
+                  filter: 'blur(12px)'
+                }}
+              ></div>
+              
+              <div className="flex justify-center mb-2 sm:mb-3 md:mb-4 relative z-10">
+                <div 
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center relative"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.95), rgba(15, 91, 229, 0.9))',
+                    boxShadow: '0 8px 24px rgba(72, 128, 255, 0.4)',
+                    border: '2px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                >
+                  <Users className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full opacity-60" style={{ background: 'rgba(72, 128, 255, 0.5)', filter: 'blur(8px)' }}></div>
+                </div>
               </div>
-              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2" style={{ color: '#FFFFFF', fontWeight: '600', textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)' }}>Pengguna</div>
-              <div className="text-lg sm:text-xl md:text-2xl font-bold" style={{ color: '#FFFFFF', fontWeight: '800', textShadow: '0 2px 6px rgba(0, 0, 0, 0.5)' }}>10K+</div>
+              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 relative z-10" style={{ color: '#133E87', fontWeight: '600', fontFamily: 'Nunito Sans, sans-serif' }}>Pengguna</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold relative z-10" style={{ color: '#0F5BE5', fontWeight: '800', fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(72, 128, 255, 0.2)' }}>10K+</div>
             </div>
 
             {/* Card 2: Waktu */}
-            <div className="rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center transition-colors" style={{ 
-              background: 'rgba(15, 91, 229, 0.15)',
-              backdropFilter: 'blur(10px)',
-              border: '2px solid rgba(255, 255, 255, 0.3)'
-            }}>
-              <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
-                <Clock className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#FFFFFF' }} />
+            <div 
+              className="relative p-3 sm:p-4 md:p-6 text-center transition-all duration-300 cursor-pointer overflow-hidden"
+              style={{ 
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(15px)',
+                border: '2px solid rgba(72, 128, 255, 0.3)',
+                borderRadius: '32px',
+                boxShadow: '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px) scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 16px 48px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(72, 128, 255, 0.4) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.5)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+              }}
+            >
+              {/* Bubble glow effect */}
+              <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-30 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.6), transparent 70%)',
+                  filter: 'blur(15px)'
+                }}
+              ></div>
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255, 182, 193, 0.5), transparent 70%)',
+                  filter: 'blur(12px)'
+                }}
+              ></div>
+              
+              <div className="flex justify-center mb-2 sm:mb-3 md:mb-4 relative z-10">
+                <div 
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center relative"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.95), rgba(15, 91, 229, 0.9))',
+                    boxShadow: '0 8px 24px rgba(72, 128, 255, 0.4)',
+                    border: '2px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                >
+                  <Clock className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full opacity-60" style={{ background: 'rgba(72, 128, 255, 0.5)', filter: 'blur(8px)' }}></div>
+                </div>
               </div>
-              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2" style={{ color: '#FFFFFF', fontWeight: '600', textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)' }}>Waktu</div>
-              <div className="text-lg sm:text-xl md:text-2xl font-bold" style={{ color: '#FFFFFF', fontWeight: '800', textShadow: '0 2px 6px rgba(0, 0, 0, 0.5)' }}>1K jam</div>
+              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 relative z-10" style={{ color: '#133E87', fontWeight: '600', fontFamily: 'Nunito Sans, sans-serif' }}>Waktu</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold relative z-10" style={{ color: '#0F5BE5', fontWeight: '800', fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(72, 128, 255, 0.2)' }}>1K jam</div>
             </div>
 
             {/* Card 3: Ikan */}
-            <div className="rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center transition-colors" style={{ 
-              background: 'rgba(15, 91, 229, 0.15)',
-              backdropFilter: 'blur(10px)',
-              border: '2px solid rgba(255, 255, 255, 0.3)'
-            }}>
-              <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
-                <img src={logo} alt="Temanikan Logo" className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 object-contain" />
+            <div 
+              className="relative p-3 sm:p-4 md:p-6 text-center transition-all duration-300 cursor-pointer overflow-hidden"
+              style={{ 
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(15px)',
+                border: '2px solid rgba(72, 128, 255, 0.3)',
+                borderRadius: '32px',
+                boxShadow: '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px) scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 16px 48px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(72, 128, 255, 0.4) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.5)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+              }}
+            >
+              {/* Bubble glow effect */}
+              <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-30 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.6), transparent 70%)',
+                  filter: 'blur(15px)'
+                }}
+              ></div>
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255, 182, 193, 0.5), transparent 70%)',
+                  filter: 'blur(12px)'
+                }}
+              ></div>
+              
+              <div className="flex justify-center mb-2 sm:mb-3 md:mb-4 relative z-10">
+                <div 
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center relative"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.95), rgba(15, 91, 229, 0.9))',
+                    boxShadow: '0 8px 24px rgba(72, 128, 255, 0.4)',
+                    border: '2px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                >
+                  <img src={logo} alt="Temanikan Logo" className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 object-contain" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full opacity-60" style={{ background: 'rgba(72, 128, 255, 0.5)', filter: 'blur(8px)' }}></div>
+                </div>
               </div>
-              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2" style={{ color: '#FFFFFF', fontWeight: '600', textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)' }}>Ikan</div>
-              <div className="text-lg sm:text-xl md:text-2xl font-bold" style={{ color: '#FFFFFF', fontWeight: '800', textShadow: '0 2px 6px rgba(0, 0, 0, 0.5)' }}>500+Spesies</div>
+              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 relative z-10" style={{ color: '#133E87', fontWeight: '600', fontFamily: 'Nunito Sans, sans-serif' }}>Ikan</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold relative z-10" style={{ color: '#0F5BE5', fontWeight: '800', fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(72, 128, 255, 0.2)' }}>500+Spesies</div>
             </div>
 
             {/* Card 4: Robot */}
@@ -336,16 +462,58 @@ export default function LandingPageNew({ onAuthClick, onNavigate, onSmartNavigat
             </div>
 
             {/* Card 5: Akurasi */}
-            <div className="rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-md text-center transition-colors" style={{ 
-              background: 'rgba(15, 91, 229, 0.15)',
-              backdropFilter: 'blur(10px)',
-              border: '2px solid rgba(255, 255, 255, 0.3)'
-            }}>
-              <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
-                <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" style={{ color: '#FFFFFF' }} />
+            <div 
+              className="relative p-3 sm:p-4 md:p-6 text-center transition-all duration-300 cursor-pointer overflow-hidden"
+              style={{ 
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(15px)',
+                border: '2px solid rgba(72, 128, 255, 0.3)',
+                borderRadius: '32px',
+                boxShadow: '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                fontFamily: 'Nunito Sans, sans-serif'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px) scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 16px 48px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(72, 128, 255, 0.4) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.5)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+              }}
+            >
+              {/* Bubble glow effect */}
+              <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-30 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(72, 128, 255, 0.6), transparent 70%)',
+                  filter: 'blur(15px)'
+                }}
+              ></div>
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255, 182, 193, 0.5), transparent 70%)',
+                  filter: 'blur(12px)'
+                }}
+              ></div>
+              
+              <div className="flex justify-center mb-2 sm:mb-3 md:mb-4 relative z-10">
+                <div 
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center relative"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.95), rgba(15, 91, 229, 0.9))',
+                    boxShadow: '0 8px 24px rgba(72, 128, 255, 0.4)',
+                    border: '2px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                >
+                  <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full opacity-60" style={{ background: 'rgba(72, 128, 255, 0.5)', filter: 'blur(8px)' }}></div>
+                </div>
               </div>
-              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2" style={{ color: '#FFFFFF', fontWeight: '600', textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)' }}>Akurasi</div>
-              <div className="text-lg sm:text-xl md:text-2xl font-bold" style={{ color: '#FFFFFF', fontWeight: '800', textShadow: '0 2px 6px rgba(0, 0, 0, 0.5)' }}>95%Terdeteksi</div>
+              <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 relative z-10" style={{ color: '#133E87', fontWeight: '600', fontFamily: 'Nunito Sans, sans-serif' }}>Akurasi</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold relative z-10" style={{ color: '#0F5BE5', fontWeight: '800', fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(72, 128, 255, 0.2)' }}>95%Terdeteksi</div>
             </div>
           </div>
         </div>
