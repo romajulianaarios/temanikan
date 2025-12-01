@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from '../Router';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -28,113 +28,42 @@ export default function DetectionHistory() {
   const [activeTab, setActiveTab] = useState('semua');
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [selectedRecord, setSelectedRecord] = useState<DetectionRecord | null>(null);
+  const [detectionRecords, setDetectionRecords] = useState<DetectionRecord[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const detectionRecords: DetectionRecord[] = [
-    {
-      id: 1,
-      fishType: 'Ikan Koi',
-      location: 'Akuarium Utama',
-      date: '4 Nov 2025',
-      time: '14:30',
-      status: 'warning',
-      disease: 'Parasitic Diseases',
-      confidence: 85,
-      imageUrl: 'https://images.unsplash.com/photo-1669241942890-2e066facbd9c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxrb2klMjBmaXNoJTIwY2xvc2UlMjB1cHxlbnwxfHx8fDE3NjIyNjUwNTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      recommendation: 'Segera isolasi ikan yang terinfeksi. Naikkan suhu air secara bertahap hingga 28-30°C. Berikan obat anti-parasit sesuai dosis.',
-      symptoms: ['Bintik putih pada tubuh', 'Ikan menggosok-gosokkan tubuh', 'Nafsu makan menurun']
-    },
-    {
-      id: 2,
-      fishType: 'Ikan Mas',
-      location: 'Akuarium Utama',
-      date: '3 Nov 2025',
-      time: '16:45',
-      status: 'healthy',
-      disease: 'Healthy Fish',
-      confidence: 95,
-      imageUrl: 'https://images.unsplash.com/photo-1720001586147-0bfee9e5dba2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb2xkZmlzaCUyMGNsb3NlJTIwdW5kZXJ3YXRlcnxlbnwxfHx8fDE3NjIyNjUwNTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      recommendation: 'Ikan dalam kondisi sehat. Lanjutkan perawatan rutin.',
-      symptoms: []
-    },
-    {
-      id: 3,
-      fishType: 'Ikan Cupang',
-      location: 'Akuarium Karantina',
-      date: '3 Nov 2025',
-      time: '09:15',
-      status: 'warning',
-      disease: 'Bacterial Diseases',
-      confidence: 72,
-      imageUrl: 'https://images.unsplash.com/photo-1573472420143-0c68f179bdc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZXR0YSUyMGZpc2glMjBibHVlfGVufDF8fHx8MTc2MjI2NTA2MHww&ixlib=rb-4.1.0&q=80&w=1080',
-      recommendation: 'Periksa kualitas air. Ganti 25% air secara berkala. Berikan garam ikan dan antibiotik jika diperlukan.',
-      symptoms: ['Sirip robek atau compang-camping', 'Perubahan warna pada sirip']
-    },
-    {
-      id: 4,
-      fishType: 'Ikan Koi',
-      location: 'Akuarium Utama',
-      date: '2 Nov 2025',
-      time: '11:20',
-      status: 'healthy',
-      disease: 'Healthy Fish',
-      confidence: 92,
-      imageUrl: 'https://images.unsplash.com/photo-1669241942890-2e066facbd9c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxrb2klMjBmaXNoJTIwY2xvc2UlMjB1cHxlbnwxfHx8fDE3NjIyNjUwNTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      recommendation: 'Ikan dalam kondisi sehat. Lanjutkan perawatan rutin.',
-      symptoms: []
-    },
-    {
-      id: 5,
-      fishType: 'Ikan Cupang',
-      location: 'Akuarium Karantina',
-      date: '1 Nov 2025',
-      time: '15:30',
-      status: 'critical',
-      disease: 'Bacterial Diseases',
-      confidence: 88,
-      imageUrl: 'https://images.unsplash.com/photo-1573472420143-0c68f179bdc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZXR0YSUyMGZpc2glMjBibHVlfGVufDF8fHx8MTc2MjI2NTA2MHww&ixlib=rb-4.1.0&q=80&w=1080',
-      recommendation: 'Kondisi kritis. Isolasi segera. Konsultasi dengan ahli ikan. Berikan antibiotik spektrum luas.',
-      symptoms: ['Perut membengkak', 'Sisik berdiri', 'Ikan tidak aktif']
-    },
-    {
-      id: 6,
-      fishType: 'Ikan Mas',
-      location: 'Akuarium Utama',
-      date: '31 Okt 2025',
-      time: '10:00',
-      status: 'healthy',
-      disease: 'Healthy Fish',
-      confidence: 96,
-      imageUrl: 'https://images.unsplash.com/photo-1720001586147-0bfee9e5dba2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb2xkZmlzaCUyMGNsb3NlJTIwdW5kZXJ3YXRlcnxlbnwxfHx8fDE3NjIyNjUwNTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      recommendation: 'Ikan dalam kondisi sehat. Lanjutkan perawatan rutin.',
-      symptoms: []
-    },
-    {
-      id: 7,
-      fishType: 'Ikan Koi',
-      location: 'Akuarium Utama',
-      date: '30 Okt 2025',
-      time: '14:15',
-      status: 'warning',
-      disease: 'Fungal Diseases',
-      confidence: 78,
-      imageUrl: 'https://images.unsplash.com/photo-1669241942890-2e066facbd9c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxrb2klMjBmaXNoJTIwY2xvc2UlMjB1cHxlbnwxfHx8fDE3NjIyNjUwNTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      recommendation: 'Gunakan obat anti-jamur. Perbaiki kualitas air. Isolasi jika memburuk.',
-      symptoms: ['Bercak putih seperti kapas', 'Kulit tampak rusak']
-    },
-    {
-      id: 8,
-      fishType: 'Ikan Cupang',
-      location: 'Akuarium Karantina',
-      date: '29 Okt 2025',
-      time: '09:45',
-      status: 'healthy',
-      disease: 'Healthy Fish',
-      confidence: 93,
-      imageUrl: 'https://images.unsplash.com/photo-1573472420143-0c68f179bdc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZXR0YSUyMGZpc2glMjBibHVlfGVufDF8fHx8MTc2MjI2NTA2MHww&ixlib=rb-4.1.0&q=80&w=1080',
-      recommendation: 'Ikan dalam kondisi sehat. Lanjutkan perawatan rutin.',
-      symptoms: []
-    }
-  ];
+  useEffect(() => {
+    const fetchDetections = async () => {
+      try {
+        const { diseaseAPI } = await import('../../services/api');
+        // Fetch all detections (ignoring deviceId as requested)
+        const response = await diseaseAPI.getAllDetections(50);
+
+        if (response.success && response.detections) {
+          const formattedRecords = response.detections.map((d: any) => ({
+            id: d.id,
+            fishType: d.fish_type || 'Unknown',
+            location: d.location || 'Unknown',
+            date: new Date(d.detected_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+            time: new Date(d.detected_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+            status: d.severity === 'critical' || d.severity === 'high' ? 'critical' :
+              d.severity === 'medium' ? 'warning' : 'healthy',
+            disease: d.disease_name,
+            confidence: Math.round(d.confidence * 100),
+            imageUrl: d.image_url,
+            recommendation: d.recommended_treatment,
+            symptoms: d.symptoms ? (typeof d.symptoms === 'string' ? JSON.parse(d.symptoms) : d.symptoms) : []
+          }));
+          setDetectionRecords(formattedRecords);
+        }
+      } catch (error) {
+        console.error('Failed to fetch detections:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetections();
+  }, []);
 
   const getFilteredRecords = () => {
     switch (activeTab) {
@@ -176,6 +105,14 @@ export default function DetectionHistory() {
   const healthyCount = detectionRecords.filter(r => r.status === 'healthy').length;
   const warningCount = detectionRecords.filter(r => r.status === 'warning' || r.status === 'critical').length;
 
+  if (loading) {
+    return (
+      <div className="p-12 text-center">
+        <p className="text-gray-500">Memuat riwayat deteksi...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -183,7 +120,7 @@ export default function DetectionHistory() {
         <div className="flex items-center gap-3">
           <div
             className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
-            style={{ 
+            style={{
               background: 'linear-gradient(135deg, rgba(206, 57, 57, 0.3), rgba(220, 38, 38, 0.2))',
               backdropFilter: 'blur(10px)',
               border: '2px solid rgba(206, 57, 57, 0.3)',
@@ -201,7 +138,7 @@ export default function DetectionHistory() {
         </div>
         <Button
           className="bubble-button text-white rounded-full transition-all duration-300"
-          style={{ 
+          style={{
             background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
             border: '2px solid rgba(255, 255, 255, 0.3)',
             boxShadow: '0 8px 24px rgba(15, 91, 229, 0.3)',
@@ -224,9 +161,9 @@ export default function DetectionHistory() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card 
+        <Card
           className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
-          style={{ 
+          style={{
             backgroundColor: '#FFFFFF',
             border: '2px solid rgba(16, 185, 129, 0.2)',
             boxShadow: '0 10px 50px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
@@ -253,7 +190,7 @@ export default function DetectionHistory() {
           <div className="flex items-center gap-3 relative z-10">
             <div
               className="p-3 rounded-full transition-all duration-300"
-              style={{ 
+              style={{
                 background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.2))',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(16, 185, 129, 0.3)',
@@ -269,9 +206,9 @@ export default function DetectionHistory() {
           </div>
         </Card>
 
-        <Card 
+        <Card
           className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
-          style={{ 
+          style={{
             backgroundColor: '#FFFFFF',
             border: '2px solid rgba(254, 197, 61, 0.2)',
             boxShadow: '0 10px 50px rgba(254, 197, 61, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
@@ -298,7 +235,7 @@ export default function DetectionHistory() {
           <div className="flex items-center gap-3 relative z-10">
             <div
               className="p-3 rounded-full transition-all duration-300"
-              style={{ 
+              style={{
                 background: 'linear-gradient(135deg, rgba(254, 197, 61, 0.3), rgba(245, 158, 11, 0.2))',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(254, 197, 61, 0.3)',
@@ -314,9 +251,9 @@ export default function DetectionHistory() {
           </div>
         </Card>
 
-        <Card 
+        <Card
           className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
-          style={{ 
+          style={{
             backgroundColor: '#FFFFFF',
             border: '2px solid rgba(72, 128, 255, 0.2)',
             boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
@@ -343,7 +280,7 @@ export default function DetectionHistory() {
           <div className="flex items-center gap-3 relative z-10">
             <div
               className="p-3 rounded-full transition-all duration-300"
-              style={{ 
+              style={{
                 background: 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(72, 128, 255, 0.3)',
@@ -370,9 +307,9 @@ export default function DetectionHistory() {
       </div>
 
       {/* Tabs and Table */}
-      <Card 
+      <Card
         className="bubble-card rounded-[32px] transition-all duration-300 relative overflow-hidden"
-        style={{ 
+        style={{
           backgroundColor: '#FFFFFF',
           border: '2px solid rgba(72, 128, 255, 0.2)',
           boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',

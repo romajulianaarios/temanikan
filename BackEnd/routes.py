@@ -2380,6 +2380,40 @@ def register_routes(app):
             return jsonify({'error': str(e)}), 500
 
     # Notification Routes
+    # ==================== DISEASE DETECTION ROUTES ====================
+
+    @app.route('/api/disease-detections', methods=['GET'])
+    @jwt_required()
+    def get_all_disease_detections():
+        """Get all disease detections with optional filtering"""
+        try:
+            # Get query parameters
+            limit = request.args.get('limit', default=50, type=int)
+            device_id = request.args.get('device_id', type=int)
+            
+            # Build query
+            query = DiseaseDetection.query
+            
+            # Filter by device_id if provided (though user asked to ignore it for now, 
+            # keeping it as an option is good practice)
+            if device_id:
+                query = query.filter_by(device_id=device_id)
+            
+            # Order by detected_at desc
+            detections = query.order_by(DiseaseDetection.detected_at.desc()).limit(limit).all()
+            
+            return jsonify({
+                'success': True,
+                'detections': [d.to_dict() for d in detections],
+                'count': len(detections)
+            }), 200
+            
+        except Exception as e:
+            print(f"❌ Error fetching disease detections: {e}")
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+    # ==================== NOTIFICATION ROUTES ====================
+
     @app.route('/api/notifications', methods=['GET'])
     @jwt_required()
     def get_notifications():
