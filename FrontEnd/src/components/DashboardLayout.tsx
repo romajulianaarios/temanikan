@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from './Router';
 import { useAuth } from './AuthContext';
+import { useLanguage, useTranslation } from '../contexts/LanguageContext';
 import { notificationAPI } from '../services/api';
 import { formatNotificationTime } from '../utils/dateFormat';
 import {
@@ -47,11 +48,12 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
     const navigate = useNavigate();
     const location = useLocation();
     const { user, logout } = useAuth();
+    const { language, setLanguage } = useLanguage();
+    const t = useTranslation();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [notificationOpen, setNotificationOpen] = useState(false);
     const [userProfileOpen, setUserProfileOpen] = useState(false);
     const [languageOpen, setLanguageOpen] = useState(false);
-    const [selectedLanguage, setSelectedLanguage] = useState('id');
     const [notifications, setNotifications] = useState<any[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
@@ -59,15 +61,15 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
     const currentUser = user || { name: 'User', email: '', role: userType };
 
     const menuItems = userType === 'admin' ? [
-        { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-        { label: 'Users', path: '/admin/users', icon: UsersIcon },
-        { label: 'Fishpedia', path: '/admin/fishpedia', icon: BookOpen },
-        { label: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+        { label: t('nav.dashboard'), path: '/admin', icon: LayoutDashboard },
+        { label: t('nav.users'), path: '/admin/users', icon: UsersIcon },
+        { label: t('nav.fishpedia'), path: '/admin/fishpedia', icon: BookOpen },
+        { label: t('nav.orders'), path: '/admin/orders', icon: ShoppingCart },
     ] : [
-        { label: 'Beranda', path: '/member', icon: LayoutDashboard },
-        { label: 'Fishpedia', path: '/member/fishpedia', icon: BookOpen },
-        { label: 'Forum', path: '/member/forum', icon: MessageSquare },
-        { label: 'Pesanan', path: '/member/orders', icon: ShoppingCart },
+        { label: t('nav.dashboard'), path: '/member', icon: LayoutDashboard },
+        { label: t('nav.fishpedia'), path: '/member/fishpedia', icon: BookOpen },
+        { label: t('nav.forum'), path: '/member/forum', icon: MessageSquare },
+        { label: t('nav.orders'), path: '/member/orders', icon: ShoppingCart },
     ];
 
     const isActivePath = (path: string) => {
@@ -243,7 +245,7 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
                                     }}
                                     onClick={() => setLanguageOpen(!languageOpen)}
                                 >
-                                    <span>{selectedLanguage.toUpperCase()}</span>
+                                    <span>{language.toUpperCase()}</span>
                                     <ChevronDown className={`w-3 h-3 transition-transform ${languageOpen ? 'rotate-180' : ''}`} />
                                 </button>
                                 
@@ -261,24 +263,24 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
                                     >
                                         <button
                                             className={`w-full px-4 py-2.5 text-left text-xs font-medium transition-all duration-200 ${
-                                                selectedLanguage === 'id' ? 'bg-blue-50' : 'hover:bg-gray-50'
+                                                language === 'id' ? 'bg-blue-50' : 'hover:bg-gray-50'
                                             }`}
                                             style={{
-                                                color: selectedLanguage === 'id' ? '#133E87' : '#608BC1',
+                                                color: language === 'id' ? '#133E87' : '#608BC1',
                                                 fontFamily: 'Nunito Sans, sans-serif'
                                             }}
                                             onMouseEnter={(e) => {
-                                                if (selectedLanguage !== 'id') {
+                                                if (language !== 'id') {
                                                     e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
                                                 }
                                             }}
                                             onMouseLeave={(e) => {
-                                                if (selectedLanguage !== 'id') {
+                                                if (language !== 'id') {
                                                     e.currentTarget.style.backgroundColor = 'transparent';
                                                 }
                                             }}
                                             onClick={() => {
-                                                setSelectedLanguage('id');
+                                                setLanguage('id');
                                                 setLanguageOpen(false);
                                             }}
                                         >
@@ -287,24 +289,24 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
                                         <div className="h-px" style={{ backgroundColor: 'rgba(72, 128, 255, 0.1)' }}></div>
                                         <button
                                             className={`w-full px-4 py-2.5 text-left text-xs font-medium transition-all duration-200 ${
-                                                selectedLanguage === 'en' ? 'bg-blue-50' : 'hover:bg-gray-50'
+                                                language === 'en' ? 'bg-blue-50' : 'hover:bg-gray-50'
                                             }`}
                                             style={{
-                                                color: selectedLanguage === 'en' ? '#133E87' : '#608BC1',
+                                                color: language === 'en' ? '#133E87' : '#608BC1',
                                                 fontFamily: 'Nunito Sans, sans-serif'
                                             }}
                                             onMouseEnter={(e) => {
-                                                if (selectedLanguage !== 'en') {
+                                                if (language !== 'en') {
                                                     e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
                                                 }
                                             }}
                                             onMouseLeave={(e) => {
-                                                if (selectedLanguage !== 'en') {
+                                                if (language !== 'en') {
                                                     e.currentTarget.style.backgroundColor = 'transparent';
                                                 }
                                             }}
                                             onClick={() => {
-                                                setSelectedLanguage('en');
+                                                setLanguage('en');
                                                 setLanguageOpen(false);
                                             }}
                                         >
@@ -357,7 +359,7 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
                                         }}
                                     >
                                         <div className="p-4 border-b" style={{ borderColor: 'rgba(72, 128, 255, 0.1)' }}>
-                                            <h3 className="font-semibold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Notifikasi</h3>
+                                            <h3 className="font-semibold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{t('common.notifications')}</h3>
                                         </div>
                                         <div className="max-h-[400px] overflow-y-auto">
                                             {notifications.length === 0 ? (
@@ -365,7 +367,7 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
                                                     <div className="bg-gray-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                                                         <Bell className="w-6 h-6 text-gray-400" />
                                                     </div>
-                                                    Tidak ada notifikasi baru
+                                                    {t('common.noNotifications')}
                                                 </div>
                                             ) : (
                                                 notifications.slice(0, 5).map((notif) => (
@@ -429,7 +431,7 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
                                                 }}
                                             >
                                                 <span className="text-sm font-medium" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
-                                                    Lihat Semua Notifikasi
+                                                    {t('notification.seeAll')}
                                                 </span>
                                             </button>
                                         </div>
@@ -515,7 +517,7 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
                                             onClick={() => setUserProfileOpen(false)}
                                         >
                                             <User className="w-4 h-4 mr-3" style={{ color: '#4880FF' }} />
-                                            <span className="font-medium" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Profil Saya</span>
+                                            <span className="font-medium" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{t('common.profile')}</span>
                                         </Link>
 
                                         <Link
@@ -533,7 +535,7 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
                                             onClick={() => setUserProfileOpen(false)}
                                         >
                                             <Settings className="w-4 h-4 mr-3" style={{ color: '#4880FF' }} />
-                                            <span className="font-medium" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Pengaturan</span>
+                                            <span className="font-medium" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{t('common.settings')}</span>
                                         </Link>
 
                                         <div className="my-2 h-px" style={{ backgroundColor: 'rgba(72, 128, 255, 0.1)' }}></div>
@@ -555,7 +557,7 @@ export default function DashboardLayout({ children, title, userType, breadcrumbs
                                             }}
                                         >
                                             <LogOut className="w-4 h-4 mr-3" style={{ color: '#EF4444' }} />
-                                            <span className="font-medium" style={{ color: '#DC2626', fontFamily: 'Nunito Sans, sans-serif' }}>Keluar</span>
+                                            <span className="font-medium" style={{ color: '#DC2626', fontFamily: 'Nunito Sans, sans-serif' }}>{t('common.logout')}</span>
                                         </button>
                                     </div>
                                 )}

@@ -3,11 +3,17 @@ import { Badge } from '../ui/badge';
 import { Users, Bot, Activity, AlertTriangle, TrendingUp, TrendingDown } from '../icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Link } from '../Router';
+import { useTranslation, useLanguage } from '../../contexts/LanguageContext';
+import { useMemo } from 'react';
+import { formatTimeAgo } from '../../utils/dateFormat';
 
 export default function AdminOverview() {
-  const stats = [
+  const t = useTranslation();
+  const { language } = useLanguage();
+  
+  const stats = useMemo(() => [
     {
-      label: 'Total Pengguna',
+      label: t('admin.stats.totalUsers'),
       value: '1,247',
       change: '+12.5%',
       trend: 'up',
@@ -15,7 +21,7 @@ export default function AdminOverview() {
       color: '#608BC1'
     },
     {
-      label: 'Robot Aktif',
+      label: t('admin.stats.activeRobots'),
       value: '856',
       change: '+8.2%',
       trend: 'up',
@@ -23,7 +29,7 @@ export default function AdminOverview() {
       color: '#133E87'
     },
     {
-      label: 'Deteksi Penyakit (Bulan Ini)',
+      label: t('admin.stats.diseaseDetection'),
       value: '342',
       change: '-5.3%',
       trend: 'down',
@@ -31,14 +37,14 @@ export default function AdminOverview() {
       color: '#608BC1'
     },
     {
-      label: 'Peringatan Sistem',
+      label: t('admin.stats.systemAlerts'),
       value: '23',
       change: '+15.2%',
       trend: 'up',
       icon: AlertTriangle,
       color: '#ff9800'
     },
-  ];
+  ], [t]);
 
   const userGrowthData = [
     { month: 'Jun', users: 850 },
@@ -49,36 +55,38 @@ export default function AdminOverview() {
     { month: 'Nov', users: 1247 },
   ];
 
-  const diseaseDistribution = [
+  const diseaseDistribution = useMemo(() => [
     { name: 'White Spot', value: 145, color: '#608BC1' },
     { name: 'Fin Rot', value: 98, color: '#133E87' },
     { name: 'Ich', value: 56, color: '#CBDCEB' },
-    { name: 'Lainnya', value: 43, color: '#F3F3E0' },
-  ];
+    { name: t('common.other'), value: 43, color: '#F3F3E0' },
+  ], [t]);
 
-  const recentAlerts = [
+  // Create sample dates for alerts
+  const now = new Date();
+  const recentAlerts = useMemo(() => [
     {
       id: 1,
       type: 'critical',
       message: 'Robot ID #234 mengalami error sistem',
       user: 'Ahmad Wijaya',
-      time: '10 menit yang lalu'
+      date: new Date(now.getTime() - 10 * 60 * 1000).toISOString() // 10 minutes ago
     },
     {
       id: 2,
       type: 'warning',
       message: 'Lonjakan deteksi penyakit di area Jakarta',
       user: 'Sistem',
-      time: '1 jam yang lalu'
+      date: new Date(now.getTime() - 60 * 60 * 1000).toISOString() // 1 hour ago
     },
     {
       id: 3,
       type: 'info',
       message: 'Update firmware tersedia untuk 12 robot',
       user: 'Sistem',
-      time: '2 jam yang lalu'
+      date: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString() // 2 hours ago
     },
-  ];
+  ], []);
 
   return (
     <div className="space-y-6" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>
@@ -194,7 +202,7 @@ export default function AdminOverview() {
             color: '#133E87',
             fontFamily: 'Nunito Sans, sans-serif',
             fontWeight: 800
-          }}>Pertumbuhan Pengguna</h3>
+          }}>{t('admin.stats.userGrowth')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart 
               data={userGrowthData}
@@ -224,7 +232,7 @@ export default function AdminOverview() {
               <Bar 
                 dataKey="users" 
                 fill="#608BC1" 
-                name="Pengguna"
+                name={t('admin.stats.users')}
                 radius={[8, 8, 0, 0]}
                 animationDuration={800}
                 animationEasing="ease-in-out"
@@ -270,7 +278,7 @@ export default function AdminOverview() {
             color: '#133E87',
             fontFamily: 'Nunito Sans, sans-serif',
             fontWeight: 800
-          }}>Distribusi Jenis Penyakit</h3>
+          }}>{t('admin.stats.diseaseDistribution')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -357,7 +365,7 @@ export default function AdminOverview() {
             color: '#133E87',
             fontFamily: 'Nunito Sans, sans-serif',
             fontWeight: 800
-          }}>Peringatan Sistem Terbaru</h3>
+          }}>{t('admin.stats.recentAlerts')}</h3>
           <Link 
             to="/admin/notifications" 
             className="bubble-button text-sm font-bold px-4 py-2 rounded-full transition-all duration-300" 
@@ -380,7 +388,7 @@ export default function AdminOverview() {
               e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.3)';
             }}
           >
-            Lihat Semua
+            {t('common.seeAll')}
           </Link>
         </div>
         <div className="space-y-3">
@@ -442,7 +450,7 @@ export default function AdminOverview() {
                 }}>
                   <span>{alert.user}</span>
                   <span>•</span>
-                  <span>{alert.time}</span>
+                  <span>{formatTimeAgo(alert.date, t, language)}</span>
                 </div>
               </div>
             </div>

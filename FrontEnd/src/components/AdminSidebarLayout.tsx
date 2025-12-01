@@ -1,6 +1,7 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link, useLocation } from './Router';
 import { useAuth } from './AuthContext';
+import { useLanguage, useTranslation } from '../contexts/LanguageContext';
 import {
   Fish,
   Home as LayoutDashboard,
@@ -45,9 +46,12 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { language, setLanguage } = useLanguage();
+  const t = useTranslation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -55,7 +59,7 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
   const currentUser = {
     name: user?.name || 'Admin Temanikan',
     email: user?.email || 'admin@temanikan.com',
-    role: 'Administrator'
+    role: t('profile.administrator')
   };
 
   // Fetch notifications from API
@@ -110,15 +114,15 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
     }
   };
 
-  const adminMenuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
-    { icon: UsersIcon, label: 'Manajemen Pengguna', path: '/admin/users' },
-    { icon: Bot, label: 'Status Robot', path: '/admin/robots' },
-    { icon: Camera, label: 'Tren Deteksi', path: '/admin/disease-trends' },
-    { icon: BookOpen, label: 'Fishpedia', path: '/admin/fishpedia' },
-    { icon: MessageSquare, label: 'Forum', path: '/admin/forum' },
-    { icon: ShoppingCart, label: 'Kelola Pesanan', path: '/admin/orders' },
-  ];
+  const adminMenuItems = useMemo(() => [
+    { icon: LayoutDashboard, label: t('admin.dashboard'), path: '/admin' },
+    { icon: UsersIcon, label: t('admin.userManagement'), path: '/admin/users' },
+    { icon: Bot, label: t('admin.robotStatus'), path: '/admin/robots' },
+    { icon: Camera, label: t('admin.diseaseTrends'), path: '/admin/disease-trends' },
+    { icon: BookOpen, label: t('admin.fishpedia'), path: '/admin/fishpedia' },
+    { icon: MessageSquare, label: t('admin.forum'), path: '/admin/forum' },
+    { icon: ShoppingCart, label: t('admin.orders'), path: '/admin/orders' },
+  ], [t, language]);
 
   const handleLogout = () => {
     logout();
@@ -142,15 +146,18 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
       if (notificationOpen && !target.closest('.notification-dropdown-container')) {
         setNotificationOpen(false);
       }
+      if (languageOpen && !target.closest('.language-dropdown-container')) {
+        setLanguageOpen(false);
+      }
     };
 
-    if (notificationOpen) {
+    if (notificationOpen || languageOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [notificationOpen]);
+  }, [notificationOpen, languageOpen]);
 
   return (
     <div className="min-h-screen flex relative overflow-hidden" style={{
@@ -297,7 +304,7 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
             }}
           >
             <LogOut className="w-5 h-5 flex-shrink-0 relative z-10" />
-            {!sidebarCollapsed && <span className="relative z-10">Logout</span>}
+            {!sidebarCollapsed && <span className="relative z-10">{t('common.logout')}</span>}
           </button>
         </div>
       </aside>
@@ -361,7 +368,7 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
             }}
           >
             <LogOut className="w-5 h-5" />
-            <span>Logout</span>
+            <span>{t('common.logout')}</span>
           </button>
         </div>
       </aside>
@@ -409,6 +416,101 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Language Switcher */}
+            <div className="relative language-dropdown-container hidden md:block">
+              <button
+                className="px-3 py-2 rounded-full text-xs font-medium outline-none transition-all duration-300 bubble-button flex items-center gap-2"
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  border: '2px solid rgba(72, 128, 255, 0.4)',
+                  color: '#133E87',
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.5)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.3) inset';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.4)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+                onClick={() => setLanguageOpen(!languageOpen)}
+              >
+                <span>{language.toUpperCase()}</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${languageOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {languageOpen && (
+                <div 
+                  className="absolute right-0 mt-2 min-w-[80px] rounded-2xl shadow-xl z-50 overflow-hidden"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(15px)',
+                    border: '2px solid rgba(72, 128, 255, 0.2)',
+                    boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
+                    fontFamily: 'Nunito Sans, sans-serif',
+                    top: '100%'
+                  }}
+                >
+                  <button
+                    className={`w-full px-4 py-2.5 text-left text-xs font-medium transition-all duration-200 ${
+                      language === 'id' ? 'bg-blue-50' : 'hover:bg-gray-50'
+                    }`}
+                    style={{
+                      color: language === 'id' ? '#133E87' : '#608BC1',
+                      fontFamily: 'Nunito Sans, sans-serif'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (language !== 'id') {
+                        e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (language !== 'id') {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
+                    onClick={() => {
+                      setLanguage('id');
+                      setLanguageOpen(false);
+                    }}
+                  >
+                    ID
+                  </button>
+                  <div className="h-px" style={{ backgroundColor: 'rgba(72, 128, 255, 0.1)' }}></div>
+                  <button
+                    className={`w-full px-4 py-2.5 text-left text-xs font-medium transition-all duration-200 ${
+                      language === 'en' ? 'bg-blue-50' : 'hover:bg-gray-50'
+                    }`}
+                    style={{
+                      color: language === 'en' ? '#133E87' : '#608BC1',
+                      fontFamily: 'Nunito Sans, sans-serif'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (language !== 'en') {
+                        e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (language !== 'en') {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
+                    onClick={() => {
+                      setLanguage('en');
+                      setLanguageOpen(false);
+                    }}
+                  >
+                    EN
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Notification Dropdown */}
             <div className="relative notification-dropdown-container">
               <button
@@ -440,13 +542,13 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
                   }}
                 >
                   <div className="p-4 border-b flex justify-between items-center bg-white/50">
-                    <h3 className="font-bold text-gray-800">Notifikasi</h3>
+                    <h3 className="font-bold text-gray-800">{t('common.notifications')}</h3>
                     {unreadCount > 0 && (
                       <button
                         onClick={handleMarkAllRead}
                         className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                       >
-                        Tandai semua dibaca
+                        {t('common.seeAll')}
                       </button>
                     )}
                   </div>
@@ -477,13 +579,13 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
                     ) : (
                       <div className="p-8 text-center text-gray-500">
                         <Bell className="w-8 h-8 mx-auto mb-2 opacity-20" />
-                        <p className="text-sm">Tidak ada notifikasi</p>
+                        <p className="text-sm">{t('common.noNotifications')}</p>
                       </div>
                     )}
                   </div>
                   <div className="p-3 border-t bg-gray-50/50 text-center">
                     <Link to="/admin/notifications" className="text-xs font-bold text-blue-600 hover:text-blue-800">
-                      Lihat Semua Notifikasi
+                      {t('notification.seeAll')}
                     </Link>
                   </div>
                 </div>
@@ -510,23 +612,23 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl border-white/50 bg-white/90 backdrop-blur-xl">
-                <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('profile.myAccount')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   className="cursor-pointer" 
                   onClick={() => navigate('/admin/profile')}
                 >
-                  <User className="w-4 h-4 mr-2" /> Profil
+                  <User className="w-4 h-4 mr-2" /> {t('profile.myProfile')}
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   className="cursor-pointer" 
                   onClick={() => navigate('/admin/settings')}
                 >
-                  <Settings className="w-4 h-4 mr-2" /> Pengaturan
+                  <Settings className="w-4 h-4 mr-2" /> {t('settings.title')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50" onClick={handleLogout}>
-                  <LogOut className="w-4 h-4 mr-2" /> Keluar
+                  <LogOut className="w-4 h-4 mr-2" /> {t('common.logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

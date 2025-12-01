@@ -8,6 +8,7 @@ import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
 import { Package, ShoppingCart, CheckCircle, XCircle, Clock, Truck, CreditCard, Plus, Eye, Upload } from '../icons';
+import { useTranslation } from '../../contexts/LanguageContext';
 import { formatDateTime } from '../../utils/dateFormat';
 
 const MAX_PAYMENT_PROOF_SIZE = 5 * 1024 * 1024; // 5MB
@@ -33,6 +34,7 @@ interface Order {
 }
 
 export default function MyOrders() {
+  const t = useTranslation();
   // State management
   const [activeView, setActiveView] = useState<'create' | 'list'>('list');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -90,7 +92,7 @@ export default function MyOrders() {
       setOrders(response.data || []);
     } catch (error: any) {
       console.error('❌ Error fetching orders:', error);
-      setError(error.response?.data?.error || error.message || 'Gagal memuat pesanan');
+      setError(error.response?.data?.error || error.message || t('orders.error'));
     } finally {
       setLoading(false);
     }
@@ -128,7 +130,7 @@ export default function MyOrders() {
 
   const handleSubmitOrder = async () => {
     if (!isFormValid()) {
-      alert('Mohon lengkapi semua field yang diperlukan');
+      alert(t('orders.fillAll'));
       return;
     }
 
@@ -308,7 +310,7 @@ export default function MyOrders() {
     // Prioritize payment status for display
     if (paymentStatus === 'pending') {
       return {
-        label: 'Menunggu Pembayaran',
+        label: t('orders.pending'),
         bgColor: '#FEF3C7',
         textColor: '#92400E'
       };
@@ -321,17 +323,17 @@ export default function MyOrders() {
         textColor: '#92400E'
       },
       confirmed: { 
-        label: 'Diproses', 
+        label: t('orders.processing'), 
         bgColor: '#DBEAFE',
         textColor: '#1E40AF'
       },
       processing: { 
-        label: 'Diproses', 
+        label: t('orders.processing'), 
         bgColor: '#DBEAFE',
         textColor: '#1E40AF'
       },
       shipping: { 
-        label: 'Dikirim', 
+        label: t('orders.shipping'), 
         bgColor: '#EDE9FE',
         textColor: '#5B21B6'
       },
@@ -446,7 +448,7 @@ export default function MyOrders() {
               <Plus className="w-6 h-6" style={{ color: '#4880FF' }} />
             </div>
             <div className="text-left">
-              <h3 style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Buat Pesanan Baru</h3>
+              <h3 style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>{t('orders.createOrder')}</h3>
               <p className="text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Pesan Robot Temanikan</p>
             </div>
           </div>
@@ -513,7 +515,7 @@ export default function MyOrders() {
               <Package className="w-6 h-6" style={{ color: '#4880FF' }} />
             </div>
             <div className="text-left">
-              <h3 style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>Pesanan Saya</h3>
+              <h3 style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>{t('orders.myOrders')}</h3>
               <p className="text-sm" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Lihat riwayat pesanan</p>
             </div>
           </div>

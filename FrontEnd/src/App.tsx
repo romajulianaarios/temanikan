@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from './components/Router';
 import { AuthProvider, useAuth } from './components/AuthContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import LandingPageNew from './components/LandingPageNew';
 import PublicFishpedia from './components/PublicFishpedia';
 import PublicProduk from './components/PublicProduk';
@@ -135,9 +136,11 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </LanguageProvider>
     </Router>
   );
 }

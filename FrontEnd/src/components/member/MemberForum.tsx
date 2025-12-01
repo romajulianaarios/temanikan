@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from '../Router';  // ✅ DIPERBAIKI: Custom Router
 import { forumAPI } from '../../services/api';
 import { useAuth } from '../AuthContext';  // ✅ DIPERBAIKI: Path relatif
+import { useTranslation } from '../../contexts/LanguageContext';
 import { formatTimeAgo } from '../../utils/dateFormat';
 
 // Lucide Icons
@@ -41,10 +42,11 @@ interface Category {
 }
 
 export default function MemberForum() {
+  const t = useTranslation();
   const { user } = useAuth();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('Semua Topik');
+  const [selectedCategory, setSelectedCategory] = useState<string>(t('forum.allTopics'));
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [showReplies, setShowReplies] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -113,7 +115,7 @@ export default function MemberForum() {
         }, {});
 
         const categoryList: Category[] = [
-          { name: 'Semua Topik', count: mappedTopics.length },
+          { name: t('forum.allTopics'), count: mappedTopics.length },
           ...Object.entries(categoryCounts).map(([name, count]) => ({
             name,
             count: count as number
@@ -124,7 +126,7 @@ export default function MemberForum() {
       }
     } catch (err: any) {
       console.error('❌ Error fetching topics:', err);
-      setError(err.response?.data?.message || 'Gagal memuat topik forum');
+      setError(err.response?.data?.message || t('forum.error'));
     } finally {
       setLoading(false);
     }
@@ -164,7 +166,7 @@ export default function MemberForum() {
     let filtered = topics;
     
     // Filter by category
-    if (selectedCategory !== 'Semua Topik') {
+    if (selectedCategory !== t('forum.allTopics')) {
       filtered = filtered.filter(topic => topic.category === selectedCategory);
     }
     
@@ -270,7 +272,7 @@ export default function MemberForum() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Memuat forum...</p>
+          <p className="text-gray-600">{t('forum.loading')}</p>
         </div>
       </div>
     );
@@ -286,7 +288,7 @@ export default function MemberForum() {
             onClick={fetchTopics}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
           >
-            Coba Lagi
+            {t('common.tryAgain')}
           </button>
         </div>
       </div>
@@ -299,10 +301,10 @@ export default function MemberForum() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl mb-2" style={{ color: '#FFFFFF', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>
-            Forum <span style={{ color: '#FFFFFF' }}>Komunitas</span>
+            {t('forum.title')}
           </h2>
           <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif' }}>
-            Berbagi pengalaman dan tips dengan komunitas
+            {t('forum.subtitle')}
           </p>
         </div>
         <div className="flex gap-3">
@@ -326,7 +328,7 @@ export default function MemberForum() {
               }}
             >
               <Plus className="w-4 h-4" />
-              Topik Baru
+              {t('forum.newTopic')}
             </button>
           </Link>
           <Link to="/member/forum/my-topics">
@@ -351,7 +353,7 @@ export default function MemberForum() {
                 e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
               }}
             >
-              Lihat Topik Saya
+              {t('forum.myTopics')}
             </button>
           </Link>
         </div>
@@ -361,7 +363,7 @@ export default function MemberForum() {
       <div className="relative">
         <input
           type="text"
-          placeholder="Cari topik berdasarkan judul atau nama penulis..."
+          placeholder={t('forum.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-4 pr-4 py-3 rounded-full transition-all duration-300"
@@ -426,7 +428,7 @@ export default function MemberForum() {
             }}
           ></div>
           <h3 className="mb-4 text-lg relative z-10" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
-            Kategori
+            {t('forum.category')}
           </h3>
           <div className="space-y-2">
             {categories.map((category, index) => (

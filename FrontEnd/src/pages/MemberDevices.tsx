@@ -5,6 +5,7 @@ import { useNavigate } from '../components/Router';
 import { Plus, Bot, Activity, Circle } from '../components/icons';
 import { Button } from '../components/ui/button';
 import { useAuth } from '../components/AuthContext';
+import { useTranslation } from '../contexts/LanguageContext';
 import { deviceAPI } from '../services/api';
 import NotificationModal from '../components/ui/NotificationModal';
 
@@ -19,6 +20,7 @@ interface Device {
 export default function MemberDevices() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const t = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,7 @@ export default function MemberDevices() {
       }
     } catch (err: any) {
       console.error('Error fetching devices:', err);
-      setError(err.response?.data?.error || 'Gagal memuat data perangkat');
+      setError(err.response?.data?.error || t('common.error.loadDevice'));
     } finally {
       setLoading(false);
     }
@@ -69,16 +71,16 @@ export default function MemberDevices() {
 
         // Show success notification modal
         setNotificationType('success');
-        setNotificationTitle('Berhasil!');
-        setNotificationMessage(`Perangkat "${deviceData.namaPerangkat}" berhasil didaftarkan!`);
+        setNotificationTitle(t('common.success.title'));
+        setNotificationMessage(t('common.success.deviceAdded', { name: deviceData.namaPerangkat }));
         setShowNotification(true);
       }
     } catch (err: any) {
       console.error('Error adding device:', err);
       // Show error notification modal
-      const errorMsg = err.response?.data?.error || 'Gagal mendaftarkan perangkat. Silakan coba lagi.';
+      const errorMsg = err.response?.data?.error || t('common.error.deviceAddFailed');
       setNotificationType('error');
-      setNotificationTitle('Gagal');
+      setNotificationTitle(t('common.error.title'));
       setNotificationMessage(errorMsg);
       setShowNotification(true);
     }
@@ -90,16 +92,16 @@ export default function MemberDevices() {
   };
 
   return (
-    <DashboardLayout title="Perangkat Saya" userType="member">
+    <DashboardLayout title={t('common.myDevices')} userType="member">
       <div className="space-y-6">
         {/* Header Section */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-3xl" style={{ color: '#FFFFFF', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>
-              Halo, {user?.name || 'Pengguna'}!
+              {t('device.greeting', { name: user?.name || t('device.user') })}
             </h1>
             <p className="text-sm mt-1" style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif' }}>
-              Ayo kelola semua robot Temanikan Anda dalam satu tempat
+              {t('device.manageAll')}
             </p>
           </div>
 
@@ -126,7 +128,7 @@ export default function MemberDevices() {
               }}
             >
               <Plus className="w-5 h-5" />
-              <span>Tambah Perangkat Baru</span>
+              <span>{t('device.addDevice')}</span>
             </Button>
           )}
         </div>
@@ -140,7 +142,7 @@ export default function MemberDevices() {
               border: '2px solid rgba(72, 128, 255, 0.2)',
               boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
               fontFamily: 'Nunito Sans, sans-serif',
-              borderRadius: '48px'
+              borderRadius: '80px'
             }}
           >
             {/* Bubble glow effect */}
@@ -162,10 +164,10 @@ export default function MemberDevices() {
               <Bot className="w-12 h-12" style={{ color: '#4880FF' }} />
             </div>
             <h2 className="text-2xl mb-3 relative z-10" style={{ color: '#133E87', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif' }}>
-              Anda Belum Memiliki Perangkat
+              {t('device.noDevicesTitle')}
             </h2>
             <p className="text-sm mb-8 max-w-md mx-auto relative z-10" style={{ color: '#608BC1', lineHeight: '1.6', fontFamily: 'Nunito Sans, sans-serif' }}>
-              Silakan tambahkan perangkat Temanikan pertama Anda untuk memulai monitoring.
+              {t('device.noDevicesDesc')}
             </p>
             <Button
               onClick={() => setIsModalOpen(true)}
@@ -189,7 +191,7 @@ export default function MemberDevices() {
               }}
             >
               <Plus className="w-5 h-5" />
-              <span>Tambah Perangkat Baru</span>
+              <span>{t('device.addDevice')}</span>
             </Button>
           </div>
         ) : (
@@ -197,12 +199,13 @@ export default function MemberDevices() {
             {/* Stats Cards - Only show if devices exist */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div
-                className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+                className="bubble-card p-6 rounded-[80px] transition-all duration-300 relative overflow-hidden"
                 style={{ 
                   backgroundColor: '#FFFFFF',
                   border: '2px solid rgba(72, 128, 255, 0.2)',
                   boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-                  fontFamily: 'Nunito Sans, sans-serif'
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  borderRadius: '80px'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
@@ -224,7 +227,7 @@ export default function MemberDevices() {
                 ></div>
                 <div className="flex items-center justify-between relative z-10">
                   <div>
-                    <p className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Total Perangkat</p>
+                    <p className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>{t('device.totalDevices')}</p>
                     <p className="text-3xl mt-2 tracking-tight" style={{ color: '#133E87', fontWeight: 800, fontFamily: 'Nunito Sans, sans-serif' }}>
                       {devices.length}
                     </p>
@@ -244,12 +247,13 @@ export default function MemberDevices() {
               </div>
 
               <div
-                className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+                className="bubble-card p-6 rounded-[80px] transition-all duration-300 relative overflow-hidden"
                 style={{ 
                   backgroundColor: '#FFFFFF',
                   border: '2px solid rgba(16, 185, 129, 0.2)',
                   boxShadow: '0 10px 50px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-                  fontFamily: 'Nunito Sans, sans-serif'
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  borderRadius: '80px'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
@@ -271,7 +275,7 @@ export default function MemberDevices() {
                 ></div>
                 <div className="flex items-center justify-between relative z-10">
                   <div>
-                    <p className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Perangkat Online</p>
+                    <p className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>{t('device.onlineDevices')}</p>
                     <p className="text-3xl mt-2 tracking-tight" style={{ color: '#10B981', fontWeight: 800, fontFamily: 'Nunito Sans, sans-serif' }}>
                       {devices.filter(d => d.status === 'online').length}
                     </p>
@@ -291,12 +295,13 @@ export default function MemberDevices() {
               </div>
 
               <div
-                className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
+                className="bubble-card p-6 rounded-[80px] transition-all duration-300 relative overflow-hidden"
                 style={{ 
                   backgroundColor: '#FFFFFF',
                   border: '2px solid rgba(239, 68, 68, 0.2)',
                   boxShadow: '0 10px 50px rgba(239, 68, 68, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-                  fontFamily: 'Nunito Sans, sans-serif'
+                  fontFamily: 'Nunito Sans, sans-serif',
+                  borderRadius: '80px'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
@@ -318,7 +323,7 @@ export default function MemberDevices() {
                 ></div>
                 <div className="flex items-center justify-between relative z-10">
                   <div>
-                    <p className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Perangkat Offline</p>
+                    <p className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>{t('device.offlineDevices')}</p>
                     <p className="text-3xl mt-2 tracking-tight" style={{ color: '#EF4444', fontWeight: 800, fontFamily: 'Nunito Sans, sans-serif' }}>
                       {devices.filter(d => d.status === 'offline').length}
                     </p>
@@ -341,19 +346,20 @@ export default function MemberDevices() {
             {/* Devices Grid */}
             <div>
               <h2 className="text-xl mb-6" style={{ color: '#FFFFFF', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>
-                Daftar Perangkat
+                {t('device.deviceList')}
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {devices.map((device) => (
                   <div
                     key={device.id}
-                    className="bubble-card p-6 rounded-[32px] transition-all duration-300 group relative overflow-hidden"
+                    className="bubble-card p-6 rounded-[80px] transition-all duration-300 group relative overflow-hidden"
                     style={{
                       backgroundColor: '#FFFFFF',
                       border: '2px solid rgba(72, 128, 255, 0.2)',
                       boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-                      fontFamily: 'Nunito Sans, sans-serif'
+                      fontFamily: 'Nunito Sans, sans-serif',
+                      borderRadius: '80px'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
@@ -409,7 +415,7 @@ export default function MemberDevices() {
                         }}
                       >
                         <span className={`w-2 h-2 rounded-full ${device.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-                        {device.status === 'online' ? 'Online' : 'Offline'}
+                        {device.status === 'online' ? t('device.online') : t('device.offline')}
                       </div>
                     </div>
 
@@ -434,7 +440,7 @@ export default function MemberDevices() {
                     {/* Last Active */}
                     <div className="flex items-center gap-2 text-xs mb-6 relative z-10" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>
                       <Activity className="w-3.5 h-3.5" />
-                      <span>Terakhir aktif: {device.lastActive}</span>
+                      <span>{t('device.lastActive')} {device.lastActive}</span>
                     </div>
 
                     {/* Action Button - Only this is clickable */}
@@ -458,7 +464,7 @@ export default function MemberDevices() {
                           e.currentTarget.style.boxShadow = '0 6px 20px rgba(15, 91, 229, 0.3)';
                         }}
                       >
-                        Kelola Perangkat
+                        {t('device.manageDevice')}
                       </button>
                     </div>
                   </div>

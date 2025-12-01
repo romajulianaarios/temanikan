@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { ChevronRight } from '../icons';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { fishpediaAPI, buildAssetUrl } from '../../services/api';
+import { useTranslation } from '../../contexts/LanguageContext';
 import logo from '../../assets/logo_temanikan.png';
 
 interface FishSpecies {
@@ -33,9 +34,10 @@ interface FishSpecies {
 }
 
 export default function MemberFishpedia() {
+  const t = useTranslation();
   const [selectedFish, setSelectedFish] = useState<FishSpecies | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState('Semua');
+  const [selectedDifficulty, setSelectedDifficulty] = useState(t('fishpedia.all'));
   const [fishSpecies, setFishSpecies] = useState<FishSpecies[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +85,7 @@ export default function MemberFishpedia() {
       }
     } catch (err: any) {
       console.error('❌ Error fetching fish data:', err);
-      setError('Gagal memuat data ikan');
+      setError(t('fishpedia.error'));
     } finally {
       setLoading(false);
     }
@@ -236,12 +238,12 @@ export default function MemberFishpedia() {
     }
   ]; // Hardcoded data as fallback
 
-  const difficultyLevels = ['Semua', 'Mudah', 'Menengah', 'Sulit'];
+  const difficultyLevels = [t('fishpedia.all'), t('fishpedia.easy'), t('fishpedia.medium'), t('fishpedia.hard')];
 
   const filteredFish = fishSpecies.filter(fish => {
     const matchesSearch = fish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          fish.scientificName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDifficulty = selectedDifficulty === 'Semua' || fish.difficulty === selectedDifficulty;
+    const matchesDifficulty = selectedDifficulty === t('fishpedia.all') || fish.difficulty === selectedDifficulty;
     return matchesSearch && matchesDifficulty;
   });
 
@@ -262,7 +264,7 @@ export default function MemberFishpedia() {
     <div className="space-y-6">
       {loading && (
         <div className="text-center py-8">
-          <p className="text-gray-600">Memuat data ikan...</p>
+          <p className="text-gray-600">{t('fishpedia.loading')}</p>
         </div>
       )}
       
@@ -274,9 +276,9 @@ export default function MemberFishpedia() {
 
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl mb-3" style={{ color: '#FFFFFF', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>Fishpedia</h1>
+        <h1 className="text-3xl md:text-4xl mb-3" style={{ color: '#FFFFFF', fontWeight: 700, fontFamily: 'Nunito Sans, sans-serif', textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>{t('fishpedia.title')}</h1>
         <p className="text-lg" style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif' }}>
-          Jelajahi database lengkap ikan hias dengan informasi detail tentang perawatan, habitat, dan karakteristik setiap spesies
+          {t('fishpedia.subtitle')}
         </p>
       </div>
 
@@ -285,7 +287,7 @@ export default function MemberFishpedia() {
         {/* Search Bar */}
         <div className="relative">
           <input
-            placeholder="Cari nama ikan atau nama ilmiah..."
+            placeholder={t('fishpedia.search')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-6 py-6 text-base rounded-full transition-all duration-300 w-full"
@@ -313,7 +315,7 @@ export default function MemberFishpedia() {
 
         {/* Difficulty Filter */}
         <div className="flex flex-wrap gap-2">
-          <span className="text-sm self-center mr-2" style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Tingkat Kesulitan:</span>
+          <span className="text-sm self-center mr-2" style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>{t('fishpedia.difficulty')}</span>
           {difficultyLevels.map((difficulty) => (
             <button
               key={difficulty}
@@ -357,7 +359,7 @@ export default function MemberFishpedia() {
       {/* Results Count */}
       <div className="mb-6">
         <p style={{ color: 'rgba(255, 255, 255, 0.9)', fontFamily: 'Nunito Sans, sans-serif' }}>
-          Menampilkan <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{filteredFish.length}</span> dari <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{fishSpecies.length}</span> spesies ikan
+          {t('fishpedia.showing')} <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{filteredFish.length}</span> {t('fishpedia.of')} <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{fishSpecies.length}</span> {t('fishpedia.species')}
         </p>
       </div>
 
@@ -412,16 +414,20 @@ export default function MemberFishpedia() {
               
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Temperamen:</span>
+                  <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{t('fishpedia.temperament')}:</span>
                   <p className="font-medium" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.temperament}</p>
                 </div>
                 <div>
-                  <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Ukuran:</span>
+                  <span style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{t('fishpedia.size')}:</span>
                   <p className="font-medium" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{fish.size}</p>
                 </div>
               </div>
 
               <button 
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent event from bubbling to Card
+                  setSelectedFish(fish);
+                }}
                 className="bubble-button mt-4 flex items-center gap-2 group w-full justify-center rounded-full py-2 transition-all duration-300"
                 style={{ 
                   background: 'linear-gradient(135deg, rgba(15, 91, 229, 0.95), rgba(72, 128, 255, 0.9))',
@@ -440,7 +446,7 @@ export default function MemberFishpedia() {
                   e.currentTarget.style.boxShadow = '0 6px 20px rgba(15, 91, 229, 0.3)';
                 }}
               >
-                Lihat Detail
+                {t('fishpedia.viewDetails')}
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
@@ -452,8 +458,8 @@ export default function MemberFishpedia() {
       {filteredFish.length === 0 && (
         <div className="text-center py-12">
           <img src={logo} alt="Temanikan Logo" className="w-16 h-16 mx-auto mb-4 object-contain opacity-50" />
-          <p className="text-lg" style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>Tidak ada ikan yang ditemukan</p>
-          <p className="text-sm mt-2" style={{ color: 'rgba(255, 255, 255, 0.8)', fontFamily: 'Nunito Sans, sans-serif' }}>Coba ubah kata kunci pencarian atau filter tingkat kesulitan</p>
+          <p className="text-lg" style={{ color: '#FFFFFF', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 600 }}>{t('fishpedia.noFishFound')}</p>
+          <p className="text-sm mt-2" style={{ color: 'rgba(255, 255, 255, 0.8)', fontFamily: 'Nunito Sans, sans-serif' }}>{t('fishpedia.changeSearch')}</p>
         </div>
       )}
 
@@ -525,7 +531,7 @@ export default function MemberFishpedia() {
                     fontFamily: 'Nunito Sans, sans-serif'
                   }}
                 >
-                  <span className="text-xs font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Kategori</span>
+                  <span className="text-xs font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{t('fishpedia.categoryLabel')}</span>
                   <p className="font-medium mt-1" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.category}</p>
                 </div>
                 <div 
@@ -537,7 +543,7 @@ export default function MemberFishpedia() {
                     fontFamily: 'Nunito Sans, sans-serif'
                   }}
                 >
-                  <span className="text-xs font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Famili</span>
+                  <span className="text-xs font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{t('fishpedia.family')}</span>
                   <p className="font-medium mt-1" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.family || 'N/A'}</p>
                 </div>
                 <div 
@@ -549,7 +555,7 @@ export default function MemberFishpedia() {
                     fontFamily: 'Nunito Sans, sans-serif'
                   }}
                 >
-                  <span className="text-xs font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Temperamen</span>
+                  <span className="text-xs font-semibold" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{t('fishpedia.temperament')}</span>
                   <p className="font-medium mt-1" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.temperament || 'Damai'}</p>
                 </div>
               </div>
@@ -564,7 +570,7 @@ export default function MemberFishpedia() {
                   fontFamily: 'Nunito Sans, sans-serif'
                 }}
               >
-                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>📝 Deskripsi</h3>
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>📝 {t('fishpedia.description')}</h3>
                 <p className="leading-relaxed text-sm" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.detailedDescription || selectedFish.description}</p>
               </div>
 
@@ -579,18 +585,18 @@ export default function MemberFishpedia() {
                     fontFamily: 'Nunito Sans, sans-serif'
                   }}
                 >
-                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>💧 Parameter Air</h3>
+                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>💧 {t('fishpedia.waterParams')}</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: 'rgba(72, 128, 255, 0.2)' }}>
-                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Suhu</span>
+                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{t('fishpedia.temperature')}</span>
                       <span className="font-semibold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.temperature}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: 'rgba(72, 128, 255, 0.2)' }}>
-                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>pH</span>
+                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{t('fishpedia.ph')}</span>
                       <span className="font-semibold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.ph}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Ukuran Maksimal</span>
+                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{t('fishpedia.maxSize')}</span>
                       <span className="font-semibold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.size}</span>
                     </div>
                   </div>
@@ -605,14 +611,14 @@ export default function MemberFishpedia() {
                     fontFamily: 'Nunito Sans, sans-serif'
                   }}
                 >
-                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>ℹ️ Informasi Lainnya</h3>
+                  <h3 className="text-base font-bold mb-4" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>ℹ️ {t('common.otherInfo')}</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: 'rgba(72, 128, 255, 0.2)' }}>
-                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Temperamen</span>
+                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{t('fishpedia.temperament')}</span>
                       <span className="font-semibold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.temperament}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>Lama Hidup</span>
+                      <span className="text-sm font-medium" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{t('fishpedia.lifespanLabel')}</span>
                       <span className="font-semibold text-sm" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.lifespan}</span>
                     </div>
                   </div>
@@ -629,7 +635,7 @@ export default function MemberFishpedia() {
                   fontFamily: 'Nunito Sans, sans-serif'
                 }}
               >
-                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>🌍 Habitat Alami</h3>
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>🌍 {t('fishpedia.naturalHabitat')}</h3>
                 <p className="leading-relaxed text-sm" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.habitat || 'Informasi habitat tidak tersedia'}</p>
               </div>
 
@@ -643,7 +649,7 @@ export default function MemberFishpedia() {
                   fontFamily: 'Nunito Sans, sans-serif'
                 }}
               >
-                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>🍽️ Makanan & Diet</h3>
+                <h3 className="text-base font-bold mb-3" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>🍽️ {t('fishpedia.foodDiet')}</h3>
                 <p className="leading-relaxed text-sm" style={{ color: '#636E72', fontFamily: 'Nunito Sans, sans-serif' }}>{selectedFish.diet || 'Informasi diet tidak tersedia'}</p>
               </div>
                 </div>

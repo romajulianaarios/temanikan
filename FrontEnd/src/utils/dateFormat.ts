@@ -1,9 +1,10 @@
 /**
  * Format notification time to a human-readable string
  * @param dateString - ISO date string or date string
+ * @param t - Optional translation function
  * @returns Formatted time string (e.g., "2 jam yang lalu", "Kemarin", "30 Nov 2024")
  */
-export function formatNotificationTime(dateString: string): string {
+export function formatNotificationTime(dateString: string, t?: (key: string, params?: Record<string, string | number>) => string, language?: 'id' | 'en'): string {
   if (!dateString) return '';
 
   const now = new Date();
@@ -19,6 +20,43 @@ export function formatNotificationTime(dateString: string): string {
   const diffInHours = Math.floor(diffInMinutes / 60);
   const diffInDays = Math.floor(diffInHours / 24);
 
+  // Use translation if provided
+  if (t) {
+    // Less than 1 minute ago
+    if (diffInSeconds < 60) {
+      return t('time.justNow');
+    }
+
+    // Less than 1 hour ago
+    if (diffInMinutes < 60) {
+      return t('time.minutesAgo', { minutes: diffInMinutes });
+    }
+
+    // Less than 24 hours ago
+    if (diffInHours < 24) {
+      return t('time.hoursAgo', { hours: diffInHours });
+    }
+
+    // Yesterday
+    if (diffInDays === 1) {
+      return t('time.yesterday');
+    }
+
+    // Less than 7 days ago
+    if (diffInDays < 7) {
+      return t('time.daysAgo', { days: diffInDays });
+    }
+
+    // More than 7 days ago - show formatted date
+    const locale = (language === 'en' ? 'en-US' : 'id-ID');
+    return date.toLocaleDateString(locale, {
+      day: 'numeric',
+      month: 'short',
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+    });
+  }
+
+  // Fallback to default Indonesian
   // Less than 1 minute ago
   if (diffInSeconds < 60) {
     return 'Baru saja';
@@ -55,10 +93,11 @@ export function formatNotificationTime(dateString: string): string {
 /**
  * Format time ago (alias for formatNotificationTime, used in forum components)
  * @param dateString - ISO date string or date string
+ * @param t - Optional translation function
  * @returns Formatted time string (e.g., "2 jam yang lalu", "Kemarin", "30 Nov 2024")
  */
-export function formatTimeAgo(dateString: string): string {
-  return formatNotificationTime(dateString);
+export function formatTimeAgo(dateString: string, t?: (key: string, params?: Record<string, string | number>) => string, language?: 'id' | 'en'): string {
+  return formatNotificationTime(dateString, t, language);
 }
 
 /**

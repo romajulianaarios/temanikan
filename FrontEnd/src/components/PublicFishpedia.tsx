@@ -549,9 +549,7 @@ export default function PublicFishpedia({ onAuthClick, onNavigateHome, onSmartNa
                   <button 
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent event from bubbling to Card
-                      if (onAuthClick) {
-                        onAuthClick('login');
-                      }
+                      setSelectedFish(fish);
                     }}
                     className="w-full py-3 rounded-full font-semibold transition-all duration-300 bubble-button flex items-center justify-center gap-2"
                     style={{

@@ -296,6 +296,13 @@ export default function ForumModeration() {
     setShowDetailModal(true);
   };
 
+  // Open topic detail modal
+  const openTopicDetailModal = (topic: Topic) => {
+    console.log('Opening topic detail modal for:', topic.id);
+    setSelectedTopic(topic);
+    setShowDetailModal(true);
+  };
+
   // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -565,9 +572,10 @@ export default function ForumModeration() {
                         <Button 
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            setSelectedTopic(item);
-                            setShowDetailModal(true);
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            openTopicDetailModal(item);
                           }}
                           className="relative"
                           style={{ 
@@ -575,7 +583,8 @@ export default function ForumModeration() {
                             zIndex: 999999,
                             isolation: 'isolate',
                             pointerEvents: 'auto',
-                            transform: 'translateZ(0)'
+                            transform: 'translateZ(0)',
+                            cursor: 'pointer'
                           }}
                         >
                           <Eye className="w-4 h-4 mr-2" />
