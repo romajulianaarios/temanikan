@@ -88,9 +88,10 @@ const DialogOverlay = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const zIndex = props.style?.zIndex 
-    ? (typeof props.style.zIndex === 'number' ? props.style.zIndex : 9999998)
-    : 9999998;
+  // Get z-index from props.style, with high default to ensure it's above navbar
+  const overlayZIndex = props.style?.zIndex 
+    ? (typeof props.style.zIndex === 'number' ? props.style.zIndex : 99999998)
+    : 99999998;
   
   return (
     <div
@@ -103,7 +104,7 @@ const DialogOverlay = React.forwardRef<
         pointerEvents: 'auto',
         background: 'rgba(0, 0, 0, 0.5)',
         backdropFilter: 'blur(8px)',
-        zIndex: zIndex - 1,
+        zIndex: overlayZIndex, // Use z-index from props (overlayStyle)
         transform: 'translateZ(0)',
         isolation: 'isolate',
         ...props.style

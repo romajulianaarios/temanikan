@@ -69,7 +69,8 @@ export default function MyOrders() {
 
   const dialogOverlayStyle = {
     backdropFilter: 'blur(8px)',
-    background: 'rgba(0, 0, 0, 0.5)'
+    background: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 99999998 // Just below dialog content (99999999)
   };
 
   // Fetch orders on mount
@@ -178,7 +179,13 @@ export default function MyOrders() {
     setShowSuccessModal(false);
     if (newOrderData) {
       setSelectedOrder(newOrderData);
-      setShowPaymentModal(true);
+      // Use setTimeout to ensure state is updated before opening modal
+      setTimeout(() => {
+        setShowPaymentModal(true);
+      }, 100);
+    } else {
+      console.error('❌ newOrderData is null when trying to pay');
+      alert('Data pesanan tidak ditemukan. Silakan coba lagi.');
     }
   };
 
@@ -1137,7 +1144,8 @@ export default function MyOrders() {
             left: '50%',
             top: '50%',
             transform: 'translate(-50%, -50%)',
-            margin: 0
+            margin: 0,
+            zIndex: 99999999
           }}
           overlayStyle={dialogOverlayStyle}
         >
@@ -1237,7 +1245,8 @@ export default function MyOrders() {
             left: '50%',
             top: '50%',
             transform: 'translate(-50%, -50%)',
-            margin: 0
+            margin: 0,
+            zIndex: 99999999
           }}
           overlayStyle={dialogOverlayStyle}
         >
@@ -1344,7 +1353,8 @@ export default function MyOrders() {
             left: '50%',
             top: '50%',
             transform: 'translate(-50%, -50%)',
-            margin: 0
+            margin: 0,
+            zIndex: 99999999
           }}
           overlayStyle={dialogOverlayStyle}
         >
@@ -1400,11 +1410,12 @@ export default function MyOrders() {
             left: '50%',
             top: '50%',
             transform: 'translate(-50%, -50%)',
-            margin: 0
+            margin: 0,
+            zIndex: 99999999
           }}
           overlayStyle={dialogOverlayStyle}
         >
-          {selectedOrder && (
+          {selectedOrder ? (
             <>
               <DialogHeader>
                 <DialogTitle style={{ color: '#4880FF' }}>
@@ -1476,6 +1487,19 @@ export default function MyOrders() {
                 </Button>
               </DialogFooter>
             </>
+          ) : (
+            <div className="p-6 text-center">
+              <p className="text-gray-600 mb-4">Memuat informasi pesanan...</p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowPaymentModal(false);
+                  setSelectedOrder(null);
+                }}
+              >
+                Tutup
+              </Button>
+            </div>
           )}
         </DialogContent>
       </Dialog>

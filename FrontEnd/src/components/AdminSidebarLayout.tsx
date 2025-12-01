@@ -413,16 +413,18 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
             <div className="relative notification-dropdown-container">
               <button
                 onClick={() => setNotificationOpen(!notificationOpen)}
-                className="bubble-button relative p-2.5 rounded-full transition-all duration-300"
+                className="bubble-button relative p-3 rounded-full transition-all duration-300"
                 style={{
-                  backgroundColor: notificationOpen ? '#E0E7FF' : '#F0F5FF',
-                  color: '#4880FF',
-                  boxShadow: notificationOpen
-                    ? '0 0 0 2px rgba(72, 128, 255, 0.3), inset 0 2px 5px rgba(0,0,0,0.05)'
-                    : '0 4px 15px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8) inset'
+                  background: notificationOpen 
+                    ? 'linear-gradient(135deg, rgba(72, 128, 255, 0.4), rgba(15, 91, 229, 0.3))'
+                    : 'linear-gradient(135deg, rgba(72, 128, 255, 0.3), rgba(15, 91, 229, 0.2))',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(72, 128, 255, 0.3)',
+                  boxShadow: '0 4px 15px rgba(72, 128, 255, 0.2)',
+                  color: '#4880FF'
                 }}
               >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-6 h-6" />
                 {unreadCount > 0 && (
                   <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
                 )}
@@ -491,29 +493,35 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
             {/* Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="bubble-button flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-full transition-all duration-300"
+                <button className="bubble-button flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full transition-all duration-300"
                   style={{
                     backgroundColor: '#FFFFFF',
                     boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.8) inset'
                   }}
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-md">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-md text-xs">
                     {currentUser.name.charAt(0)}
                   </div>
                   <div className="text-left hidden sm:block">
-                    <p className="text-sm font-bold text-gray-800 leading-tight">{currentUser.name}</p>
-                    <p className="text-[10px] text-gray-500 font-medium">{currentUser.role}</p>
+                    <p className="text-xs font-bold text-gray-800 leading-tight">{currentUser.name}</p>
+                    <p className="text-[9px] text-gray-500 font-medium">{currentUser.role}</p>
                   </div>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-3 h-3 text-gray-400" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl border-white/50 bg-white/90 backdrop-blur-xl">
                 <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem 
+                  className="cursor-pointer" 
+                  onClick={() => navigate('/admin/profile')}
+                >
                   <User className="w-4 h-4 mr-2" /> Profil
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem 
+                  className="cursor-pointer" 
+                  onClick={() => navigate('/admin/settings')}
+                >
                   <Settings className="w-4 h-4 mr-2" /> Pengaturan
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

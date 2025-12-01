@@ -67,6 +67,8 @@ def main():
         print("  python update_api_key.py [API_KEY]")
         print("\nContoh:")
         print("  python update_api_key.py AIzaSyA_nyNIO60t4OUKkJLKgPnXw4EwoUcOfB8")
+        print("\n  Untuk multiple keys (backup), pisahkan dengan koma:")
+        print("  python update_api_key.py KEY1,KEY2,KEY3")
         print("\nAtau masukkan API key secara interaktif:")
         api_key = input("\nMasukkan API Key baru: ").strip()
         if not api_key:
@@ -79,7 +81,14 @@ def main():
         print("❌ API Key tidak boleh kosong!")
         sys.exit(1)
     
-    if not api_key.startswith('AIza'):
+    # Check if multiple keys (comma-separated)
+    keys = [k.strip() for k in api_key.split(',')]
+    if len(keys) > 1:
+        print(f"✅ Detected {len(keys)} API keys (multiple backup keys)")
+        for i, key in enumerate(keys, 1):
+            if not key.startswith('AIza'):
+                print(f"⚠️  Warning: Key #{i} biasanya dimulai dengan 'AIza'")
+    elif not api_key.startswith('AIza'):
         print("⚠️  Warning: API Key biasanya dimulai dengan 'AIza'")
         response = input("Lanjutkan? (y/n): ").strip().lower()
         if response != 'y':
@@ -112,6 +121,11 @@ def main():
     print("- API key disimpan di file .env (prioritas)")
     print("- Jika .env tidak ada, akan menggunakan config.py")
     print("- Pastikan file .env tidak di-commit ke Git!")
+    if len(keys) > 1:
+        print(f"\n🎯 Multiple Keys Setup:")
+        print(f"- Primary key: {keys[0][:20]}...")
+        print(f"- Backup keys: {len(keys)-1} key(s)")
+        print("- Sistem akan otomatis switch ke backup jika primary gagal")
 
 if __name__ == '__main__':
     main()
