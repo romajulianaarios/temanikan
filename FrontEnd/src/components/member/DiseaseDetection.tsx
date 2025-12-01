@@ -4,7 +4,7 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../ui/dialog';
-import { Camera, Video, Eye, AlertTriangle, CheckCircle, TrendingUp, Calendar, Monitor } from 'lucide-react';
+import { Camera, Video, Eye, AlertTriangle, CheckCircle, TrendingUp, Calendar, Monitor, Trash2 } from 'lucide-react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { deviceAPI, diseaseAPI } from '../../services/api';
 
@@ -18,21 +18,24 @@ export default function DiseaseDetection() {
   const [deviceResolveMessage, setDeviceResolveMessage] = useState('');
   const [resolvingDevice, setResolvingDevice] = useState(false);
 
+  // Detection History State
+  const [detectionRefreshKey, setDetectionRefreshKey] = useState(0);
+  const [detectionLoading, setDetectionLoading] = useState(false);
+  const [detectionError, setDetectionError] = useState('');
+  const [detectionCards, setDetectionCards] = useState<any[]>([]);
+
   // Upload State
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadDetections, setUploadDetections] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showUploadResult, setShowUploadResult] = useState(false);
+
+  // Live Detection State
   const [isLiveDetecting, setIsLiveDetecting] = useState(false);
   const [liveDetectionPreview, setLiveDetectionPreview] = useState<string | null>(null);
   const [liveDetectionResults, setLiveDetectionResults] = useState<any[]>([]);
   const [liveDetectionError, setLiveDetectionError] = useState('');
   const [liveDetectionSaveMessage, setLiveDetectionSaveMessage] = useState('');
-  const [detectionCards, setDetectionCards] = useState<any[]>([]);
-  const [detectionLoading, setDetectionLoading] = useState(false);
-  const [detectionError, setDetectionError] = useState('');
-  const [detectionRefreshKey, setDetectionRefreshKey] = useState(0);
-  const refreshDetectionHistory = () => setDetectionRefreshKey((prev) => prev + 1);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -40,6 +43,21 @@ export default function DiseaseDetection() {
   const uploadCanvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const refreshDetectionHistory = () => {
+    setDetectionRefreshKey(prev => prev + 1);
+  };
+
+  const handleDeleteDetection = async (id: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus riwayat ini?')) return;
+    try {
+      await diseaseAPI.deleteDetection(id);
+      refreshDetectionHistory();
+    } catch (error) {
+      console.error('Failed to delete detection:', error);
+      alert('Gagal menghapus riwayat deteksi');
+    }
+  };
 
   // Start Camera
   const startCamera = async () => {
@@ -614,6 +632,7 @@ export default function DiseaseDetection() {
       isSubscribed = false;
     };
   }, [detectionRefreshKey]);
+
   const stats = [
     {
       label: 'Total Deteksi Hari Ini',
@@ -694,9 +713,9 @@ export default function DiseaseDetection() {
       </div>
 
       {/* Filters & Actions */}
-      <Card 
+      <Card
         className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
-        style={{ 
+        style={{
           backgroundColor: '#FFFFFF',
           border: '2px solid rgba(72, 128, 255, 0.2)',
           boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
@@ -778,10 +797,6 @@ export default function DiseaseDetection() {
         ) : detectionCards.length > 0 ? (
           detectionCards.map((detection) => {
             const displayDeviceName = activeDeviceName || detection.deviceName;
-            const modalOverlayStyle = {
-              backdropFilter: 'none',
-              background: 'rgba(15, 23, 42, 0.55)'
-            };
 
             return (
               <Dialog key={detection.id}>
@@ -840,18 +855,12 @@ export default function DiseaseDetection() {
                     </div>
                   </Card>
                 </DialogTrigger>
-                <DialogContent
-                  className="w-[92vw] sm:max-w-lg text-[12px] md:text-[13px] max-h-[85vh] overflow-y-auto"
-                  style={{ backgroundColor: 'white', fontFamily: '"Nunito Sans", sans-serif', borderRadius: '12px' }}
-                  overlayStyle={modalOverlayStyle}
-                >
+                <DialogContent className="w-[92vw] sm:max-w-lg text-[12px] md:text-[13px] max-h-[85vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle className="text-base font-semibold" style={{ color: '#1F2937', fontFamily: 'inherit' }}>
-                      Detail Deteksi Penyakit
-                    </DialogTitle>
+                    <DialogTitle>Detail Deteksi</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
-                    <div className="w-full h-48 rounded-lg overflow-hidden">
+                    <div className="w-full h-64 rounded-lg overflow-hidden">
                       <ImageWithFallback
                         src={detection.imageUrl}
                         alt={detection.fishType}
@@ -859,57 +868,41 @@ export default function DiseaseDetection() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
-                        <p className="text-xs mb-1" style={{ color: '#6B7280' }}>Jenis Ikan</p>
-                        <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>{detection.fishType}</p>
-                      </div>
-                      <div className="p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
-                        <p className="text-xs mb-1" style={{ color: '#6B7280' }}>Tingkat Kepercayaan</p>
-                        <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>{detection.confidence}%</p>
-                      </div>
-                      <div className="col-span-2 p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
-                        <p className="text-xs mb-1" style={{ color: '#6B7280' }}>Tanggal & Waktu</p>
-                        <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>{detection.date} - {detection.time}</p>
-                      </div>
-                    </div>
-
-                    {displayDeviceName && (
-                      <div className="p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
-                        <p className="text-xs mb-1" style={{ color: '#6B7280' }}>Perangkat Akuarium</p>
-                        <p className="text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>{displayDeviceName}</p>
-                      </div>
-                    )}
-
-                    <div
-                      className="p-3 rounded-lg border-l-4"
-                      style={{
-                        backgroundColor: detection.statusBg,
-                        borderColor: detection.statusColor
-                      }}
-                    >
-                      <h4 className="mb-2 text-sm" style={{ color: detection.statusColor, fontWeight: 600 }}>Diagnosis</h4>
-                      <p className="text-sm" style={{ color: '#1F2937' }}>{detection.disease}</p>
-                    </div>
-
-                    {detection.symptoms.length > 0 && (
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <h4 className="mb-3 text-sm" style={{ color: '#1F2937', fontWeight: 600 }}>Gejala yang Terdeteksi</h4>
-                        <div className="space-y-2">
-                          {detection.symptoms.map((symptom, index) => (
-                            <div
-                              key={index}
-                              className="flex items-start gap-2 p-2.5 rounded-lg"
-                              style={{ backgroundColor: '#F9FAFB' }}
-                            >
-                              <div
-                                className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
-                                style={{ backgroundColor: detection.statusColor }}
-                              />
-                              <p className="text-sm" style={{ color: '#1F2937' }}>{symptom}</p>
-                            </div>
+                        <p className="text-xs text-gray-500">Penyakit</p>
+                        <p className="font-semibold">{detection.disease}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Tingkat Kepercayaan</p>
+                        <p className="font-semibold">{detection.confidence}%</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Waktu Deteksi</p>
+                        <p className="font-semibold">{detection.date} {detection.time}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Status</p>
+                        <span
+                          className="px-2 py-1 rounded text-xs inline-block mt-1"
+                          style={{
+                            backgroundColor: detection.statusBg,
+                            color: detection.statusColor
+                          }}
+                        >
+                          {detection.statusLabel}
+                        </span>
+                      </div>
+                    </div>
+
+                    {detection.symptoms && detection.symptoms.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Gejala</p>
+                        <ul className="list-disc pl-4 text-sm">
+                          {detection.symptoms.map((symptom: string, idx: number) => (
+                            <li key={idx}>{symptom}</li>
                           ))}
-                        </div>
+                        </ul>
                       </div>
                     )}
 
@@ -926,6 +919,15 @@ export default function DiseaseDetection() {
                       </h4>
                       <p className="text-sm" style={{ color: '#1F2937' }}>{detection.recommendation}</p>
                     </div>
+
+                    <Button
+                      variant="destructive"
+                      className="w-full mt-4 flex items-center justify-center gap-2"
+                      onClick={() => handleDeleteDetection(detection.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Hapus Riwayat
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -944,9 +946,9 @@ export default function DiseaseDetection() {
       </div>
 
       {/* Upload New Image */}
-      <Card 
+      <Card
         className="bubble-card p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden"
-        style={{ 
+        style={{
           backgroundColor: '#FFFFFF',
           border: '2px solid rgba(72, 128, 255, 0.2)',
           boxShadow: '0 10px 50px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
@@ -1110,7 +1112,7 @@ export default function DiseaseDetection() {
         <DialogContent className="max-w-4xl bg-white">
           <DialogHeader>
             <DialogTitle className="text-xl" style={{ color: '#1F2937', fontWeight: 700 }}>
-              Live Stream - Akuarium Utama
+              Live Stream - {activeDeviceName || 'Akuarium Utama'}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
