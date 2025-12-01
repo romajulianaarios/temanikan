@@ -2404,13 +2404,15 @@ def register_routes(app):
     @app.route('/api/notifications/<int:notification_id>', methods=['GET'])
     @jwt_required()
     def get_notification_detail(notification_id):
-        user_id = get_jwt_identity()
+        user_id_str = get_jwt_identity()
+        user_id = int(user_id_str)  # ✅ Convert string to integer
+        
         notification = Notification.query.get(notification_id)
         
         if not notification:
             return jsonify({'success': False, 'error': 'Notification not found'}), 404
         
-        if notification.user_id != user_id:
+        if notification.user_id != user_id:  # ✅ Sekarang keduanya integer
             return jsonify({'success': False, 'error': 'Unauthorized access'}), 403
         
         # Mark as read when viewed

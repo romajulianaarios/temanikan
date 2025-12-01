@@ -48,6 +48,8 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // User data from auth context
   const currentUser = {
@@ -56,33 +58,57 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
     role: 'Administrator'
   };
 
-  // Mock unread notifications
-  const unreadNotifications = [
-    {
-      id: 1,
-      title: 'Pesanan baru masuk',
-      message: 'Roma Juliana melakukan pemesanan Robot Temanikan',
-      time: '5 menit yang lalu',
-      type: 'info',
-      is_read: false
-    },
-    {
-      id: 2,
-      title: 'Laporan deteksi penyakit',
-      message: 'Terdeteksi peningkatan kasus white spot 15%',
-      time: '1 jam yang lalu',
-      type: 'warning',
-      is_read: false
-    },
-    {
-      id: 3,
-      title: 'Pengguna baru terdaftar',
-      message: '3 pengguna baru mendaftar hari ini',
-      time: '2 jam yang lalu',
-      type: 'info',
-      is_read: false
+  // Fetch notifications from API
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const { notificationAPI } = await import('../services/api');
+        const response = await notificationAPI.getNotifications(10, false);
+
+        if (response.notifications) {
+          setNotifications(response.notifications);
+          setUnreadCount(response.unread_count || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch notifications', error);
+      }
+    };
+
+    if (user) {
+      fetchNotifications();
+      // Optional: Poll every minute
+      const interval = setInterval(fetchNotifications, 60000);
+      return () => clearInterval(interval);
     }
-  ];
+  }, [user]);
+
+  const handleMarkAsRead = async (id: number) => {
+    try {
+      const { notificationAPI } = await import('../services/api');
+      await notificationAPI.markAsRead(id);
+
+      // Update local state
+      setNotifications(prev =>
+        prev.map(n => n.id === id ? { ...n, is_read: true } : n)
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Failed to mark notification as read', error);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      const { notificationAPI } = await import('../services/api');
+      await notificationAPI.markAllAsRead();
+
+      // Update local state
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all as read', error);
+    }
+  };
 
   const adminMenuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
@@ -295,442 +321,217 @@ export default function AdminSidebarLayout({ children, title, breadcrumbs }: Adm
           width: '280px'
         }}
       >
-        {/* Mobile Sidebar Header */}
-        <div className="p-4 border-b flex items-center justify-between" style={{
-          borderColor: 'rgba(255, 255, 255, 0.3)',
-          backgroundColor: 'rgba(255, 255, 255, 0.5)',
-          backdropFilter: 'blur(10px)'
-        }}>
+        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}>
           <div className="flex items-center gap-2">
             <Fish className="w-7 h-7" style={{ color: '#4880FF' }} />
-            <span className="text-lg font-bold" style={{
-              color: '#133E87',
-              fontFamily: 'Nunito Sans, sans-serif',
-              fontWeight: 700
-            }}>temanikan</span>
+            <span className="text-lg font-bold" style={{ color: '#133E87' }}>temanikan</span>
           </div>
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="bubble-button p-1.5 rounded-full transition-all duration-300"
-            style={{
-              backgroundColor: 'rgba(72, 128, 255, 0.2)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(72, 128, 255, 0.3)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
-              e.currentTarget.style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.2)';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-          >
-            <X className="w-5 h-5" style={{ color: '#4880FF' }} />
+          <button onClick={() => setMobileMenuOpen(false)} className="p-2">
+            <X className="w-6 h-6" style={{ color: '#133E87' }} />
           </button>
         </div>
 
-        {/* Mobile Sidebar Navigation */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {adminMenuItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
               onClick={() => setMobileMenuOpen(false)}
-              className="bubble-button flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300"
               style={{
-                backgroundColor: isActivePath(item.path)
-                  ? '#4880FF'
-                  : '#FFFFFF',
-                border: isActivePath(item.path)
-                  ? '2px solid rgba(72, 128, 255, 0.5)'
-                  : '2px solid rgba(72, 128, 255, 0.15)',
+                backgroundColor: isActivePath(item.path) ? '#4880FF' : 'transparent',
                 color: isActivePath(item.path) ? '#FFFFFF' : '#133E87',
-                fontWeight: isActivePath(item.path) ? 700 : 600,
-                fontFamily: 'Nunito Sans, sans-serif',
-                boxShadow: isActivePath(item.path)
-                  ? '0 6px 25px rgba(72, 128, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset'
-                  : '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset'
-              }}
-              onMouseEnter={(e) => {
-                if (!isActivePath(item.path)) {
-                  e.currentTarget.style.backgroundColor = '#F0F5FF';
-                  e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(72, 128, 255, 0.2) inset';
-                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.3)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActivePath(item.path)) {
-                  e.currentTarget.style.backgroundColor = '#FFFFFF';
-                  e.currentTarget.style.transform = 'translateX(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 128, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset';
-                  e.currentTarget.style.borderColor = 'rgba(72, 128, 255, 0.15)';
-                }
+                fontWeight: isActivePath(item.path) ? 700 : 600
               }}
             >
-              {/* Bubble glow for active item */}
-              {isActivePath(item.path) && (
-                <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-30 pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%)',
-                    filter: 'blur(15px)'
-                  }}
-                ></div>
-              )}
-              <item.icon className="w-5 h-5 flex-shrink-0 relative z-10" />
-              <span className="relative z-10">{item.label}</span>
+              <item.icon className="w-5 h-5" />
+              <span>{item.label}</span>
             </Link>
           ))}
         </nav>
 
-        {/* Mobile Sidebar Footer */}
         <div className="p-4 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}>
           <button
-            type="button"
-            onClick={() => {
-              setMobileMenuOpen(false);
-              handleLogout();
-            }}
-            className="bubble-button w-full flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 relative overflow-hidden"
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300"
             style={{
               backgroundColor: '#FEE2E2',
-              border: '2px solid rgba(239, 68, 68, 0.4)',
               color: '#B91C1C',
-              fontWeight: 700,
-              fontFamily: 'Nunito Sans, sans-serif',
-              boxShadow: '0 6px 25px rgba(239, 68, 68, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6) inset'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#FECACA';
-              e.currentTarget.style.transform = 'translateX(4px) scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 8px 30px rgba(239, 68, 68, 0.35), 0 0 0 1px rgba(239, 68, 68, 0.2) inset';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#FEE2E2';
-              e.currentTarget.style.transform = 'translateX(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 6px 25px rgba(239, 68, 68, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6) inset';
+              fontWeight: 700
             }}
           >
-            <LogOut className="w-5 h-5 flex-shrink-0 relative z-10" />
-            <span className="relative z-10">Logout</span>
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-[80px]' : 'lg:ml-[280px]'
-          }`}
-      >
-        {/* Top Bar */}
-        <header className="sticky top-0 z-30" style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 4px 30px rgba(72, 128, 255, 0.1)'
-        }}>
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Mobile Menu Button */}
+      {/* Main Content */}
+      <main className={`flex-1 transition-all duration-300 flex flex-col min-h-screen ${sidebarCollapsed ? 'lg:ml-[80px]' : 'lg:ml-[280px]'
+        }`}>
+        {/* Top Header */}
+        <header className="sticky top-0 z-30 px-6 py-4 flex items-center justify-between shadow-sm"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(12px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.5)'
+          }}
+        >
+          <div className="flex items-center gap-4">
+            <button
+              className="lg:hidden p-2 rounded-lg hover:bg-white/50 transition-colors"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="w-6 h-6" style={{ color: '#133E87' }} />
+            </button>
+
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
+                {title}
+              </h1>
+              {breadcrumbs && (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  {breadcrumbs.map((crumb, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      {index > 0 && <span className="text-gray-400">/</span>}
+                      {crumb.path ? (
+                        <Link to={crumb.path} className="hover:text-blue-600 transition-colors">
+                          {crumb.label}
+                        </Link>
+                      ) : (
+                        <span>{crumb.label}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Notification Dropdown */}
+            <div className="relative notification-dropdown-container">
               <button
-                className="bubble-button lg:hidden p-2 rounded-full transition-all duration-300"
+                onClick={() => setNotificationOpen(!notificationOpen)}
+                className="bubble-button relative p-2.5 rounded-full transition-all duration-300"
                 style={{
-                  backgroundColor: 'rgba(72, 128, 255, 0.2)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(72, 128, 255, 0.3)'
-                }}
-                onClick={() => setMobileMenuOpen(true)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
-                  e.currentTarget.style.transform = 'scale(1.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.2)';
-                  e.currentTarget.style.transform = 'scale(1)';
+                  backgroundColor: notificationOpen ? '#E0E7FF' : '#F0F5FF',
+                  color: '#4880FF',
+                  boxShadow: notificationOpen
+                    ? '0 0 0 2px rgba(72, 128, 255, 0.3), inset 0 2px 5px rgba(0,0,0,0.05)'
+                    : '0 4px 15px rgba(72, 128, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8) inset'
                 }}
               >
-                <Menu className="w-6 h-6" style={{ color: '#4880FF' }} />
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                )}
               </button>
 
-              {/* Page Title */}
-              <div className="hidden sm:block">
-                <h1 style={{
-                  color: '#133E87',
-                  fontFamily: 'Nunito Sans, sans-serif',
-                  fontWeight: 700,
-                  fontSize: '1.5rem'
-                }}>{title}</h1>
-              </div>
-
-              {/* Right Side Actions */}
-              <div className="flex items-center gap-3 ml-auto">
-                {/* Language Selector */}
-                <div className="hidden md:block">
-                  <Select defaultValue="id">
-                    <SelectTrigger
-                      className="bubble-button px-3 py-2 h-auto text-sm font-semibold transition-all duration-300"
-                      style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(72, 128, 255, 0.3)',
-                        color: '#133E87',
-                        fontFamily: 'Nunito Sans, sans-serif',
-                        cursor: 'pointer',
-                        minWidth: '80px'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
-                        e.currentTarget.style.transform = 'scale(1.05)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="id">ID</SelectItem>
-                      <SelectItem value="en">EN</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Notification Dropdown */}
-                <div className="relative notification-dropdown-container">
-                  <button
-                    className="bubble-button relative px-3 py-2.5 rounded-full transition-all duration-300 group"
-                    style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(72, 128, 255, 0.3)',
-                      cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
-                      e.currentTarget.style.transform = 'scale(1.1)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }}
-                    onClick={() => setNotificationOpen(!notificationOpen)}
-                  >
-                    <Bell className="w-5 h-5 group-hover:scale-110 transition-transform relative z-10" style={{ color: '#4880FF' }} />
-                    {unreadNotifications.length > 0 && (
-                      <span
-                        className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full border-2 border-white z-20"
-                        style={{ backgroundColor: '#EF4444' }}
-                      />
+              {/* Notification Content */}
+              {notificationOpen && (
+                <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl shadow-2xl overflow-hidden z-50 origin-top-right transition-all duration-200 animate-in fade-in zoom-in-95"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.5)'
+                  }}
+                >
+                  <div className="p-4 border-b flex justify-between items-center bg-white/50">
+                    <h3 className="font-bold text-gray-800">Notifikasi</h3>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllRead}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        Tandai semua dibaca
+                      </button>
                     )}
-                  </button>
-
-                  {notificationOpen && (
-                    <div
-                      className="absolute right-0 mt-2 w-80 rounded-2xl shadow-xl z-50"
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(15px)',
-                        border: '2px solid rgba(72, 128, 255, 0.2)',
-                        boxShadow: '0 15px 60px rgba(72, 128, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset',
-                        fontFamily: 'Nunito Sans, sans-serif',
-                        top: '100%'
-                      }}
-                    >
-                      <div className="p-4 border-b" style={{ borderColor: 'rgba(72, 128, 255, 0.1)' }}>
-                        <h3 className="font-semibold" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>Notifikasi</h3>
-                      </div>
-                      <div className="max-h-[400px] overflow-y-auto">
-                        {unreadNotifications.length === 0 ? (
-                          <div className="p-8 text-center text-sm text-gray-500">
-                            <div className="bg-gray-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                              <Bell className="w-6 h-6 text-gray-400" />
-                            </div>
-                            Tidak ada notifikasi baru
-                          </div>
-                        ) : (
-                          unreadNotifications.map((notif) => (
-                            <div
-                              key={notif.id}
-                              className={`cursor-pointer flex flex-col items-start p-4 border-b transition-all duration-200 rounded-xl mx-2 my-1 ${!notif.is_read ? 'bg-blue-50/50' : ''}`}
-                              style={{
-                                borderColor: 'rgba(72, 128, 255, 0.1)',
-                                fontFamily: 'Nunito Sans, sans-serif'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.1)';
-                                e.currentTarget.style.transform = 'translateX(4px)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = !notif.is_read ? 'rgba(72, 128, 255, 0.05)' : 'transparent';
-                                e.currentTarget.style.transform = 'translateX(0)';
-                              }}
-                              onClick={() => {
-                                setNotificationOpen(false);
-                                navigate(`/admin/notifications/${notif.id}`);
-                              }}
-                            >
-                              <div className="flex justify-between w-full mb-1">
-                                <span className={`font-semibold text-sm ${!notif.is_read ? 'text-blue-600' : 'text-gray-900'}`} style={{ fontFamily: 'Nunito Sans, sans-serif' }}>
-                                  {notif.title}
-                                </span>
-                                {!notif.is_read && (
-                                  <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5"></span>
-                                )}
-                              </div>
-                              <p className="text-xs line-clamp-2 mb-2 leading-relaxed" style={{ color: '#608BC1', fontFamily: 'Nunito Sans, sans-serif' }}>{notif.message}</p>
-                              <span className="text-[10px] font-medium" style={{ color: '#9CA3AF', fontFamily: 'Nunito Sans, sans-serif' }}>
-                                {notif.time}
+                  </div>
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          onClick={() => handleMarkAsRead(notif.id)}
+                          className={`p-4 border-b last:border-0 hover:bg-blue-50/50 transition-colors cursor-pointer ${!notif.is_read ? 'bg-blue-50/30' : ''}`}
+                        >
+                          <div className="flex gap-3">
+                            <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${!notif.is_read ? 'bg-blue-500' : 'bg-gray-300'}`} />
+                            <div className="flex-1">
+                              <h4 className={`text-sm ${!notif.is_read ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>
+                                {notif.title}
+                              </h4>
+                              <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                {notif.message}
+                              </p>
+                              <span className="text-[10px] text-gray-400 mt-2 block">
+                                {new Date(notif.created_at).toLocaleString('id-ID')}
                               </span>
                             </div>
-                          ))
-                        )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-8 text-center text-gray-500">
+                        <Bell className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm">Tidak ada notifikasi</p>
                       </div>
-                      <div className="p-2 border-t" style={{ borderColor: 'rgba(72, 128, 255, 0.1)', background: 'rgba(72, 128, 255, 0.05)' }}>
-                        <button
-                          className="cursor-pointer justify-center py-2.5 rounded-full hover:bg-white hover:shadow-sm transition-all text-center w-full bubble-button"
-                          style={{
-                            fontFamily: 'Nunito Sans, sans-serif',
-                            border: '2px solid rgba(72, 128, 255, 0.2)',
-                            background: 'rgba(255, 255, 255, 0.8)'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#F0F5FF';
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(72, 128, 255, 0.2)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
-                          onClick={() => {
-                            setNotificationOpen(false);
-                            navigate('/admin/notifications');
-                          }}
-                        >
-                          <span className="text-sm font-medium" style={{ color: '#133E87', fontFamily: 'Nunito Sans, sans-serif' }}>
-                            Lihat Semua Notifikasi
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  <div className="p-3 border-t bg-gray-50/50 text-center">
+                    <Link to="/admin/notifications" className="text-xs font-bold text-blue-600 hover:text-blue-800">
+                      Lihat Semua Notifikasi
+                    </Link>
+                  </div>
                 </div>
-
-                {/* User Profile Dropdown Menu */}
-                <div className="relative">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="bubble-button flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300"
-                        style={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                          backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(72, 128, 255, 0.3)'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(72, 128, 255, 0.4)';
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-                          e.currentTarget.style.transform = 'scale(1)';
-                        }}
-                      >
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                          style={{
-                            background: 'linear-gradient(135deg, #4880FF, #0F5BE5)',
-                            boxShadow: '0 2px 8px rgba(72, 128, 255, 0.4)'
-                          }}
-                        >
-                          <User className="w-4 h-4 text-white" />
-                        </div>
-                        <div className="hidden lg:flex flex-col items-start">
-                          <p className="text-xs font-semibold" style={{
-                            color: '#133E87',
-                            fontFamily: 'Nunito Sans, sans-serif',
-                            fontWeight: 700
-                          }}>{currentUser.name}</p>
-                          <p className="text-xs" style={{
-                            color: '#608BC1',
-                            fontSize: '11px',
-                            fontFamily: 'Nunito Sans, sans-serif'
-                          }}>{currentUser.role}</p>
-                        </div>
-                        <ChevronDown className="w-4 h-4 hidden lg:block" style={{ color: '#4880FF' }} />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" sideOffset={4} className="w-56">
-                      <DropdownMenuLabel>
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm" style={{ color: '#1F2937' }}>{currentUser.name}</p>
-                          <p className="text-xs text-gray-600">{currentUser.email}</p>
-                          <p className="text-xs" style={{ color: '#4880FF' }}>{currentUser.role}</p>
-                        </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-
-                      {/* Profil Saya */}
-                      <DropdownMenuItem
-                        className="cursor-pointer flex items-center"
-                        onClick={() => {
-                          navigate('/admin/profile');
-                        }}
-                      >
-                        <User className="w-4 h-4 mr-2" style={{ color: '#4880FF' }} />
-                        Profil Saya
-                      </DropdownMenuItem>
-
-                      {/* Pengaturan */}
-                      <DropdownMenuItem
-                        className="cursor-pointer flex items-center"
-                        onClick={() => {
-                          navigate('/admin/settings');
-                        }}
-                      >
-                        <Settings className="w-4 h-4 mr-2" style={{ color: '#4880FF' }} />
-                        Pengaturan
-                      </DropdownMenuItem>
-
-                      <DropdownMenuSeparator />
-
-                      {/* Logout */}
-                      <DropdownMenuItem
-                        onClick={handleLogout}
-                        className="cursor-pointer text-red-600 focus:text-red-600 flex items-center"
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Logout
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
+              )}
             </div>
+
+            {/* Profile Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="bubble-button flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.8) inset'
+                  }}
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-md">
+                    {currentUser.name.charAt(0)}
+                  </div>
+                  <div className="text-left hidden sm:block">
+                    <p className="text-sm font-bold text-gray-800 leading-tight">{currentUser.name}</p>
+                    <p className="text-[10px] text-gray-500 font-medium">{currentUser.role}</p>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl border-white/50 bg-white/90 backdrop-blur-xl">
+                <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer">
+                  <User className="w-4 h-4 mr-2" /> Profil
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  <Settings className="w-4 h-4 mr-2" /> Pengaturan
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" /> Keluar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 relative" style={{ zIndex: 1 }}>
-          <div className="max-w-7xl mx-auto">
+        <div className="p-6 overflow-x-hidden">
+          <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             {children}
           </div>
-        </main>
-
-        {/* Footer */}
-        <footer
-          className="py-6 text-center border-t"
-          style={{
-            backgroundColor: 'transparent',
-            borderColor: 'rgba(229, 231, 235, 0.5)',
-            color: '#6B7280'
-          }}
-        >
-          <p className="text-sm">© 2025 Temanikan. All rights reserved.</p>
-        </footer>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
